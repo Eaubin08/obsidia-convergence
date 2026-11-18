@@ -19,6 +19,11 @@ _CANONICAL_CREATE = "CREATE_TARGET_FROM_SOURCE"
 _PC2_ADAPTER_CREATE = "CREATE"
 
 
+def _is_link_or_junction(path: Path) -> bool:
+    """Refuse aussi les jonctions NTFS (pas toujours des symlinks Windows)."""
+    return path.is_symlink() or path.is_junction()
+
+
 def _reject(reason: str) -> dict:
     return {
         "status": "HOLD_CREATE_PRE",
@@ -66,19 +71,19 @@ def prepare_create_target_pre_evidence(
         return _reject("TARGET_PATH_ABSOLUTE_OR_DRIVE")
 
     root = Path(worktree_root)
-    if root.is_symlink() or not root.is_dir():
+    if _is_link_or_junction(root) or not root.is_dir():
         return _reject("WORKTREE_ROOT_UNVERIFIED")
     root = root.resolve(strict=True)
 
     candidate = root
     for part in relative.parts:
         candidate = candidate / part
-        if candidate.is_symlink():
+        if _is_link_or_junction(candidate):
             return _reject("TARGET_PATH_SYMLINK_COMPONENT")
         if candidate != root / Path(*relative.parts) and candidate.exists() and not candidate.is_dir():
             return _reject("TARGET_PARENT_NOT_DIRECTORY")
 
-    if candidate.exists() or candidate.is_symlink():
+    if candidate.exists() or _is_link_or_junction(candidate):
         return _reject("CREATE_TARGET_ALREADY_EXISTS")
 
     try:
