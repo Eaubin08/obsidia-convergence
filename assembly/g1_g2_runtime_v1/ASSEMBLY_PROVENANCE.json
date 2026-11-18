@@ -1,0 +1,229 @@
+{
+  "schema": "OBSIDIA_G1_G2_ASSEMBLY_PROVENANCE_V1",
+  "source_pc1": {
+    "machine": "DESKTOP-Q5MD7J7",
+    "source_head": "d48c3a885fca4d09584f77c353fd725d104aa863",
+    "imports": [
+      "imports/pc1-k1-v5-runtime",
+      "imports/pc1-k1-v5-runtime-deps"
+    ]
+  },
+  "source_pc2": {
+    "machine": "DESKTOP-SDOG0EL",
+    "merkle": "imports/pc2-governance-g1-g2/4a1-write-closure/audit_merkle.py",
+    "variant_families": [
+      "4a1-write-closure",
+      "x108-create-pre",
+      "x108-create-integration",
+      "v01-c1-world-action"
+    ]
+  },
+  "status": "ASSEMBLED_CANDIDATE_EXECUTION_HOLD",
+  "sources": [
+    {
+      "path": "periphery/world_calls/k1_dpapi_bootstrap.py",
+      "source_sha256": "58f6e76dfbf9a8a0d953c9d6df5a85c624a98b9a41042c087759661d65d4497c",
+      "assembly_sha256": "58f6e76dfbf9a8a0d953c9d6df5a85c624a98b9a41042c087759661d65d4497c",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "periphery/world_calls/sovereign_ticket.py",
+      "source_sha256": "ef3ef0ddc529e68ea93f9caf1a81c53015e324e3c856a3fc454ef9c1c4523c64",
+      "assembly_sha256": "ef3ef0ddc529e68ea93f9caf1a81c53015e324e3c856a3fc454ef9c1c4523c64",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "periphery/world_calls/ticket_store.py",
+      "source_sha256": "33f75dd0474254963d3865162d54877166010619aec310b0fc87c5c114e29526",
+      "assembly_sha256": "33f75dd0474254963d3865162d54877166010619aec310b0fc87c5c114e29526",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "scripts/obsidia_batch_execution.py",
+      "source_sha256": "7d6f95ee6cf45626d7d9c8730ea8e22f116ebeb0053f02b2c48724e51d500498",
+      "assembly_sha256": "7d6f95ee6cf45626d7d9c8730ea8e22f116ebeb0053f02b2c48724e51d500498",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "scripts/obsidia_batch_selector.py",
+      "source_sha256": "37b00f2e352bd662ae6141f36a7293c385f8fc33bbf0723fd1a3617c184c5f3e",
+      "assembly_sha256": "37b00f2e352bd662ae6141f36a7293c385f8fc33bbf0723fd1a3617c184c5f3e",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "scripts/obsidia_branching_ledger.py",
+      "source_sha256": "e68518f77c92cefa639e14eada6146dc27fb5a37f4029305de9c191e919dd9f7",
+      "assembly_sha256": "e68518f77c92cefa639e14eada6146dc27fb5a37f4029305de9c191e919dd9f7",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "scripts/obsidia_governed_apply_v0.py",
+      "source_sha256": "e07f72d073d2fc0c2ce4b6a877b4169593cec29fc27088f8092484ff832f8091",
+      "assembly_sha256": "e07f72d073d2fc0c2ce4b6a877b4169593cec29fc27088f8092484ff832f8091",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "scripts/obsidia_governed_execution_driver_v0.py",
+      "source_sha256": "fb84fe8d84999e369194a3be4d34649a0fd90f723258e4cb53b8cf504d4ad5f1",
+      "assembly_sha256": "fb84fe8d84999e369194a3be4d34649a0fd90f723258e4cb53b8cf504d4ad5f1",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "scripts/obsidia_governed_rollback_v0.py",
+      "source_sha256": "6496f3ae6fa9a6700a09d6e142de28818378aaa745121d769bbe619004a4b62f",
+      "assembly_sha256": "6496f3ae6fa9a6700a09d6e142de28818378aaa745121d769bbe619004a4b62f",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "scripts/obsidia_kx108_decision_store.py",
+      "source_sha256": "930778ab6c8448e6f01b9a5b24dec90325a2b2712e4b9d2326e1e501e68970cc",
+      "assembly_sha256": "d632f8873cdd8bc5f9b7045b4914c5ecd8d82b1d754b29d1fb80e02a09ffad0b",
+      "relation": "K1_PLUS_NON_AUTHORIZING_WORLD_ACTION"
+    },
+    {
+      "path": "scripts/obsidia_kx108_pre_execution_evidence_adapter_v0.py",
+      "source_sha256": "11bf7e1dd7e817c6c81e3cdbd124ff76c172157925a8b7fac06146466e87a342",
+      "assembly_sha256": "11bf7e1dd7e817c6c81e3cdbd124ff76c172157925a8b7fac06146466e87a342",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "scripts/obsidia_pre_execution_context.py",
+      "source_sha256": "80bf042cf873a10b9a13d4662ea6e3284c11d14a7afd508e2e3878090ed140cf",
+      "assembly_sha256": "80bf042cf873a10b9a13d4662ea6e3284c11d14a7afd508e2e3878090ed140cf",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "scripts/obsidia_test_contract.py",
+      "source_sha256": "d236e439318c27833a5727e4210754e8a3199bda77586a06441d991b822cb169",
+      "assembly_sha256": "d236e439318c27833a5727e4210754e8a3199bda77586a06441d991b822cb169",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "sigma/aggregation.py",
+      "source_sha256": "3ee17993b04af99440b007eb2951c7830523e522855e93fccb2422526364691a",
+      "assembly_sha256": "3ee17993b04af99440b007eb2951c7830523e522855e93fccb2422526364691a",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "sigma/contracts.py",
+      "source_sha256": "1bb807593b58563442e03d80ecdd4aa5c21d8087a021fc01ee1adfa85f036026",
+      "assembly_sha256": "1bb807593b58563442e03d80ecdd4aa5c21d8087a021fc01ee1adfa85f036026",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "sigma/guard.py",
+      "source_sha256": "49d212a9d0615ac43e54fcbca849d48d9ec3da30f86c025aaebbad7b46f55562",
+      "assembly_sha256": "49d212a9d0615ac43e54fcbca849d48d9ec3da30f86c025aaebbad7b46f55562",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "sigma/protocols.py",
+      "source_sha256": "78d68e77d69b0fae17ac5a9f6942b899a752f3357e163f1ade813dd2d4644b35",
+      "assembly_sha256": "78d68e77d69b0fae17ac5a9f6942b899a752f3357e163f1ade813dd2d4644b35",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "sigma/tests/test_kx108_zero_vote_guard_v1.py",
+      "source_sha256": "e5642a530eb23c0d6afdb25c40299ff4c7717b5f06cf5be6037cc0c66d5ae2e7",
+      "assembly_sha256": "e5642a530eb23c0d6afdb25c40299ff4c7717b5f06cf5be6037cc0c66d5ae2e7",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "sigma/tooling/governed_bounded_apply.py",
+      "source_sha256": "1b4c29c49d855e5e49272a64c2bc71ceedbebdd6875057b31f3855b56c11b3c7",
+      "assembly_sha256": "1b4c29c49d855e5e49272a64c2bc71ceedbebdd6875057b31f3855b56c11b3c7",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "tests/cli/test_k1_governed_singlewrite_v1.py",
+      "source_sha256": "35ae3f820b4a222112305feb529c7aa1dd0799eca7e27a3671bf62c5cb5afc93",
+      "assembly_sha256": "35ae3f820b4a222112305feb529c7aa1dd0799eca7e27a3671bf62c5cb5afc93",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "tests/cli/test_k1_pre_action_binding_positive_v1.py",
+      "source_sha256": "880aa6da0426f2f8cce8b8dc3480335e6d2d6ea815d77fb0b1abc339b009cbd2",
+      "assembly_sha256": "880aa6da0426f2f8cce8b8dc3480335e6d2d6ea815d77fb0b1abc339b009cbd2",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "tests/cli/test_k1_pre_action_binding_red_v1.py",
+      "source_sha256": "ab3f17b98e7819c8de7c4312d9303a921f56f8d1cc43e0352c65f5dc154348a2",
+      "assembly_sha256": "ab3f17b98e7819c8de7c4312d9303a921f56f8d1cc43e0352c65f5dc154348a2",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "tests/cli/test_kx108_post_pre_binding_v0.py",
+      "source_sha256": "1a590b3782c299d3856c45ebbac63ea1ab704cc620a1a7bea89e24a7854f8072",
+      "assembly_sha256": "1a590b3782c299d3856c45ebbac63ea1ab704cc620a1a7bea89e24a7854f8072",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "tests/cli/test_kx108_pre_execution_gate_v0.py",
+      "source_sha256": "60311cd957fb11af75151e3a3fa2d2dfe57115a2172f7c10de2ce5843077a45b",
+      "assembly_sha256": "60311cd957fb11af75151e3a3fa2d2dfe57115a2172f7c10de2ce5843077a45b",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "tests/test_kx108_k1_ticket_decision_binding.py",
+      "source_sha256": "5f4aac6cdaa79e0703259846cb7ad2b66889c48478b8be0638f164105e4f7b50",
+      "assembly_sha256": "5f4aac6cdaa79e0703259846cb7ad2b66889c48478b8be0638f164105e4f7b50",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "scripts/obsidia_build.py",
+      "source_sha256": "2e5dd8048aea3ea2b26324766cf0e8479eab26699498910ac131a4c3954b7c3c",
+      "assembly_sha256": "2e5dd8048aea3ea2b26324766cf0e8479eab26699498910ac131a4c3954b7c3c",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "scripts/obsidia_content_apply.py",
+      "source_sha256": "d5db9bdf1910f5f16977ab3ae319713ee53119b10e13e706866de988fae846fc",
+      "assembly_sha256": "d5db9bdf1910f5f16977ab3ae319713ee53119b10e13e706866de988fae846fc",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "scripts/obsidia_governed_write_guard_v0.py",
+      "source_sha256": "b046cdeed5b147b47f80dc7a9adab8e4d85ae5bf83763ac52d8c0fdd510a890d",
+      "assembly_sha256": "b046cdeed5b147b47f80dc7a9adab8e4d85ae5bf83763ac52d8c0fdd510a890d",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "scripts/obsidia_kx108_evidence_adapter.py",
+      "source_sha256": "19b6ac38ad9969ee71566fb0e4b8fa58131879bbae97051e397c9550e491bf90",
+      "assembly_sha256": "19b6ac38ad9969ee71566fb0e4b8fa58131879bbae97051e397c9550e491bf90",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "scripts/obsidia_mission_authority_freshness_lock_v0.py",
+      "source_sha256": "6f9a5192f9536590c52c9f3f1ef0f172a70524bdaac24389666144a6b0617b01",
+      "assembly_sha256": "6f9a5192f9536590c52c9f3f1ef0f172a70524bdaac24389666144a6b0617b01",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "scripts/obsidia_mission_authority_pre_adapter_v0.py",
+      "source_sha256": "1d9843c2fcfd264965beafe02eb7cad9510b9a91d443a406d941b6f379dafd08",
+      "assembly_sha256": "1d9843c2fcfd264965beafe02eb7cad9510b9a91d443a406d941b6f379dafd08",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "scripts/obsidia_post_execution_disposition_v0.py",
+      "source_sha256": "c7ed5f25a4df9778e2da06ee3bc9718692f2f84753afb53c8f0fc78f5a7d1bd2",
+      "assembly_sha256": "c7ed5f25a4df9778e2da06ee3bc9718692f2f84753afb53c8f0fc78f5a7d1bd2",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "scripts/obsidia_sealed_evidence_v0.py",
+      "source_sha256": "7ae5c0b511b3f0ec1ddb8a540dee66c99dacbd0e946fd696d4292a64e46b7cec",
+      "assembly_sha256": "7ae5c0b511b3f0ec1ddb8a540dee66c99dacbd0e946fd696d4292a64e46b7cec",
+      "relation": "COPIED_BYTE_EXACT"
+    },
+    {
+      "path": "sigma/tooling/k1_windows_stable_write.py",
+      "source_sha256": "c1e8ecb32b914bb483d82ec5b5d40e8bdd719fd5af42781028d5dcc6d58e9d97",
+      "assembly_sha256": "c1e8ecb32b914bb483d82ec5b5d40e8bdd719fd5af42781028d5dcc6d58e9d97",
+      "relation": "COPIED_BYTE_EXACT"
+    }
+  ],
+  "pc2_merkle_sha256": "71281606809ba38462a82f645c7f42e0cd643894822d7dc2721c40d03759bc58"
+}
