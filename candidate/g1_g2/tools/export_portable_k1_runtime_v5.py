@@ -24,6 +24,7 @@ EXPECTED_SOURCE_BRANCH = "fix/kx108-zero-vote-guard-v1"
 EXPECTED_DEST_BRANCH = "build/g1-g2-contract-merge-v0"
 EXPECTED_REMOTE = "https://github.com/Eaubin08/obsidia-convergence"
 IMPORT_SUBDIR = Path("imports/pc1-k1-v5-runtime")
+SUPPLEMENT_SUBDIR = Path("imports/pc1-k1-v5-runtime-deps")
 SOURCE_RELATIVE = Path(".codex/visualizations/2026/11/kx108_zero_vote_guard_fix")
 
 # Actual imported K1 driver dependencies + KX108 authority / apply boundary.
@@ -61,6 +62,20 @@ OPTIONAL_TESTS = (
     "tests/cli/test_kx108_post_pre_binding_v0.py",
     "tests/test_kx108_k1_ticket_decision_binding.py",
     "sigma/tests/test_kx108_zero_vote_guard_v1.py",
+)
+
+# Identified by static imports after the first 25-file source capture.
+# New immutable import directory: do not rewrite the original 25 files.
+SUPPLEMENT_REQUIRED = (
+    "scripts/obsidia_build.py",
+    "scripts/obsidia_content_apply.py",
+    "scripts/obsidia_governed_write_guard_v0.py",
+    "scripts/obsidia_kx108_evidence_adapter.py",
+    "scripts/obsidia_mission_authority_freshness_lock_v0.py",
+    "scripts/obsidia_mission_authority_pre_adapter_v0.py",
+    "scripts/obsidia_post_execution_disposition_v0.py",
+    "scripts/obsidia_sealed_evidence_v0.py",
+    "sigma/tooling/k1_windows_stable_write.py",
 )
 
 _CREATE_MARKER = b"CREATE_TARGET_FROM_SOURCE"
@@ -150,6 +165,14 @@ def select_sources(root: Path) -> tuple[dict[str, bytes], list[str]]:
     return data, discovered
 
 
+def select_supplement_sources(root: Path) -> tuple[dict[str, bytes], list[str]]:
+    missing = [p for p in SUPPLEMENT_REQUIRED if not (root / p).is_file()]
+    if missing:
+        raise ExportHold("SUPPLEMENT_SOURCE_MISSING:" + ",".join(missing))
+    data = {p: _safe_code(_inside(root, p), p) for p in sorted(SUPPLEMENT_REQUIRED)}
+    return data, []
+
+
 def _verify_machine_and_repos(source: Path, destination: Path) -> tuple[str, str]:
     machine = os.environ.get("COMPUTERNAME", "").upper()
     if machine != EXPECTED_MACHINE:
@@ -176,9 +199,15 @@ def _verify_machine_and_repos(source: Path, destination: Path) -> tuple[str, str
     return _git(source, "rev-parse", "HEAD"), local_head
 
 
-def _manifest(source: Path, selected: dict[str, bytes], discovered: list[str], source_head: str) -> dict:
+def _manifest(
+    source: Path, selected: dict[str, bytes], discovered: list[str],
+    source_head: str, *, supplement: bool = False,
+) -> dict:
     return {
-        "schema": "OBSIDIA_G1_G2_PORTABLE_K1_RUNTIME_V5_SOURCE_CAPTURE_V1",
+        "schema": (
+            "OBSIDIA_G1_G2_PORTABLE_K1_RUNTIME_V5_SUPPLEMENT_V1"
+            if supplement else "OBSIDIA_G1_G2_PORTABLE_K1_RUNTIME_V5_SOURCE_CAPTURE_V1"
+        ),
         "source_machine": EXPECTED_MACHINE,
         "source_worktree": str(source),
         "source_branch": EXPECTED_SOURCE_BRANCH,
@@ -196,9 +225,12 @@ def _manifest(source: Path, selected: dict[str, bytes], discovered: list[str], s
     }
 
 
-def _push(destination: Path, selected: dict[str, bytes], manifest: dict) -> str:
-    relative_root = IMPORT_SUBDIR.as_posix()
-    output = destination / IMPORT_SUBDIR
+def _push(
+    destination: Path, selected: dict[str, bytes], manifest: dict,
+    import_subdir: Path = IMPORT_SUBDIR,
+) -> str:
+    relative_root = import_subdir.as_posix()
+    output = destination / import_subdir
     if output.exists():
         raise ExportHold("DEST_CAPTURE_ALREADY_EXISTS__NO_OVERWRITE")
     for relative, content in selected.items():
@@ -239,26 +271,44 @@ def _push(destination: Path, selected: dict[str, bytes], manifest: dict) -> str:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--push", action="store_true", help="Copy source files + commit + push (public repo)")
+    parser.add_argument(
+        "--supplement", action="store_true",
+        help="Import missing G1/G2 dependencies without overwriting the first capture",
+    )
     args = parser.parse_args(argv)
     source = Path.home() / SOURCE_RELATIVE
     destination = Path(__file__).resolve().parents[3]
     try:
         source_head, _ = _verify_machine_and_repos(source, destination)
-        selected, discovered = select_sources(source)
-        manifest = _manifest(source, selected, discovered, source_head)
+        if args.supplement:
+            original_manifest = destination / IMPORT_SUBDIR / "IMPORT_MANIFEST.json"
+            if not original_manifest.is_file():
+                raise ExportHold("FIRST_K1_IMPORT_MISSING__SUPPLEMENT_REFUSED")
+            prior = json.loads(original_manifest.read_text(encoding="utf-8"))
+            if prior.get("source_head") != source_head or prior.get("source_machine") != EXPECTED_MACHINE:
+                raise ExportHold("SUPPLEMENT_PROVENANCE_DIFFERS_FROM_INITIAL_IMPORT")
+            selected, discovered = select_supplement_sources(source)
+        else:
+            selected, discovered = select_sources(source)
+        manifest = _manifest(source, selected, discovered, source_head, supplement=args.supplement)
         print(f"MACHINE_VERIFIED={EXPECTED_MACHINE}")
         print(f"SOURCE_HEAD={source_head}")
         print(f"FILES_SELECTED={len(selected)}")
         print(f"CREATE_SOURCES_DISCOVERED={len(discovered)}")
         print(f"BYTES_SELECTED={sum(len(data) for data in selected.values())}")
         print(f"MODE={'PUBLIC_PUSH' if args.push else 'READ_ONLY_PREVIEW'}")
+        print(f"IMPORT_KIND={'SUPPLEMENT' if args.supplement else 'INITIAL'}")
         for item in manifest["files"]:
             print(f"FILE={item['path']} SHA256={item['sha256']}")
         if args.push:
-            commit = _push(destination, selected, manifest)
-            print("PC1_K1_V5_GITHUB_PUSH_PASS=True")
+            target = SUPPLEMENT_SUBDIR if args.supplement else IMPORT_SUBDIR
+            commit = _push(destination, selected, manifest, target)
+            print(
+                "PC1_K1_V5_SUPPLEMENT_GITHUB_PUSH_PASS=True"
+                if args.supplement else "PC1_K1_V5_GITHUB_PUSH_PASS=True"
+            )
             print(f"REMOTE_COMMIT={commit}")
-            print(f"DESTINATION={IMPORT_SUBDIR.as_posix()}")
+            print(f"DESTINATION={target.as_posix()}")
             print("SOURCE_WORKTREE_UNCHANGED=True")
         else:
             print("PREVIEW_PASS__NO_FILES_WRITTEN=True")
