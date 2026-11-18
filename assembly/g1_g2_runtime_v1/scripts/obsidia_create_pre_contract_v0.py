@@ -17,6 +17,10 @@ from typing import Callable
 _SHA256 = re.compile(r"^[a-fA-F0-9]{64}$")
 _CANONICAL_CREATE = "CREATE_TARGET_FROM_SOURCE"
 _PC2_ADAPTER_CREATE = "CREATE"
+_WINDOWS_FORBIDDEN = frozenset('<>"|?*')
+_WINDOWS_RESERVED = frozenset({"CON", "PRN", "AUX", "NUL"} |
+    {f"COM{i}" for i in range(1, 10)} |
+    {f"LPT{i}" for i in range(1, 10)})
 
 
 def _is_link_or_junction(path: Path) -> bool:
@@ -57,7 +61,12 @@ def prepare_create_target_pre_evidence(
     if not callable(is_protected):
         return _reject("CANONICAL_PROTECTION_POLICY_MISSING")
 
-    raw_path = target_path.strip()
+    # Aucune normalisation silencieuse : PRE doit désigner exactement la
+    # cible que l'APPLY canonique recontrôlera. Sur Windows, des alias de nom
+    # (casse, point/espace final, périphérique, forme 8.3) sont dangereux.
+    if target_path != target_path.strip():
+        return _reject("TARGET_PATH_AMBIGUOUS_WHITESPACE")
+    raw_path = target_path
     if "\x00" in raw_path or PureWindowsPath(raw_path).drive:
         return _reject("TARGET_PATH_ABSOLUTE_OR_DRIVE")
     normalized = raw_path.replace("\\", "/")
@@ -66,28 +75,40 @@ def prepare_create_target_pre_evidence(
     parts = normalized.split("/")
     if any(part in ("", ".", "..") or ":" in part for part in parts):
         return _reject("TARGET_PATH_TRAVERSAL_OR_ADS")
+    if any(
+        part != part.strip() or part.endswith(".") or "~" in part
+        or any(char in _WINDOWS_FORBIDDEN or ord(char) < 32 for char in part)
+        or part.split(".", 1)[0].upper() in _WINDOWS_RESERVED
+        for part in parts
+    ):
+        return _reject("TARGET_PATH_WINDOWS_ALIAS_OR_RESERVED")
     relative = PurePosixPath(normalized)
     if relative.is_absolute():
         return _reject("TARGET_PATH_ABSOLUTE_OR_DRIVE")
 
-    root = Path(worktree_root)
-    if _is_link_or_junction(root) or not root.is_dir():
-        return _reject("WORKTREE_ROOT_UNVERIFIED")
-    root = root.resolve(strict=True)
+    try:
+        root = Path(worktree_root)
+        if _is_link_or_junction(root) or not root.is_dir():
+            return _reject("WORKTREE_ROOT_UNVERIFIED")
+        root = root.resolve(strict=True)
 
-    candidate = root
-    for part in relative.parts:
-        candidate = candidate / part
-        if _is_link_or_junction(candidate):
-            return _reject("TARGET_PATH_SYMLINK_COMPONENT")
-        if candidate != root / Path(*relative.parts) and candidate.exists() and not candidate.is_dir():
-            return _reject("TARGET_PARENT_NOT_DIRECTORY")
+        candidate = root
+        for part in relative.parts:
+            candidate = candidate / part
+            if _is_link_or_junction(candidate):
+                return _reject("TARGET_PATH_SYMLINK_COMPONENT")
+            if candidate != root / Path(*relative.parts) and candidate.exists() and not candidate.is_dir():
+                return _reject("TARGET_PARENT_NOT_DIRECTORY")
 
-    if candidate.exists() or _is_link_or_junction(candidate):
-        return _reject("CREATE_TARGET_ALREADY_EXISTS")
+        if candidate.exists() or _is_link_or_junction(candidate):
+            return _reject("CREATE_TARGET_ALREADY_EXISTS")
+    except (OSError, TypeError, ValueError):
+        return _reject("WORKTREE_OR_TARGET_UNVERIFIED")
 
     try:
-        if bool(is_protected(normalized)):
+        # Le callback K1 historique compare des préfixes en minuscules.
+        # Windows résout les mêmes fichiers quelle que soit leur casse.
+        if bool(is_protected(normalized)) or bool(is_protected(normalized.casefold())):
             return _reject("CREATE_TARGET_PROTECTED")
     except Exception:
         return _reject("CANONICAL_PROTECTION_POLICY_FAILED")

@@ -303,3 +303,38 @@ Les deux fichiers de l'export V3 restés indexés sur le portable ne sont pas
 supposés publiés : ne pas les effacer ni réexécuter les collecteurs V3/V4
 en `--push` sans une nouvelle revue de portée. Ne pas élargir automatiquement
 le dépôt public à l'ensemble des dépendances transitives d'Obsidure.
+
+### G2 — durcissement PRE CREATE des alias de chemins Windows (18/11/2026)
+
+Le prédicat `_is_protected` du rail K1 effectue une comparaison de préfixe
+sensible à la casse. Sous Windows, `Proofs/fichier` et `proofs/fichier`
+peuvent pointer au même emplacement. Le contrat CREATE a donc été renforcé
+**dans le candidat d'intégration uniquement** : double vérification de la
+politique canonique (chemin exact + chemin `casefold`), refus des noms de
+périphériques Windows, des points/espaces finaux, des alias potentiels 8.3,
+des caractères interdits et des racines invalides. Toute ambiguïté mène à
+`HOLD_CREATE_PRE`. Aucun `ALLOW`, aucune écriture de cible.
+
+Preuve locale d'assemblage : **30 tests `unittest` autonomes PASS**, dont
+4 nouveaux tests ciblés (Linux, Python 3.12), sans pytest ni source canonique
+du FIX chargée. La suite Windows complète et les tests K1/C2 restent à
+relancer après mise à jour du clone : le nouveau correctif **n'est pas encore
+validé sur Windows**.
+
+```powershell
+cd "$env:USERPROFILE\obsidia-convergence"
+git pull --ff-only
+Push-Location .\assembly\g1_g2_runtime_v1
+try {
+    py -3 -B -m pytest -q -p no:cacheprovider tests/integration
+} finally {
+    Pop-Location
+}
+```
+
+Le raccordement canonique Sigma/Obsidure reste un chantier distinct :
+`sigma.base` et `periphery.agents` manquent au paquet autonome et la closure
+Obsidure dépasse les limites de publication prévues. Ne pas créer de faux
+substituts de ces modules et ne pas agrandir le dépôt GitHub public par
+copie massive. Il faut définir et valider l'interface d'intégration réelle
+avant de lever le `HOLD` complet.

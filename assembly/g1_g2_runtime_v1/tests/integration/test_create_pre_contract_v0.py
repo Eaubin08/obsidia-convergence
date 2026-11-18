@@ -64,6 +64,27 @@ def test_path_escapes_and_ambiguous_spellings_fail_closed(tmp_path, path):
     assert result["authorized"] is False
 
 
+@pytest.mark.parametrize("path", [
+    "Proofs/new.txt", "FoRmAl/model.tla", "MERKLE_SEAL.JSON",
+    "src/CON", "src/nul.txt", "src/COM1.log", "src/Lpt9",
+    "src/new.txt.", "src/new.txt ", " src/new.txt", "src/part /new.txt",
+    "src/PROOFS~1/out.txt", "src/a?.txt", "src/invalid\x01.txt",
+])
+def test_windows_aliases_and_protected_paths_fail_closed(tmp_path, path):
+    from scripts.obsidia_batch_execution import _is_protected
+
+    result = invoke(tmp_path, target_path=path, is_protected=_is_protected)
+    assert result["status"] == "HOLD_CREATE_PRE"
+    assert result["authorized"] is False
+    assert result["target_mutated"] is False
+
+
+def test_invalid_root_returns_hold_not_exception(tmp_path):
+    result = invoke(None)
+    assert result["status"] == "HOLD_CREATE_PRE"
+    assert result["reason"] == "WORKTREE_OR_TARGET_UNVERIFIED"
+
+
 def test_existing_target_is_rejected(tmp_path):
     (tmp_path / "src").mkdir()
     (tmp_path / "src" / "feature.py").write_text("already here", encoding="utf-8")
