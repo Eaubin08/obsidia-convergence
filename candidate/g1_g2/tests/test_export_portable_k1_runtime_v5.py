@@ -100,3 +100,23 @@ def test_wrong_machine_is_a_hard_stop_before_git(source, monkeypatch):
     with pytest.raises(EXP.ExportHold, match="WRONG_MACHINE"):
         EXP._verify_machine_and_repos(source, source)
 
+
+def test_supplement_lists_only_missing_direct_runtime_dependencies(source):
+    assert EXP.IMPORT_SUBDIR != EXP.SUPPLEMENT_SUBDIR
+    assert not set(EXP.SUPPLEMENT_REQUIRED).intersection(EXP.REQUIRED_SOURCES)
+    for relative in EXP.SUPPLEMENT_REQUIRED:
+        path = source / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("# bounded supplementary source\n", encoding="utf-8")
+    selected, discovered = EXP.select_supplement_sources(source)
+    assert len(selected) == len(EXP.SUPPLEMENT_REQUIRED)
+    assert not discovered
+    manifest = EXP._manifest(source, selected, discovered, "a" * 40, supplement=True)
+    assert manifest["schema"].endswith("_SUPPLEMENT_V1")
+    assert manifest["status"] == "SOURCE_ONLY__FUNCTIONAL_HOLD"
+
+
+def test_supplement_missing_source_fails_closed(source):
+    with pytest.raises(EXP.ExportHold, match="SUPPLEMENT_SOURCE_MISSING"):
+        EXP.select_supplement_sources(source)
+
