@@ -277,3 +277,29 @@ du socle effectivement autonome séparément ; conserver explicitement les
 gates K1/C2 et leurs consommateurs transitifs en `HOLD`, sans les considérer
 comme des PASS. Réexaminer ensuite un raccordement contrôlé au runtime
 canonique complet, sans fusion par copie brute.
+
+### Premier PASS Windows du socle autonome — 18/11/2026
+
+Sur **le portable `DESKTOP-Q5MD7J7`**, depuis
+`C:\Users\User\obsidia-convergence\assembly\g1_g2_runtime_v1` :
+
+```powershell
+py -3 -B -m pytest -q -p no:cacheprovider tests/integration
+```
+
+Résultat communiqué par l'exécution locale Windows :
+
+```
+70 passed, 1 skipped, 3 subtests passed in 0.47s
+```
+
+**Verdict borné : `G1_G2_AUTONOMOUS_INTEGRATION_TESTS_PASS`** pour la suite
+`tests/integration` effectivement exécutée. Le cas skipped reste à qualifier
+avant toute certification complète. Ce PASS ne valide ni la suite K1/C2,
+ni le chargement de `sigma.base`/`periphery.agents`, ni l'APPLY production.
+
+**Statut inchangé : `FULL_FUNCTIONAL_G1_G2_HOLD`.**
+Les deux fichiers de l'export V3 restés indexés sur le portable ne sont pas
+supposés publiés : ne pas les effacer ni réexécuter les collecteurs V3/V4
+en `--push` sans une nouvelle revue de portée. Ne pas élargir automatiquement
+le dépôt public à l'ensemble des dépendances transitives d'Obsidure.
