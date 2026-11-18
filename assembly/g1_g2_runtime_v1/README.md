@@ -378,3 +378,24 @@ Résultat attendu de contrôle : `K1_CANONICAL_ABI_READONLY_PASS=True` ou un
 signatures de fonctions et hashes, **pas le contenu des fichiers**. Ne pas
 confondre cette inspection avec une validation fonctionnelle ni autoriser
 les écritures sur cette base seule.
+
+#### Reprise de l'inspection après déplacement du HEAD du FIX
+
+Sur le portable, l'inspection V1 a retourné `STOP=SOURCE_HEAD_MISMATCH`.
+Cela signifie **seulement** que le HEAD courant ne correspond plus à
+`ecaf6729f1bcdb05bb8896b7c698d1ae90e56de7` : aucune preuve n'a été
+produite que les six modules Sigma/Obsidure auraient changé.
+
+Le garde est désormais précis au fichier : un HEAD plus récent est accepté
+**uniquement si chacun des six fichiers** est identique octet pour octet à
+son blob dans le commit K1 gelé **et** dans le HEAD courant. Aucun nouveau
+HEAD n'est approuvé globalement. Le changement d'une seule source analysée
+retourne `STOP=SOURCE_FILE_DIFFERS_FROM_FROZEN_K1_HEAD:<fichier>` ou
+`STOP=SOURCE_FILE_DRIFT_FROM_CURRENT_HEAD:<fichier>`. La branche active et
+les chantiers parallèles restent intacts, notamment `world_action_bus.py`.
+
+Les contrôles locaux `unittest` sont passés à **35 PASS**, dont un nouveau
+test avec un dépôt Git temporaire : avancement du HEAD sans changement des
+modules = acceptation ; divergence de code du module = refus. Ce PASS prouve
+le fonctionnement du garde, pas les signatures des sources canoniques qui
+restent à lire sur le portable.

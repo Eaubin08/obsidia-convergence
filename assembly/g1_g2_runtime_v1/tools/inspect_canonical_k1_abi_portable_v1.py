@@ -115,7 +115,7 @@ def inspect_python(raw: bytes) -> dict:
     }
 
 
-def _read_checked(root: Path, rel: str) -> bytes:
+def _read_checked(root: Path, rel: str, frozen_head: str = SOURCE_HEAD) -> bytes:
     file_path = root / rel
     if file_path.is_symlink() or not file_path.is_file():
         raise ScopeHold("FILE_MISSING_OR_LINK:" + rel)
@@ -125,8 +125,13 @@ def _read_checked(root: Path, rel: str) -> bytes:
     if file_path.stat().st_size > MAX_FILE_BYTES:
         raise ScopeHold("FILE_TOO_LARGE:" + rel)
     raw = file_path.read_bytes()
+    # Une branche peut avancer (Gencoin, par exemple) sans toucher aux rails
+    # G1/G2. On accepte ce cas UNIQUEMENT si les octets sont strictement
+    # identiques au commit K1 gelé ET au HEAD courant, sans appliquer de patch.
+    if raw != _git(root, "show", frozen_head + ":" + rel):
+        raise ScopeHold("SOURCE_FILE_DIFFERS_FROM_FROZEN_K1_HEAD:" + rel)
     if raw != _git(root, "show", "HEAD:" + rel):
-        raise ScopeHold("SOURCE_FILE_DRIFT_FROM_PINNED_HEAD:" + rel)
+        raise ScopeHold("SOURCE_FILE_DRIFT_FROM_CURRENT_HEAD:" + rel)
     return raw
 
 
@@ -141,11 +146,11 @@ def run() -> int:
         return 2
     try:
         head = _git(root, "rev-parse", "HEAD").decode("ascii").strip()
-        if head != SOURCE_HEAD:
-            raise ScopeHold("SOURCE_HEAD_MISMATCH")
         branch = _git(root, "branch", "--show-current").decode("utf-8").strip()
         print("MACHINE_VERIFIED=" + machine)
-        print("SOURCE_HEAD=" + head)
+        print("FROZEN_SOURCE_HEAD=" + SOURCE_HEAD)
+        print("CURRENT_HEAD=" + head)
+        print("SOURCE_HEAD_ADVANCED=" + str(head != SOURCE_HEAD).lower())
         print("SOURCE_BRANCH=" + branch)
         print("MODE=AST_ONLY_NO_IMPORT_NO_COPY_NO_EXECUTION")
         for rel in FILES:
@@ -156,6 +161,7 @@ def run() -> int:
         print("STOP=" + str(exc).replace("\n", " "))
         return 2
     print("K1_CANONICAL_ABI_READONLY_PASS=True")
+    print("ALL_SIX_FILES_MATCH_FROZEN_K1_AND_CURRENT_HEAD=True")
     print("RELEASE_AUTHORIZATION=False")
     return 0
 

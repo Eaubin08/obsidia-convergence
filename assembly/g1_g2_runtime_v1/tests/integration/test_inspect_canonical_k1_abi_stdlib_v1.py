@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import importlib.util
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -48,6 +50,49 @@ class CanonicalAbiInspection(unittest.TestCase):
         self.assertEqual(INSPECT.SOURCE_HEAD,
                          "ecaf6729f1bcdb05bb8896b7c698d1ae90e56de7")
         self.assertNotIn("periphery/world_calls/world_action_bus.py", INSPECT.FILES)
+
+    def test_advanced_head_only_allowed_if_exact_six_file_identity_is_preserved(self):
+        with tempfile.TemporaryDirectory(prefix="abi-frozen-git-") as tmp:
+            root = Path(tmp).resolve()
+
+            def git(*args):
+                return subprocess.run(
+                    ["git", "-C", str(root), *args], check=True,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                ).stdout.decode("utf-8").strip()
+
+            git("init", "-q")
+            git("config", "user.name", "OBSIDIA-TEST")
+            git("config", "user.email", "tests@example.invalid")
+            (root / "sigma").mkdir()
+            (root / "sigma/base.py").write_bytes(b"class Base: pass\n")
+            git("add", "--", "sigma/base.py")
+            git("commit", "-qm", "frozen")
+            frozen_head = git("rev-parse", "HEAD")
+
+            (root / "unrelated.py").write_bytes(b"UNCHANGED_SCOPE = True\n")
+            git("add", "--", "unrelated.py")
+            git("commit", "-qm", "parallel work")
+            self.assertNotEqual(git("rev-parse", "HEAD"), frozen_head)
+            self.assertEqual(
+                INSPECT._read_checked(root, "sigma/base.py", frozen_head),
+                b"class Base: pass\n",
+            )
+
+            # Une mutation non commitée d'un module gouverné reste HOLD.
+            (root / "sigma/base.py").write_bytes(b"class Base: pass\n# drift\n")
+            with self.assertRaisesRegex(INSPECT.ScopeHold,
+                                        "SOURCE_FILE_DIFFERS_FROM_FROZEN_K1_HEAD"):
+                INSPECT._read_checked(root, "sigma/base.py", frozen_head)
+
+            # Même si le worktree revient au gel, un HEAD contenant une autre
+            # version canonique doit être refusé (pas de version mixte).
+            git("add", "--", "sigma/base.py")
+            git("commit", "-qm", "diverged canonical component")
+            (root / "sigma/base.py").write_bytes(b"class Base: pass\n")
+            with self.assertRaisesRegex(INSPECT.ScopeHold,
+                                        "SOURCE_FILE_DRIFT_FROM_CURRENT_HEAD"):
+                INSPECT._read_checked(root, "sigma/base.py", frozen_head)
 
 
 if __name__ == "__main__":
