@@ -113,5 +113,32 @@ l'ABI PRE (`target_pre_sha256` est présent dans le rapport de l'adaptateur
 brancher le vrai GuardX108 + HumanApproval, puis tester les refus et la
 reprise sans activer de service.
 
+## Transfert ciblé K1 V5 depuis le portable — étape suivante
+
+L'outil `tools/export_portable_k1_runtime_v5.py` est borné à la machine
+`DESKTOP-Q5MD7J7` et à la branche source `fix/kx108-zero-vote-guard-v1`.
+Il vérifie les dépôts, inventorie les 17 sources gouvernance requises et
+quelques tests ciblés, recherche le code CREATE uniquement parmi les scripts
+de la même racine, et vérifie les empreintes des copies et des objets Git.
+Il refuse les chemins redirigés, les secrets évidents et les mauvaises branches.
+
+Depuis le clone `C:\Users\User\obsidia-convergence` sur le portable :
+
+```powershell
+git pull --ff-only
+py -3 candidate/g1_g2/tools/export_portable_k1_runtime_v5.py
+py -3 candidate/g1_g2/tools/export_portable_k1_runtime_v5.py --push
+```
+
+La première exécution est **lecture seule**. La seconde publie explicitement
+les sources dans `imports/pc1-k1-v5-runtime/` sur la branche de build
+existante. Ce n'est pas un export de dépôt complet et le FIX original n'est
+pas modifié. Le dépôt GitHub est **public** : aucune publication n'est faite
+si une condition de sûreté échoue.
+
+**Tests du candidat et du collecteur : 54 PASS en environnement Linux isolé.**
+Sous Windows sans droits symlink, deux tests de création de vrais liens
+symboliques peuvent être `SKIP`.
+
 **Règle : aucun remplacement de K1, aucun APPLY direct, aucune activation
 de Ragnarok, aucun WORLD_ACTION egress sans preuve souveraine complète.**
