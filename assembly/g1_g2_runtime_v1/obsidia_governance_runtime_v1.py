@@ -22,6 +22,7 @@ if str(_SCRIPTS) not in sys.path:
     sys.path.insert(0, str(_SCRIPTS))
 
 from scripts.obsidia_create_pre_contract_v0 import prepare_create_target_pre_evidence
+from obsidure_governed_boundary_v1 import admit_obsidure_bridge_pre
 from scripts.obsidia_kx108_decision_store import (
     persist_kx108_world_action_pre_execution_decision,
 )
@@ -48,7 +49,7 @@ class ObsidiaGovernanceRuntime:
             "engine": "OBSIDIA_GOUVERNANCE_UNIFIED",
             "sigma_aggregation": "K1_GUARD_AVAILABLE",
             "sigma_tooling_advisory": "BOUNDED_FOUR_VOTE_INTAKE_NO_TICKET",
-            "obsidure_proposal": "CANONICAL_ABI_OBSERVED_EFFECTS_NOT_VERIFIED",
+            "obsidure_proposal": "C2_BRIDGE_READONLY_PRE_ADMISSION_NO_EXECUTION",
             "kx108_k1_pre_post": "SOURCE_ASSEMBLED_VALIDATION_PENDING",
             "update": "K1_PREPARE_AVAILABLE_EXECUTION_HOLD",
             "create": "PREFLIGHT_ONLY",
@@ -154,6 +155,21 @@ class ObsidiaGovernanceRuntime:
             target_path=target_path,
             source_content_sha256=source_content_sha256,
             is_protected=_is_protected,
+        )
+
+    def admit_obsidure_bridge(
+        self, *, bridge_result: Any, worktree_root: Path, approved_scope: list[str],
+    ) -> dict[str, Any]:
+        """Frontiere C2 lecture seule ; aucune HumanApproval ni KX108 PRE ici.
+
+        ``bridge_result`` provient du pont existant, sans executer ce pont
+        dans ce runtime. ``approved_scope`` borne des chemins, mais ne
+        constitue PAS une preuve d'approbation humaine.
+        """
+        return admit_obsidure_bridge_pre(
+            bridge_result=bridge_result,
+            worktree_root=worktree_root,
+            approved_scope=approved_scope,
         )
 
     def prepare_existing_update(self, **canonical_inputs: Any) -> dict[str, Any]:

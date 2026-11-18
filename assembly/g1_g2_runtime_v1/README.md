@@ -532,3 +532,47 @@ aux SHA256 gelés, `K1_OBSIDURE_EFFECTS_READONLY_PASS=True`,
 L'analyse sur le portable ne couvre pas les variantes Obsidure des **autres
 branches, dépôts ou worktrees**. Le choix d'une source canonique globale
 reste ouvert : ne rien remplacer par simple copie d'un fichier tiers.
+
+### Obsidure F7 → façade unique : admission PRE sans autorisation (build isolé)
+
+`ObsidiaGovernanceRuntime.admit_obsidure_bridge(...)` reçoit **un résultat**
+du pont C2 déjà identifié `build_child_execution_from_obsidure_proposal`.
+Le pont lui-même et les agents F7 **ne sont ni importés ni exécutés** : leur
+fermeture de dépendances et les effets indirects restent non démontrés. Un
+appelant peut forger ce résultat ; l'admission n'établit donc ni la provenance
+authentique de la proposition ni une approbation humaine. La sortie positive
+est strictement `OBSIDURE_PRE_ADMISSION_READONLY`, sans droit d'APPLY.
+
+| Rail | Vérification effectuée | Statut / frontière |
+|---|---|---|
+| Obsidure C2 → enfant | Forme connue du bridge, `NON_SOVEREIGN`, `write_capability=false`, opération `PLANNED`, aucun champ d'autorité injecté | Proposition seulement |
+| K1 source → cible | Chemins Windows littéraux et bornés, protections K1, absence de lien/jonction, identité de racine, SHA256 complet réel de la source | Contrôle lecture seule |
+| `UPDATE_TARGET_FROM_SOURCE` | Cible réellement existante, pré-image SHA256 complète et intacte | Admission sans mutation |
+| `CREATE_TARGET_FROM_SOURCE` | Cible réellement absente, PRE K1 CREATE appelé sans APPLY | Admission sans mutation |
+| Ancien pont C2 : UPDATE + cible absente | **Aucune conversion implicite vers CREATE** | `HOLD` |
+| Sigma, HumanApproval, KX108 PRE/POST, ticket HMAC | Non invoqués ; une valeur `ALLOW` fournie par un appelant ne confère aucun droit | **Exécution `HOLD`** |
+
+**Décisions de sélection F7** (issues de l'inspection des diffs locaux R10/R12) :
+
+- Conserver les propositions et la validation bornée comme **candidates**,
+  sans remplacer l'implémentation K1 de `injected_operations`.
+- Ne pas importer `AgentObsidure.apply_proposal`, `run_bounded_apply` ni le
+  handoff R12 dans ce build : appels possibles à `shutil.copy2`, `mkdir`,
+  écritures JSON et `write_bytes` ; pas de preuve PRE→POST complète.
+- `LeanSandbox` R12 référence un `REPO_ROOT` global plutôt que `self._root`
+  dans une voie : isolation à corriger séparément avant tout essai d'APPLY.
+- Le chemin R12 de reprise renseigne un indicateur de confirmation humaine
+  dans le code et le handoff contient `hash-dummy` : aucune valeur de ces
+  chemins ne peut servir de preuve d'approbation.
+
+Commande de validation locale, sans serveur ni mutation de cible :
+
+```powershell
+cd "$env:USERPROFILE\obsidia-convergence"
+$env:PYTHONPATH = (Resolve-Path '.\assembly\g1_g2_runtime_v1').Path
+py -3 -B -m unittest discover -s .\assembly\g1_g2_runtime_v1\tests\integration -p 'test_*stdlib_v1.py' -q
+```
+
+La fermeture des dépendances F7, les tests Windows, le raccordement de la
+véritable sortie C2, les preuves HumanApproval, PRE/POST KX108 et la protection
+au point d'écriture restent à traiter. **Un seul runtime, `RELEASE HOLD`.**
