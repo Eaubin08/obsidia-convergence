@@ -1,0 +1,25 @@
+﻿ M periphery/world_calls/sovereign_ticket.py
+ M periphery/world_calls/ticket_store.py
+ M scripts/obsidia_governed_execution_driver_v0.py
+ M scripts/obsidia_kx108_decision_store.py
+ M sigma/guard.py
+ M sigma/tests/test_kx108_pre_decision_write_safety.py
+ M sigma/tests/test_kx108_sovereign_ticket_security.py
+ M sigma/tooling/governed_bounded_apply.py
+ M tests/cli/test_governed_apply_preflight_v0.py
+ M tests/cli/test_governed_content_apply_c2_v0.py
+ M tests/cli/test_governed_rollback_v0.py
+ M tests/cli/test_kx108_post_pre_binding_v0.py
+ M tests/cli/test_kx108_pre_execution_gate_v0.py
+?? CREATOR_MODE_V0_TASK.md
+?? K1_ONE_PASS_CLOSURE/
+?? periphery/world_calls/k1_dpapi_bootstrap.py
+?? sigma/tests/test_k1_wal_authority_red_v1.py
+?? sigma/tests/test_k1_wal_path_boundary_red_v1.py
+?? sigma/tests/test_kx108_pre_phase_gate_v1.py
+?? sigma/tests/test_kx108_pre_provenance_red_v1.py
+?? sigma/tests/test_kx108_zero_vote_guard_v1.py
+?? tests/cli/test_k1_governed_singlewrite_v1.py
+?? tests/cli/test_k1_pre_action_binding_positive_v1.py
+?? tests/cli/test_k1_pre_action_binding_red_v1.py
+?? tests/test_kx108_k1_ticket_decision_binding.py

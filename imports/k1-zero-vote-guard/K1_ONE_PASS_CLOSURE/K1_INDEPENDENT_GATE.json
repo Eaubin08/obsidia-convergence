@@ -1,0 +1,9 @@
+{
+    "CodexExit":  2,
+    "RegressionExit":  0,
+    "DiffExit":  0,
+    "AgentVerdict":  "HOLD",
+    "FinalVerdict":  "HOLD",
+    "AuditExists":  false,
+    "FreezeExecuted":  false
+}

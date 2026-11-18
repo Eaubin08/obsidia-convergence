@@ -1,0 +1,38 @@
+{
+  "created_utc": "2026-11-14T03:17:29.560584+00:00",
+  "baseline_user_reported": "101/101 PASS",
+  "tested_in_this_run": 103,
+  "skipped": 0,
+  "new_negative_tests_exit": 0,
+  "regression_exit": 0,
+  "git_diff_check_exit": 0,
+  "source_sha256": {
+    "engine": "4d753c030d39dfd3b573ab45f43c48ab8f9234cb52aa12462c2f32c3a34e20f6",
+    "tests": "1eca5d0dd9444d86e77ed9e43f9f654e18baa4bb70740dcb42dfdfd1cdab9349"
+  },
+  "tracked_changed_files": 13,
+  "untracked_files": 24,
+  "all_changed_file_manifest": "ALL_CHANGED_FILES_SHA256.json",
+  "tracked_patch": "GIT_FULL_TRACKED_DIFF.patch",
+  "branch_coverage": "K1_BRANCH_COVERAGE.csv",
+  "checks": {
+    "AUTH_PRE_RECHECK_PRE_WAL": true,
+    "WAL_PREPARED": true,
+    "WAL_FINALIZING": true,
+    "WAL_COMMITTED": true,
+    "POST_WAL_IDENTITY_GUARD": true,
+    "POST_WAL_SYMLINK_GUARD": true,
+    "POST_WAL_HARDLINK_GUARD": true,
+    "STABLE_HANDLE_WRITE": false
+  },
+  "verdict": "HOLD_TOCTOU_STABLE_HANDLE_UNVERIFIED",
+  "freeze_executed": false,
+  "limitations": [
+    "A canonical PRE re-verification and content/file-identity recheck are not an atomic write operation.",
+    "A concurrent malicious mutation or rename between the last check and Path.write_bytes is not excluded by these proofs.",
+    "Windows kernel stable-handle/no-reparse/exclusive-write proof is not implemented.",
+    "Power loss and OS hard crash durability not experimentally validated.",
+    "No automatic review of semantic relevance of every modified/untracked file; all changed files are hashed and listed.",
+    "CREATE/DELETE outside canonical WRITE contract."
+  ]
+}

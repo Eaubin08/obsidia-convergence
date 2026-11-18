@@ -1,0 +1,1483 @@
+﻿diff --git a/sigma/tooling/governed_bounded_apply.py b/sigma/tooling/governed_bounded_apply.py
+index ab940ecc5..d693ac3ec 100644
+--- a/sigma/tooling/governed_bounded_apply.py
++++ b/sigma/tooling/governed_bounded_apply.py
+@@ -15,28 +15,29 @@ Implémente la séquence stricte de gouvernance sans inversion d'écriture :
+ Aucune écriture sur disque ne peut intervenir avant une décision KX108 valide (ALLOW).
+ """
+ 
+ from __future__ import annotations
+ 
+ import hashlib
+ import json
+ import os
++import stat
+ import shutil
+ import tempfile
+ import time
+ import uuid
+ from dataclasses import dataclass, field, asdict
+ from datetime import datetime, timezone
+ from pathlib import Path
+ from typing import Any, Callable, Dict, List, Optional, Tuple
+ 
+ from periphery.world_calls.sovereign_ticket import (
+     SovereignTicket,
+-    issue_sovereign_ticket,
++    issue_sovereign_ticket_from_decision_record,
+     TICKET_VERSION_V1,
+ )
+ from periphery.world_calls.ticket_store import (
+     verify_and_consume_sovereign_ticket,
+     fail_ticket_nonce,
+ )
+ from sigma.contracts import (
+     Domain,
+@@ -112,94 +113,966 @@ class PatchProposal:
+         serialized = json.dumps(self.raw_payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+         return hashlib.sha256(serialized).hexdigest()
+ 
+     @property
+     def touched_files(self) -> List[str]:
+         return sorted({op.path.replace("\\", "/") for op in self.operations})
+ 
+ 
++
++def _validated_rollback_targets(worktree, original_files):
++    """Validate every rollback target before any physical effect."""
++    root = Path(worktree).resolve(strict=True)
++
++    if not root.is_dir():
++        raise PermissionError("ROLLBACK_ROOT_NOT_DIRECTORY")
++    if not isinstance(original_files, dict):
++        raise ValueError("ROLLBACK_FILES_NOT_MAPPING")
++
++    validated = {}
++
++    for raw_path in original_files:
++        if not isinstance(raw_path, str) or not raw_path:
++            raise PermissionError("ROLLBACK_PATH_INVALID")
++
++        normalized = raw_path.replace("\\", "/")
++        parts = normalized.split("/")
++
++        if any(
++            not part or part in (".", "..") or ":" in part
++            for part in parts
++        ):
++            raise PermissionError("ROLLBACK_PATH_TRAVERSAL")
++
++        if parts[0].lower() in (".git", ".obsidia_wal"):
++            raise PermissionError("ROLLBACK_PROTECTED_PATH")
++
++        relative = Path(*parts)
++
++        if relative.is_absolute() or relative.drive or relative.root:
++            raise PermissionError("ROLLBACK_ABSOLUTE_PATH")
++
++        cursor = root
++        for part in parts:
++            cursor = cursor / part
++
++            if cursor.is_symlink():
++                raise PermissionError("ROLLBACK_SYMLINK_REFUSED")
++
++            is_junction = getattr(cursor, "is_junction", None)
++            if is_junction is not None and is_junction():
++                raise PermissionError("ROLLBACK_JUNCTION_REFUSED")
++
++            try:
++                metadata = os.lstat(cursor)
++            except FileNotFoundError:
++                continue
++
++            attributes = getattr(
++                metadata, "st_file_attributes", 0
++            )
++            if attributes & getattr(
++                stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0
++            ):
++                raise PermissionError("ROLLBACK_REPARSE_REFUSED")
++
++        target = cursor.resolve(strict=False)
++
++        try:
++            target.relative_to(root)
++        except ValueError:
++            raise PermissionError(
++                "ROLLBACK_TARGET_OUTSIDE_WORKTREE"
++            )
++
++        validated[raw_path] = target
++
++    return validated
++
++
++
++
++
++def _k1_wal_finality_receipt_path(data):
++    terminal = _k1_wal_terminal_receipt_path(data)
++    directory = terminal.parent.with_name(
++        terminal.parent.name + ".finality_v1"
++    )
++    return directory / terminal.name
++
++
++def _k1_wal_finality_check_path(path):
++    for item in (path.parent.parent, path.parent, path):
++        if item.is_symlink() or getattr(
++            item, "is_junction", lambda: False
++        )():
++            raise PermissionError("WAL_FINALITY_REDIRECTED")
++
++    if path.parent.exists() and not path.parent.is_dir():
++        raise PermissionError("WAL_FINALITY_DIRECTORY_INVALID")
++
++    if path.exists() and not path.is_file():
++        raise PermissionError("WAL_FINALITY_NOT_FILE")
++
++
++def _k1_wal_finality_payload(data):
++    return {
++        "schema": "K1_WAL_FINALITY_V1",
++        "identity": _k1_wal_lifecycle_identity(data),
++        "state": "COMMITTED",
++    }
++
++
++def _k1_wal_finality_auth(body):
++    from periphery.world_calls.sovereign_ticket import (
++        compute_authenticator,
++    )
++
++    canonical = json.dumps(
++        body,
++        sort_keys=True,
++        separators=(",", ":"),
++        ensure_ascii=False,
++    ).encode("utf-8")
++
++    return compute_authenticator(
++        b"OBSIDIA_K1_WAL_FINALITY_V1|" + canonical
++    )
++
++
++def _k1_wal_finality_receipt_present(data):
++    import hmac
++
++    path = _k1_wal_finality_receipt_path(data)
++    _k1_wal_finality_check_path(path)
++
++    if not path.exists():
++        return False
++
++    if path.stat().st_size > 1048576:
++        raise PermissionError("WAL_FINALITY_OVERSIZED")
++
++    receipt = json.loads(path.read_text(encoding="utf-8"))
++
++    if not isinstance(receipt, dict) or set(receipt) != {
++        "schema", "identity", "state", "authenticator"
++    }:
++        raise PermissionError("WAL_FINALITY_INVALID")
++
++    supplied = receipt["authenticator"]
++
++    if not isinstance(supplied, str):
++        raise PermissionError("WAL_FINALITY_AUTH_MISSING")
++
++    payload = {
++        k: v for k, v in receipt.items()
++        if k != "authenticator"
++    }
++
++    if payload != _k1_wal_finality_payload(data):
++        raise PermissionError("WAL_FINALITY_IDENTITY_MISMATCH")
++
++    if not hmac.compare_digest(
++        supplied, _k1_wal_finality_auth(payload)
++    ):
++        raise PermissionError("WAL_FINALITY_AUTH_INVALID")
++
++    return True
++
++
++def _k1_wal_write_finality_receipt(data):
++    path = _k1_wal_finality_receipt_path(data)
++    _k1_wal_finality_check_path(path)
++
++    path.parent.mkdir(parents=True, exist_ok=True)
++    _k1_wal_finality_check_path(path)
++
++    payload = _k1_wal_finality_payload(data)
++    receipt = dict(payload)
++    receipt["authenticator"] = _k1_wal_finality_auth(payload)
++
++    encoded = (
++        json.dumps(
++            receipt,
++            sort_keys=True,
++            ensure_ascii=False,
++        ) + "\n"
++    ).encode("utf-8")
++
++    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
++    flags |= getattr(os, "O_BINARY", 0)
++
++    fd = os.open(str(path), flags, 0o600)
++
++    with os.fdopen(fd, "wb") as stream:
++        stream.write(encoded)
++        stream.flush()
++        os.fsync(stream.fileno())
++
++
++def _k1_wal_terminal_receipt_path(data):
++    ledger = _k1_wal_lifecycle_path()
++    terminal_dir = ledger.with_name(
++        ledger.name + ".terminals_v2"
++    )
++
++    identity = _k1_wal_lifecycle_identity(data)
++    canonical = json.dumps(
++        identity,
++        sort_keys=True,
++        separators=(",", ":"),
++        ensure_ascii=False,
++    ).encode("utf-8")
++
++    name = hashlib.sha256(canonical).hexdigest() + ".json"
++    return terminal_dir / name
++
++
++def _k1_wal_terminal_payload(data):
++    return {
++        "schema": "K1_WAL_TERMINAL_V2",
++        "identity": _k1_wal_lifecycle_identity(data),
++        "state": "COMMITTED",
++    }
++
++
++def _k1_wal_terminal_auth(payload):
++    from periphery.world_calls.sovereign_ticket import (
++        compute_authenticator,
++    )
++
++    canonical = json.dumps(
++        payload,
++        sort_keys=True,
++        separators=(",", ":"),
++        ensure_ascii=False,
++    ).encode("utf-8")
++
++    return compute_authenticator(
++        b"OBSIDIA_K1_WAL_TERMINAL_V2\x00" + canonical
++    )
++
++
++def _k1_wal_terminal_check_path(path):
++    directory = path.parent
++
++    if (
++        directory.is_symlink()
++        or getattr(directory, "is_junction", lambda: False)()
++    ):
++        raise PermissionError("WAL_TERMINAL_DIR_REDIRECTED")
++
++    if (
++        path.is_symlink()
++        or getattr(path, "is_junction", lambda: False)()
++    ):
++        raise PermissionError("WAL_TERMINAL_FILE_REDIRECTED")
++
++
++def _k1_wal_terminal_receipt_present(data):
++    import hmac
++
++    path = _k1_wal_terminal_receipt_path(data)
++    _k1_wal_terminal_check_path(path)
++
++    if not path.exists():
++        return False
++
++    if not path.is_file():
++        raise PermissionError("WAL_TERMINAL_NOT_FILE")
++
++    receipt = json.loads(path.read_text(encoding="utf-8"))
++    expected_payload = _k1_wal_terminal_payload(data)
++
++    if not isinstance(receipt, dict):
++        raise PermissionError("WAL_TERMINAL_INVALID")
++
++    authenticator = receipt.get("authenticator")
++
++    if not isinstance(authenticator, str):
++        raise PermissionError("WAL_TERMINAL_AUTH_MISSING")
++
++    body = {
++        k: v for k, v in receipt.items()
++        if k != "authenticator"
++    }
++
++    if body != expected_payload:
++        raise PermissionError("WAL_TERMINAL_IDENTITY_MISMATCH")
++
++    if not hmac.compare_digest(
++        authenticator,
++        _k1_wal_terminal_auth(body),
++    ):
++        raise PermissionError("WAL_TERMINAL_AUTH_INVALID")
++
++    return True
++
++
++def _k1_wal_write_terminal_receipt(data):
++    path = _k1_wal_terminal_receipt_path(data)
++    _k1_wal_terminal_check_path(path)
++
++    path.parent.mkdir(parents=True, exist_ok=True)
++    _k1_wal_terminal_check_path(path)
++
++    if path.exists():
++        raise PermissionError("WAL_TERMINAL_ALREADY_EXISTS")
++
++    body = _k1_wal_terminal_payload(data)
++    receipt = dict(body)
++    receipt["authenticator"] = _k1_wal_terminal_auth(body)
++
++    encoded = (
++        json.dumps(
++            receipt,
++            sort_keys=True,
++            ensure_ascii=False,
++        ) + "\n"
++    ).encode("utf-8")
++
++    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
++    flags |= getattr(os, "O_BINARY", 0)
++
++    fd = os.open(str(path), flags, 0o600)
++
++    with os.fdopen(fd, "wb") as stream:
++        stream.write(encoded)
++        stream.flush()
++        os.fsync(stream.fileno())
++
++
++def _k1_wal_flush_metadata_parents(wal_file):
++    """
++    Flush the WAL directory, then its parent, after rename.
++    Failure forbids PREPARED and any physical ACT.
++    """
++    directory = Path(wal_file).parent
++    directories = (directory, directory.parent)
++
++    for current in directories:
++        if current.is_symlink() or getattr(
++            current, "is_junction", lambda: False
++        )():
++            raise PermissionError("WAL_DIRECTORY_REDIRECTED")
++
++        if not current.is_dir():
++            raise PermissionError("WAL_DIRECTORY_NOT_FOUND")
++
++        if os.name == "nt":
++            import ctypes
++            from ctypes import wintypes
++
++            k32 = ctypes.WinDLL(
++                "kernel32", use_last_error=True
++            )
++
++            create = k32.CreateFileW
++            create.argtypes = [
++                wintypes.LPCWSTR,
++                wintypes.DWORD,
++                wintypes.DWORD,
++                ctypes.c_void_p,
++                wintypes.DWORD,
++                wintypes.DWORD,
++                wintypes.HANDLE,
++            ]
++            create.restype = wintypes.HANDLE
++
++            flush = k32.FlushFileBuffers
++            flush.argtypes = [wintypes.HANDLE]
++            flush.restype = wintypes.BOOL
++
++            close = k32.CloseHandle
++            close.argtypes = [wintypes.HANDLE]
++            close.restype = wintypes.BOOL
++
++            handle = create(
++                str(current),
++                0x40000000,  # GENERIC_WRITE
++                0x00000007,  # FILE_SHARE_ALL
++                None,
++                3,           # OPEN_EXISTING
++                0x02000000,  # FILE_FLAG_BACKUP_SEMANTICS
++                None,
++            )
++
++            invalid = ctypes.c_void_p(-1).value
++
++            if handle is None or handle == invalid:
++                raise OSError(
++                    "WAL_DIRECTORY_OPEN_FAILED:"
++                    + str(ctypes.get_last_error())
++                )
++
++            try:
++                ok = flush(handle)
++                error = ctypes.get_last_error() if not ok else 0
++            finally:
++                closed = close(handle)
++
++            if not ok:
++                raise OSError(
++                    "WAL_DIRECTORY_FLUSH_FAILED:"
++                    + str(error)
++                )
++
++            if not closed:
++                raise OSError(
++                    "WAL_DIRECTORY_CLOSE_FAILED"
++                )
++
++        else:
++            if not hasattr(os, "O_DIRECTORY"):
++                raise OSError("WAL_DIRECTORY_SYNC_UNSUPPORTED")
++
++            fd = os.open(
++                str(current),
++                os.O_RDONLY | os.O_DIRECTORY,
++            )
++            try:
++                os.fsync(fd)
++            finally:
++                os.close(fd)
++
++
++def _k1_wal_lifecycle_path():
++    from periphery.world_calls import ticket_store as ts
++
++    base = Path(str(ts._DEFAULT_CONSUMED_STORE)).resolve()
++    return base.with_name(base.name + ".wal_lifecycle_v2.jsonl")
++
++
++def _k1_wal_lifecycle_identity(data):
++    return {
++        "wal_digest": hashlib.sha256(
++            _k1_wal_v2_bytes(data)
++        ).hexdigest(),
++        "ticket_id": data["ticket_id"],
++        "decision_record_id": data["decision_record_id"],
++        "worktree": data["worktree"],
++    }
++
++
++def _k1_wal_identity_key(identity):
++    fields = (
++        "wal_digest", "ticket_id",
++        "decision_record_id", "worktree",
++    )
++    return tuple(identity[k] for k in fields)
++
++
++def _k1_wal_event_authenticator(event):
++    from periphery.world_calls.sovereign_ticket import (
++        compute_authenticator,
++    )
++
++    body = {
++        k: v for k, v in event.items()
++        if k != "authenticator"
++    }
++
++    raw = (
++        b"OBSIDIA_K1_WAL_LIFECYCLE_V2\x00"
++        + json.dumps(
++            body,
++            sort_keys=True,
++            separators=(",", ":"),
++            ensure_ascii=False,
++        ).encode("utf-8")
++    )
++
++    return compute_authenticator(raw)
++
++
++def _k1_wal_load_states(path):
++    import hmac
++
++    states = {}
++
++    if path.is_symlink() or getattr(
++        path, "is_junction", lambda: False
++    )():
++        raise PermissionError("WAL_LIFECYCLE_REDIRECTED")
++
++    if not path.exists():
++        return states
++
++    if not path.is_file():
++        raise PermissionError("WAL_LIFECYCLE_NOT_FILE")
++
++    allowed = {
++        None: {"PREPARED"},
++        "PREPARED": {
++            "COMMITTED", "FINALIZING", "ROLLED_BACK", "RECOVERING"
++        },
++        "FINALIZING": {"COMMITTED"},
++        "RECOVERING": {"RECOVERED"},
++        "COMMITTED": set(),
++        "ROLLED_BACK": set(),
++        "RECOVERED": set(),
++    }
++
++    with path.open("r", encoding="utf-8") as stream:
++        for line in stream:
++            event = json.loads(line)
++
++            if not isinstance(event, dict) or set(event) != {
++                "schema", "identity", "state", "authenticator"
++            }:
++                raise ValueError("WAL_LIFECYCLE_EVENT_INVALID")
++
++            if event["schema"] != "K1_WAL_LIFECYCLE_V2":
++                raise ValueError("WAL_LIFECYCLE_SCHEMA_INVALID")
++
++            if not isinstance(event["identity"], dict):
++                raise ValueError("WAL_LIFECYCLE_IDENTITY_INVALID")
++
++            supplied = event["authenticator"]
++            if not isinstance(supplied, str):
++                raise ValueError("WAL_LIFECYCLE_AUTH_MISSING")
++
++            if not hmac.compare_digest(
++                supplied,
++                _k1_wal_event_authenticator(event),
++            ):
++                raise PermissionError(
++                    "WAL_LIFECYCLE_AUTH_INVALID"
++                )
++
++            identity = _k1_wal_identity_key(event["identity"])
++            previous = states.get(identity)
++            state = event["state"]
++
++            if state not in allowed.get(previous, set()):
++                raise PermissionError(
++                    "WAL_LIFECYCLE_TRANSITION_INVALID"
++                )
++
++            states[identity] = state
++
++    return states
++
++
++def _k1_wal_current_state(data):
++    path = _k1_wal_lifecycle_path()
++    identity = _k1_wal_lifecycle_identity(data)
++    return _k1_wal_load_states(path).get(
++        _k1_wal_identity_key(identity)
++    )
++
++
++def _k1_wal_record_state(data, state):
++    from periphery.world_calls.ticket_store import FileLock
++
++    path = _k1_wal_lifecycle_path()
++
++    if path.is_symlink() or getattr(
++        path, "is_junction", lambda: False
++    )():
++        raise PermissionError("WAL_LIFECYCLE_REDIRECTED")
++
++    path.parent.mkdir(parents=True, exist_ok=True)
++
++    identity = _k1_wal_lifecycle_identity(data)
++    event = {
++        "schema": "K1_WAL_LIFECYCLE_V2",
++        "identity": identity,
++        "state": state,
++    }
++
++    expected = {
++        "PREPARED": None,
++        "FINALIZING": "PREPARED",
++        "COMMITTED": "FINALIZING",
++        "ROLLED_BACK": "PREPARED",
++        "RECOVERING": "PREPARED",
++        "RECOVERED": "RECOVERING",
++    }
++
++    if state not in expected:
++        raise ValueError("WAL_LIFECYCLE_UNKNOWN_STATE")
++
++    with FileLock(str(path) + ".lock"):
++        states = _k1_wal_load_states(path)
++        previous = states.get(
++            _k1_wal_identity_key(identity)
++        )
++
++        if previous != expected[state]:
++            raise PermissionError(
++                "WAL_LIFECYCLE_TRANSITION_REFUSED"
++            )
++
++        event["authenticator"] = (
++            _k1_wal_event_authenticator(event)
++        )
++
++        with path.open("a", encoding="utf-8") as stream:
++            stream.write(
++                json.dumps(
++                    event,
++                    sort_keys=True,
++                    ensure_ascii=False,
++                ) + "\n"
++            )
++            stream.flush()
++            os.fsync(stream.fileno())
++        if state == "PREPARED":
++            # K1: the Lifecycle directory entry must
++            # be flushed before physical ACT.
++            _k1_wal_flush_metadata_parents(
++                _k1_wal_lifecycle_path()
++            )
++
++
++def _k1_wal_v2_bytes(data):
++    body = {k: v for k, v in data.items() if k != "authenticator"}
++    return b"OBSIDIA_K1_WAL_V2\\x00" + json.dumps(
++        body, sort_keys=True, separators=(",", ":"), ensure_ascii=False
++    ).encode("utf-8")
++
++
++def _k1_wal_check_preimages(original_files, pre_state_hashes):
++    if not isinstance(original_files, dict) or len(original_files) != 1:
++        raise ValueError("WAL_V2_SINGLE_TARGET_REQUIRED")
++    if not isinstance(pre_state_hashes, dict) or set(original_files) != set(pre_state_hashes):
++        raise ValueError("WAL_V2_PREIMAGE_KEYS_MISMATCH")
++    for path, original in original_files.items():
++        if not isinstance(path, str) or not path:
++            raise ValueError("WAL_V2_PATH_INVALID")
++        if original is not None and not isinstance(original, str):
++            raise ValueError("WAL_V2_PREIMAGE_TYPE_INVALID")
++        digest = None if original is None else hashlib.sha256(
++            original.encode("utf-8")
++        ).hexdigest()
++        if pre_state_hashes[path] != digest:
++            raise ValueError("WAL_V2_PREIMAGE_HASH_MISMATCH")
++
++
+ @dataclass
+ class SealedRollbackEvidence:
+     """Instantané pré-mutation scellé en mémoire et persisté en journal WAL avant toute écriture disque."""
+     evidence_id: str
+     proposal_id: str
+     created_at: str
+     original_files: Dict[str, Optional[str]]  # path -> content (None si le fichier n'existait pas)
+     pre_state_hashes: Dict[str, Optional[str]]
+ 
+     def execute_rollback(self, target_worktree: str) -> None:
+         worktree = Path(target_worktree)
++        targets = _validated_rollback_targets(
++            worktree, self.original_files
++        )
+         for path_str, orig_content in self.original_files.items():
+-            restored_file = worktree / path_str
++            restored_file = targets[path_str]
+             if orig_content is None:
+                 if restored_file.exists():
+                     restored_file.unlink()
+             else:
+                 restored_file.parent.mkdir(parents=True, exist_ok=True)
+-                restored_file.write_text(orig_content, encoding="utf-8")
++                restored_file.write_bytes(orig_content.encode("utf-8"))
++
++                # K1: the restored preimage must be synchronized
++                # before ROLLED_BACK is persisted or WAL cleared.
++                # Retain write_bytes for existing crash injections.
++                with restored_file.open("r+b") as sync_restored:
++                    sync_restored.flush()
++                    os.fsync(sync_restored.fileno())
++
++    def persist_wal(
++        self, target_worktree: str, *, verified_ticket,
++        decision_store_dir, base_sha: str, patch_hash: str, approved_scope,
++    ) -> Path:
++        """Persist WAL V2 for a verified KX108 PRE transaction."""
++        import re
++        import tempfile
++        from periphery.world_calls.sovereign_ticket import (
++            compute_authenticator, verify_authenticator,
++        )
++        from scripts import obsidia_kx108_decision_store as ds
++
++        if not isinstance(self.proposal_id, str) or not re.fullmatch(
++            r"[A-Za-z0-9_.-]{1,128}", self.proposal_id
++        ) or self.proposal_id in (".", ".."):
++            raise PermissionError("WAL_V2_PROPOSAL_ID_INVALID")
++
++        root = Path(target_worktree).resolve(strict=True)
++        targets = _validated_rollback_targets(root, self.original_files)
++        _k1_wal_check_preimages(self.original_files, self.pre_state_hashes)
+ 
+-    def persist_wal(self, target_worktree: str) -> Path:
+-        """Écrit et synchronise sur disque (fsync) le journal WAL de rollback avant la première mutation."""
+-        wal_dir = Path(target_worktree) / ".obsidia_wal"
++        if set(targets) != set(approved_scope):
++            raise PermissionError("WAL_V2_APPROVED_SCOPE_MISMATCH")
++        if not verify_authenticator(verified_ticket):
++            raise PermissionError("WAL_V2_TICKET_HMAC_INVALID")
++        if (
++            verified_ticket.x108_gate != "ALLOW"
++            or verified_ticket.scope != "bounded_apply"
++            or verified_ticket.action_id != self.proposal_id
++            or verified_ticket.input_hash != patch_hash
++            or verified_ticket.action_hash != hashlib.sha256(
++                f"{target_worktree}:{base_sha}".encode("utf-8")
++            ).hexdigest()
++        ):
++            raise PermissionError("WAL_V2_TICKET_BINDING_MISMATCH")
++
++        dc = str(Path(decision_store_dir).resolve()) if decision_store_dir is not None else None
++        record = ds.load_kx108_decision_record(
++            verified_ticket.decision_record_id,
++            Path(dc) if dc else None,
++        )
++        ok, reason = ds.verify_kx108_decision_record_authenticity(record)
++        if not ok:
++            raise PermissionError(f"WAL_V2_DECISION_AUTH_INVALID:{reason}")
++        if (
++            record.get("decision_record_hash") != verified_ticket.decision_record_hash
++            or record.get("decision_phase") != "PRE_EXECUTION"
++            or record.get("decision_record_producer")
++                != "run_and_persist_kx108_pre_execution_decision"
++            or record.get("x108_gate") != "ALLOW"
++        ):
++            raise PermissionError("WAL_V2_DECISION_BINDING_MISMATCH")
++
++        wal_dir = root / ".obsidia_wal"
++        if wal_dir.is_symlink() or getattr(
++            wal_dir, "is_junction", lambda: False
++        )():
++            raise PermissionError("WAL_V2_DIRECTORY_REDIRECTED")
+         wal_dir.mkdir(parents=True, exist_ok=True)
+-        wal_file = wal_dir / f"wal_{self.proposal_id}.json"
++        if any(wal_dir.iterdir()):
++            raise PermissionError("WAL_V2_UNRESOLVED_JOURNAL")
++
+         data = {
++            "wal_version": "K1_WAL_V2",
+             "evidence_id": self.evidence_id,
+             "proposal_id": self.proposal_id,
+             "created_at": self.created_at,
+             "original_files": self.original_files,
+             "pre_state_hashes": self.pre_state_hashes,
+             "state": "MUTATION_IN_PROGRESS",
++            "worktree": str(root),
++            "base_sha": base_sha,
++            "patch_hash": patch_hash,
++            "approved_scope": sorted(set(approved_scope)),
++            "decision_store_dir": dc,
++            "decision_record_id": verified_ticket.decision_record_id,
++            "decision_record_hash": verified_ticket.decision_record_hash,
++            "ticket_id": verified_ticket.ticket_id,
++            "action_id": verified_ticket.action_id,
++            "ticket_action_hash": verified_ticket.action_hash,
+         }
+-        with open(wal_file, "w", encoding="utf-8") as f:
+-            json.dump(data, f, ensure_ascii=False)
+-            f.flush()
+-            os.fsync(f.fileno())
++        data["authenticator"] = compute_authenticator(
++            _k1_wal_v2_bytes(data)
++        )
++
++        wal_file = wal_dir / f"wal_{self.proposal_id}.json"
++        fd, tmp = tempfile.mkstemp(
++            prefix=".wal_v2_", suffix=".tmp", dir=str(wal_dir)
++        )
++        try:
++            with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as out:
++                json.dump(data, out, sort_keys=True, ensure_ascii=False)
++                out.flush()
++                os.fsync(out.fileno())
++            os.replace(tmp, wal_file)
++            # Synchronize both the WAL entry and its parent
++            # directory entry before publishing PREPARED.
++            _k1_wal_flush_metadata_parents(wal_file)
++        finally:
++            if os.path.exists(tmp):
++                os.unlink(tmp)
++        _k1_wal_record_state(data, "PREPARED")
++        self._k1_wal_v2_data = data
+         return wal_file
+ 
+     def clear_wal(self, target_worktree: str) -> None:
+         """Nettoie le journal WAL une fois la transaction validée ou annulée."""
+         wal_file = Path(target_worktree) / ".obsidia_wal" / f"wal_{self.proposal_id}.json"
+         if wal_file.exists():
+-            try:
+-                wal_file.unlink()
+-            except OSError:
+-                pass
++            wal_file.unlink()
++            # K1_WAL_CLEANUP_METADATA_BARRIER
++            _k1_wal_flush_metadata_parents(wal_file)
+ 
+     @staticmethod
+     def recover_dangling_wal(target_worktree: str) -> List[str]:
+-        """
+-        Procédure de réconciliation post-crash système (coupure, SIGKILL) :
+-        Scanne et restaure automatiquement l'état d'origine si un journal WAL
+-        orphelin est présent sur le worktree au redémarrage.
+-        """
+-        wal_dir = Path(target_worktree) / ".obsidia_wal"
+-        recovered = []
+-        if not wal_dir.exists():
+-            return recovered
++        """Recover authenticated K1 WAL V2; otherwise preserve WAL and HOLD."""
++        import hmac
++        import tempfile
++        from periphery.world_calls.sovereign_ticket import compute_authenticator
++        from scripts import obsidia_kx108_decision_store as ds
+ 
+-        for wal_file in wal_dir.glob("wal_*.json"):
+-            try:
+-                with open(wal_file, "r", encoding="utf-8") as f:
+-                    data = json.load(f)
+-                worktree = Path(target_worktree)
+-                for path_str, orig_content in data.get("original_files", {}).items():
+-                    target_file = worktree / path_str
+-                    if orig_content is None:
+-                        if target_file.exists():
+-                            target_file.unlink()
++        try:
++            root = Path(target_worktree).resolve(strict=True)
++            wal_dir = root / ".obsidia_wal"
++            if wal_dir.is_symlink() or getattr(
++                wal_dir, "is_junction", lambda: False
++            )():
++                return []
++            if not wal_dir.is_dir():
++                return []
++
++            entries = list(wal_dir.iterdir())
++            if len(entries) != 1:
++                return []
++
++            wal_file = entries[0]
++            if (
++                wal_file.is_symlink()
++                or getattr(wal_file, "is_junction", lambda: False)()
++                or not wal_file.is_file()
++                or not wal_file.name.startswith("wal_")
++                or not wal_file.name.endswith(".json")
++            ):
++                return []
++
++            data = json.loads(wal_file.read_text(encoding="utf-8"))
++            if not isinstance(data, dict) or data.get("wal_version") != "K1_WAL_V2":
++                return []
++
++            authenticator = data.get("authenticator")
++            if not isinstance(authenticator, str) or not hmac.compare_digest(
++                authenticator, compute_authenticator(_k1_wal_v2_bytes(data))
++            ):
++                return []
++
++            if (
++                data.get("state") != "MUTATION_IN_PROGRESS"
++                or data.get("worktree") != str(root)
++                or data.get("action_id") != data.get("proposal_id")
++                or data.get("approved_scope") != sorted(
++                    data.get("original_files", {})
++                )
++                or wal_file.name != f"wal_{data.get('proposal_id')}.json"
++            ):
++                return []
++
++            _k1_wal_check_preimages(
++                data.get("original_files"),
++                data.get("pre_state_hashes"),
++            )
++            targets = _validated_rollback_targets(
++                root, data["original_files"]
++            )
++
++            dc = data.get("decision_store_dir")
++            record = ds.load_kx108_decision_record(
++                data.get("decision_record_id"),
++                Path(dc) if dc else None,
++            )
++            ok, _ = ds.verify_kx108_decision_record_authenticity(record)
++            if not ok or (
++                record.get("decision_record_hash")
++                    != data.get("decision_record_hash")
++                or record.get("decision_phase") != "PRE_EXECUTION"
++                or record.get("decision_record_producer")
++                    != "run_and_persist_kx108_pre_execution_decision"
++                or record.get("x108_gate") != "ALLOW"
++            ):
++                return []
++
++            # All verification precedes the physical restoration.
++            # Finalized WALs cannot restore an old preimage,
++            # even when Lifecycle and terminal receipt are lost.
++            if _k1_wal_finality_receipt_present(data):
++                return []
++
++            lifecycle_state = _k1_wal_current_state(data)
++
++            # A durable post-test finalization intent is not a
++            # recoverable interrupted mutation. Preserve the WAL.
++            if lifecycle_state == "FINALIZING":
++                return []
++
++            if lifecycle_state not in ("PREPARED", "RECOVERING", "RECOVERED"):
++                return []
++
++            if _k1_wal_terminal_receipt_present(data):
++                return []
++
++            # K1: RECOVERED means physical restoration was already
++            # verified and its lifecycle finalization persisted.
++            # Only WAL cleanup is permitted; never restore again.
++            if lifecycle_state == "RECOVERED":
++                targets = _validated_rollback_targets(
++                    target_worktree,
++                    data["original_files"],
++                )
++
++                for path_str, original in data["original_files"].items():
++                    target = targets[path_str]
++
++                    if original is None:
++                        if target.exists() or target.is_symlink():
++                            return []
+                     else:
+-                        target_file.parent.mkdir(parents=True, exist_ok=True)
+-                        target_file.write_text(orig_content, encoding="utf-8")
++                        if (
++                            not target.is_file()
++                            or target.read_bytes() != original.encode("utf-8")
++                        ):
++                            return []
++
++                # Authenticated WAL, terminal guard and lifecycle
++                # checks above must all have succeeded.
+                 wal_file.unlink()
+-                recovered.append(data.get("proposal_id", wal_file.stem))
+-            except Exception:
+-                continue
+-        return recovered
++                _k1_wal_flush_metadata_parents(wal_file)
++                return [data["proposal_id"]]
++
++            # Resume an already authenticated recovery without
++            # recording PREPARED -> RECOVERING a second time.
++            if lifecycle_state == "PREPARED":
++                _k1_wal_record_state(data, "RECOVERING")
++
++            for path_str, original in data["original_files"].items():
++                target = targets[path_str]
++                if original is None:
++                    if target.exists():
++                        target.unlink()
++                else:
++                    target.parent.mkdir(parents=True, exist_ok=True)
++                    fd, tmp = tempfile.mkstemp(
++                        prefix=".k1_restore_", dir=str(target.parent)
++                    )
++                    try:
++                        with os.fdopen(fd, "wb") as out:
++                            out.write(original.encode("utf-8"))
++                            out.flush()
++                            os.fsync(out.fileno())
++                        os.replace(tmp, target)
++
++                        # K1_RECOVERY_RESTORE_REPLACE_METADATA_BARRIER
++                        # The restored file was fsynced before replace.
++                        # Flush its directory metadata before RECOVERED.
++                        # Failure propagates to recovery's fail-closed handler.
++                        _k1_wal_flush_metadata_parents(target)
++                    finally:
++                        if os.path.exists(tmp):
++                            os.unlink(tmp)
++
++                if original is None:
++                    if target.exists():
++                        return []
++                elif hashlib.sha256(target.read_bytes()).hexdigest() != (
++                    data["pre_state_hashes"][path_str]
++                ):
++                    return []
++
++            _k1_wal_record_state(data, "RECOVERED")
++            wal_file.unlink()
++
++            # K1_RECOVERED_WAL_CLEANUP_METADATA_BARRIER
++            # Confirm directory metadata after WAL deletion.
++            # On failure, recovery returns [] through the
++            # existing fail-closed exception handler.
++            _k1_wal_flush_metadata_parents(wal_file)
++
++            return [data["proposal_id"]]
++        except Exception:
++            # No recovery claim. Unresolved WAL is retained.
++            return []
+ 
+ 
+ @dataclass
+ class GovernedApplyResult:
+     status: str  # "COMMITTED" | "REFUSED_PRE_DECISION" | "ROLLED_BACK" | "ERROR"
+     proposal_id: str
+     kx108_pre_gate: str
+     kx108_reason: str
+@@ -277,19 +1150,29 @@ class GovernedBoundedApply:
+ 
+     def apply_proposal_governed(
+         self,
+         proposal: PatchProposal,
+         post_test_runner: Optional[Callable[[str], bool]] = None,
+         injected_ticket: Optional[SovereignTicket] = None,
+         simulate_crash_after_auth: bool = False,
+         simulate_crash_during_mutation: bool = False,
++        decision_record_id: Optional[str] = None,
++        decision_store_dir: Optional[Any] = None,
++        execution_dir: Optional[Any] = None,
++        pre_execution_context_dir: Optional[Any] = None,
++        repo_root: Optional[Any] = None,
++        derived_authority_context: Optional[Any] = None,
+     ) -> GovernedApplyResult:
+         """
+         Exécute la chaîne transactionnelle gouvernée complète.
++
++        KX108-K1 : l'autorisation d'écrire ne provient que d'une décision KX108 vérifiée
++        (decision_record_id du magasin canonique), jamais d'un ALLOW émis ici ni de la
++        porte revendiquée par un ticket injecté. Sans décision vérifiée : refus, zéro écriture.
+         """
+         worktree = Path(proposal.target_worktree)
+ 
+         # ── 1. INTENTION & VALIDATION PRÉALABLE (ZÉRO ÉCRITURE) ──
+         valid, reason, state = self.pre_check(proposal)
+         if not valid:
+             return GovernedApplyResult(
+                 status="REFUSED_PRE_DECISION",
+@@ -299,75 +1182,129 @@ class GovernedBoundedApply:
+                 ticket_id=None,
+                 disk_written=False,
+                 rolled_back=False,
+                 modified_files=[],
+                 error_detail=reason,
+             )
+ 
+         # ── 2. DÉCISION SOUVERAINE KX108 (ZÉRO ÉCRITURE) ──
+-        if injected_ticket is not None:
+-            kx108_gate = injected_ticket.x108_gate
+-            kx108_reason = f"INJECTED_TICKET_{kx108_gate}"
+-        else:
+-            # Évaluation du state par GuardX108
+-            aggregate = DomainAggregate(
+-                domain=Domain.META,
+-                market_verdict="AUTHORIZE",
+-                confidence=0.98,
+-                contradictions=state.contradictions if state else [],
+-                unknowns=state.unknowns if state else [],
+-                risk_flags=state.risk_flags if state else [],
+-                agent_votes=[],
+-            )
+-            envelope = GuardX108().decide(aggregate)
+-            kx108_gate = envelope.x108_gate
+-            kx108_reason = envelope.reason_code
+-
+-        # SI LE KERNEL NE DIT PAS ALLOW : ARRÊT STRICT, AUCUN OCTET ÉCRIT
+-        if kx108_gate != "ALLOW":
++        # K1: mandatory cryptographic provenance before ticket
++        # issuance, nonce consumption, WAL creation or physical ACT.
++        try:
++            from periphery.world_calls.sovereign_ticket import (
++                _DEFAULT_KEY_ID,
++                require_persistent_kernel_keys,
++            )
++            from scripts.obsidia_kx108_decision_store import (
++                DECISION_RECORD_KEY_ID,
++            )
++
++            require_persistent_kernel_keys((
++                _DEFAULT_KEY_ID,
++                DECISION_RECORD_KEY_ID,
++            ))
++        except Exception as exc:
++            known_reasons = {
++                "K1_PERSISTENT_KEY_REQUIRED",
++                "K1_PERSISTENT_KEY_INVALID",
++                "K1_KEY_PROVENANCE_MISMATCH",
++            }
++            detail = str(exc)
++            refusal = (
++                detail if detail in known_reasons
++                else "K1_PERSISTENT_KEY_UNAVAILABLE"
++            )
++
+             return GovernedApplyResult(
+                 status="REFUSED_PRE_DECISION",
+                 proposal_id=proposal.proposal_id,
+-                kx108_pre_gate=kx108_gate,
+-                kx108_reason=f"KX108_GATE_NOT_ALLOW:{kx108_reason}",
+-                ticket_id=getattr(injected_ticket, "ticket_id", None) if injected_ticket else None,
++                kx108_pre_gate="NO_VERIFIED_DECISION",
++                kx108_reason=refusal,
++                ticket_id=None,
+                 disk_written=False,
+                 rolled_back=False,
+                 modified_files=[],
++                error_detail=refusal,
+             )
+ 
+-        # ── 3. ÉMISSION OU VÉRIFICATION DU TICKET D'AUTORISATION ──
++        # KX108-K1: no synthetic authorization.
++        # A decision record and ticket must pass canonical verification.
++        # PENDING is never an authorization to mutate.
++        kx108_gate = "PENDING_DECISION_RECORD_VERIFICATION"
++        kx108_reason = "AWAITING_VERIFIED_KX108_DECISION"
++
++        # 3. Verify the recorded decision and sovereign ticket
+         if injected_ticket is not None:
+             ticket = injected_ticket
+         else:
+-            ticket = issue_sovereign_ticket(
+-                action_id=proposal.proposal_id,
+-                os3_ticket_id=f"os3-{proposal.proposal_id}",
+-                x108_gate="ALLOW",
+-                scope="bounded_apply",
+-                autonomy_level=1,
+-                world_call_class="GOVERNED_WRITE",
+-                input_hash=proposal.patch_hash,
+-                action_hash=hashlib.sha256(f"{proposal.target_worktree}:{proposal.base_sha}".encode()).hexdigest(),
+-                ttl_seconds=120,
+-            )
++            # K1 : aucun ALLOW émis ici ; le ticket est dérivé d'une décision KX108 vérifiée ou refusé.
++            refusal = None
++            if not decision_record_id:
++                refusal = "NO_VERIFIED_DECISION_RECORD"
++            else:
++                try:
++                    ticket = issue_sovereign_ticket_from_decision_record(
++                        decision_record_id,
++                        action_id=proposal.proposal_id,
++                        scope="bounded_apply",
++                        input_hash=proposal.patch_hash,
++                        decision_store_dir=decision_store_dir,
++                        action_payload=proposal.raw_payload,
++                        target_worktree=proposal.target_worktree,
++                        base_sha=proposal.base_sha,
++                        approved_scope=proposal.approved_scope,
++                        execution_dir=execution_dir,
++                        pre_execution_context_dir=pre_execution_context_dir,
++                        repo_root=repo_root,
++                        derived_authority_context=derived_authority_context,
++                        autonomy_level=1,
++                        world_call_class="GOVERNED_WRITE",
++                        action_hash=hashlib.sha256(
++                            f"{proposal.target_worktree}:{proposal.base_sha}".encode()).hexdigest(),
++                        ttl_seconds=120,
++                    )
++                except AssertionError as exc:
++                    refusal = f"TICKET_ISSUANCE_REFUSED:{exc}"
++            if refusal is not None:
++                # aucune décision KX108 vérifiée : aucune porte n'est attribuée au noyau (ni HOLD ni BLOCK inventés)
++                return GovernedApplyResult(
++                    status="REFUSED_PRE_DECISION",
++                    proposal_id=proposal.proposal_id,
++                    kx108_pre_gate="NO_VERIFIED_DECISION",
++                    kx108_reason=refusal,
++                    ticket_id=None,
++                    disk_written=False,
++                    rolled_back=False,
++                    modified_files=[],
++                    error_detail=refusal,
++                )
+ 
+         # Simulation de crash immédiatement après autorisation
+         if simulate_crash_after_auth:
+             raise RuntimeError("CRASH_AFTER_AUTHORIZATION_BEFORE_MUTATION")
+ 
+         # ── 4. CONTRÔLE AVANT CONSOMMATION DU TICKET (ANTI-REJEU & BINDING) ──
+         try:
+             verified_ticket = verify_and_consume_sovereign_ticket(
+                 ticket,
+                 required_scope="bounded_apply",
+                 expected_action_id=proposal.proposal_id,
+                 action_payload=proposal.raw_payload,
++                decision_store_dir=decision_store_dir,
++                target_worktree=proposal.target_worktree,
++                base_sha=proposal.base_sha,
++                approved_scope=proposal.approved_scope,
++                execution_dir=execution_dir,
++                pre_execution_context_dir=pre_execution_context_dir,
++                repo_root=repo_root,
++                derived_authority_context=derived_authority_context,
+             )
++            kx108_gate = verified_ticket.x108_gate
++            kx108_reason = f"VERIFIED_DECISION_RECORD:{verified_ticket.decision_record_id}"
+         except Exception as exc:
+             return GovernedApplyResult(
+                 status="REFUSED_PRE_DECISION",
+                 proposal_id=proposal.proposal_id,
+                 kx108_pre_gate=kx108_gate,
+                 kx108_reason=f"TICKET_VERIFICATION_FAILED:{exc}",
+                 ticket_id=getattr(ticket, "ticket_id", None),
+                 disk_written=False,
+@@ -389,53 +1326,106 @@ class GovernedBoundedApply:
+                 ticket_id=verified_ticket.ticket_id,
+                 disk_written=False,
+                 rolled_back=False,
+                 modified_files=[],
+             )
+ 
+         # ── 6. SCELLAGE DU ROLLBACK EN MÉMOIRE & SUR DISQUE (WAL) ──
+         # Réconciliation préalable si un crash antérieur a laissé des traces orphelines
+-        SealedRollbackEvidence.recover_dangling_wal(proposal.target_worktree)
++        # K1: unresolved WAL blocks new physical mutation.
++        wal_dir = Path(proposal.target_worktree) / ".obsidia_wal"
++        wal_junction = getattr(
++            wal_dir, "is_junction", lambda: False
++        )()
++
++        if (
++            wal_dir.is_symlink()
++            or wal_junction
++            or (
++                wal_dir.exists()
++                and (
++                    not wal_dir.is_dir()
++                    or any(wal_dir.iterdir())
++                )
++            )
++        ):
++            fail_ticket_nonce(
++                verified_ticket.nonce,
++                verified_ticket.ticket_id,
++                reason="WAL_UNRESOLVED_FAIL_CLOSED",
++            )
++            return GovernedApplyResult(
++                status="REFUSED_PRE_DECISION",
++                proposal_id=proposal.proposal_id,
++                kx108_pre_gate=kx108_gate,
++                kx108_reason="WAL_UNRESOLVED_FAIL_CLOSED",
++                ticket_id=verified_ticket.ticket_id,
++                disk_written=False,
++                rolled_back=False,
++                modified_files=[],
++                error_detail="WAL_UNRESOLVED_FAIL_CLOSED",
++            )
++
++        SealedRollbackEvidence.recover_dangling_wal(
++            proposal.target_worktree
++        )
+ 
+         snapshot_original: Dict[str, Optional[str]] = {}
+         pre_hashes: Dict[str, Optional[str]] = {}
+         for op in proposal.operations:
+             target_file = worktree / op.path
+             if target_file.exists():
+-                content = target_file.read_text(encoding="utf-8")
++                content = target_file.read_bytes().decode("utf-8")
+                 snapshot_original[op.path] = content
+                 pre_hashes[op.path] = hashlib.sha256(content.encode("utf-8")).hexdigest()
+             else:
+                 snapshot_original[op.path] = None
+                 pre_hashes[op.path] = None
+ 
+         rollback_evidence = SealedRollbackEvidence(
+             evidence_id=f"rollback-{uuid.uuid4().hex[:12]}",
+             proposal_id=proposal.proposal_id,
+             created_at=datetime.now(timezone.utc).isoformat(),
+             original_files=snapshot_original,
+             pre_state_hashes=pre_hashes,
+         )
+         # Écriture persistante et fsync du journal WAL avant le moindre octet de mutation
+-        rollback_evidence.persist_wal(proposal.target_worktree)
++        rollback_evidence.persist_wal(
++            proposal.target_worktree,
++            verified_ticket=verified_ticket,
++            decision_store_dir=decision_store_dir,
++            base_sha=proposal.base_sha,
++            patch_hash=proposal.patch_hash,
++            approved_scope=proposal.approved_scope,
++        )
+ 
+         # ── 7. APPLICATION DES MUTATIONS SUR DISQUE ──
+         disk_written = False
+         written_files = []
++        _k1_commit_finality_started = False
+         try:
+             for op in proposal.operations:
+                 target_file = worktree / op.path
+                 target_file.parent.mkdir(parents=True, exist_ok=True)
+ 
+                 if simulate_crash_during_mutation and disk_written:
+                     raise IOError("CRASH_DURING_MUTATION")
+ 
+                 if op.op_type == "WRITE":
+-                    target_file.write_text(op.content, encoding="utf-8")
++                    target_file.write_bytes(op.content.encode("utf-8"))
++
++                    # K1: synchronize the actual target before
++                    # post-tests and durable FINALIZING.
++                    # Preserve write_bytes as the existing crash
++                    # injection boundary.
++                    with target_file.open("r+b") as sync_target:
++                        sync_target.flush()
++                        os.fsync(sync_target.fileno())
++
+                     disk_written = True
+                     written_files.append(op.path)
+                 elif op.op_type == "DELETE":
+                     if target_file.exists():
+                         target_file.unlink()
+                         disk_written = True
+                         written_files.append(op.path)
+ 
+@@ -443,23 +1433,133 @@ class GovernedBoundedApply:
+             tests_passed = True
+             if post_test_runner is not None:
+                 tests_passed = post_test_runner(proposal.target_worktree)
+ 
+             if not tests_passed:
+                 raise AssertionError("POST_APPLY_TESTS_FAILED")
+ 
+             # Succès : suppression du journal WAL
++            # K1: the commit-finalization boundary begins here.
++            # Do not physically roll back after this point.
++            _k1_commit_finality_started = True
++
++            # Durable authenticated intent after successful post-tests.
++            # From FINALIZING onward, recovery cannot restore preimages.
++            _k1_wal_record_state(
++                rollback_evidence._k1_wal_v2_data,
++                "FINALIZING",
++            )
++
++            _k1_wal_write_finality_receipt(
++                rollback_evidence._k1_wal_v2_data
++            )
++            # K1_FINALITY_METADATA_BARRIER
++            _k1_wal_flush_metadata_parents(
++                _k1_wal_finality_receipt_path(
++                    rollback_evidence._k1_wal_v2_data
++                )
++            )
++
++            _k1_wal_write_terminal_receipt(
++                rollback_evidence._k1_wal_v2_data
++            )
++            # K1_TERMINAL_METADATA_BARRIER
++            _k1_wal_flush_metadata_parents(
++                _k1_wal_terminal_receipt_path(
++                    rollback_evidence._k1_wal_v2_data
++                )
++            )
++
++            _k1_wal_record_state(
++                rollback_evidence._k1_wal_v2_data,
++                "COMMITTED",
++            )
+             rollback_evidence.clear_wal(proposal.target_worktree)
+ 
+         except Exception as exc:
++            # A post-finalization failure must retain the WAL
++            # and must not physically restore the preimage.
++            try:
++                _k1_existing_finality = (
++                    _k1_wal_finality_receipt_present(
++                        rollback_evidence._k1_wal_v2_data
++                    )
++                    or _k1_wal_terminal_receipt_present(
++                        rollback_evidence._k1_wal_v2_data
++                    )
++                )
++            except Exception:
++                _k1_existing_finality = True
++
++            if _k1_commit_finality_started or _k1_existing_finality:
++                return GovernedApplyResult(
++                    status="ERROR",
++                    proposal_id=proposal.proposal_id,
++                    kx108_pre_gate=kx108_gate,
++                    kx108_reason="K1_COMMIT_FINALIZATION_PENDING",
++                    ticket_id=verified_ticket.ticket_id,
++                    disk_written=disk_written,
++                    rolled_back=False,
++                    modified_files=written_files,
++                    error_detail=str(exc),
++                )
++
+             # ── ROLLBACK AUTOMATIQUE IMMÉDIAT EN CAS D'ERREUR OU DE CRASH ──
+-            if disk_written:
+-                rollback_evidence.execute_rollback(proposal.target_worktree)
++            # K1: disk_written is not proof of physical state.
++            # A write may reach disk and raise before returning.
++            targets = _validated_rollback_targets(
++                proposal.target_worktree,
++                rollback_evidence.original_files,
++            )
++            rollback_needed = disk_written
+ 
++            for path_str, original in rollback_evidence.original_files.items():
++                target = targets[path_str]
++                expected = (
++                    None if original is None
++                    else original.encode("utf-8")
++                )
++
++                if expected is None:
++                    if target.exists() or target.is_symlink():
++                        rollback_needed = True
++                elif not target.is_file() or target.read_bytes() != expected:
++                    rollback_needed = True
++
++            if rollback_needed:
++                rollback_evidence.execute_rollback(
++                    proposal.target_worktree
++                )
++
++            targets = _validated_rollback_targets(
++                proposal.target_worktree,
++                rollback_evidence.original_files,
++            )
++
++            for path_str, original in rollback_evidence.original_files.items():
++                target = targets[path_str]
++
++                if original is None:
++                    if target.exists():
++                        raise PermissionError(
++                            "WAL_ROLLBACK_UNVERIFIED"
++                        )
++                elif (
++                    not target.is_file()
++                    or target.read_bytes() != original.encode("utf-8")
++                ):
++                    raise PermissionError(
++                        "WAL_ROLLBACK_UNVERIFIED"
++                    )
++
++            _k1_wal_record_state(
++                rollback_evidence._k1_wal_v2_data,
++                "ROLLED_BACK",
++            )
+             rollback_evidence.clear_wal(proposal.target_worktree)
+             fail_ticket_nonce(verified_ticket.nonce, verified_ticket.ticket_id, reason=f"APPLY_ERROR:{exc}")
+             return GovernedApplyResult(
+                 status="ROLLED_BACK",
+                 proposal_id=proposal.proposal_id,
+                 kx108_pre_gate=kx108_gate,
+                 kx108_reason=f"APPLY_FAILED_ROLLED_BACK:{exc}",
+                 ticket_id=verified_ticket.ticket_id,

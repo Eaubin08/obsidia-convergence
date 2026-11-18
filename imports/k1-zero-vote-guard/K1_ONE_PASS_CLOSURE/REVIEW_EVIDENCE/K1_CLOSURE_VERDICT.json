@@ -1,0 +1,45 @@
+{
+  "baseline": "100/100 PASS (user console evidence)",
+  "verdict": "READY_FOR_FREEZE_REVIEW",
+  "tests_passed": 101,
+  "tests_failed": 0,
+  "tests_skipped": 0,
+  "regression_exit": 0,
+  "residual_replay_exit": 0,
+  "diff_exit": 0,
+  "checks": {
+    "baseline_user_reported": "100/100 PASS",
+    "clear_wal_cleanup_barrier": "PASS",
+    "recover_wal_unlink_barriers": "PASS",
+    "recovery_restore_target_barrier": "PASS",
+    "residual_recovered_replay_test": "PRESENT",
+    "diff_check": "PASS",
+    "pytest_regression": "PASS",
+    "residual_replay_execution": "PASS"
+  },
+  "modified_files_by_this_run": [
+    "sigma/tooling/governed_bounded_apply.py",
+    "tests/cli/test_k1_governed_singlewrite_v1.py"
+  ],
+  "open_blockers": [],
+  "unverified_limits": [
+    "Power-loss/OS-crash persistence not experimentally demonstrated",
+    "CREATE/DELETE authorization out of scope: current K1 physical contract is WRITE",
+    "No claim of exhaustiveness beyond inspected K1 code and listed regression modules",
+    "COMMITTED residual WAL may intentionally HOLD; do not remove it without authentic terminal proof"
+  ],
+  "coverage": {
+    "kx108_pre_authority": "existing regression tests",
+    "wal_prepare_commit_and_receipts": "existing regression tests",
+    "wal_cleanup_committed": "existing regression tests",
+    "restore_recovered_and_metadata": "existing regression tests",
+    "recover_wal_unlink_all_success_exits": "PASS",
+    "residual_recovered_replay": "PASS",
+    "committed_residual_wal": "HOLD by observed test 94; no forced cleanup",
+    "create_delete": "OUT_OF_SCOPE",
+    "power_loss": "UNVERIFIED"
+  },
+  "authority_change_requested": false,
+  "freeze_executed": false,
+  "source_engine_sha256_after": "3fc8b66c8f3329cf4122f34da36bc56bb4a173c3ba3ea06871367aea5a7f5023"
+}

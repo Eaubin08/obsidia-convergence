@@ -1,0 +1,9 @@
+{
+  "engine_sha256_before": "4d753c030d39dfd3b573ab45f43c48ab8f9234cb52aa12462c2f32c3a34e20f6",
+  "engine_sha256_after": "4d753c030d39dfd3b573ab45f43c48ab8f9234cb52aa12462c2f32c3a34e20f6",
+  "test_sha256_after": "1eca5d0dd9444d86e77ed9e43f9f654e18baa4bb70740dcb42dfdfd1cdab9349",
+  "reverify_pre_before_wal": true,
+  "reverify_pre_after_wal": true,
+  "stable_kernel_handle_guarantee": false,
+  "final_freeze": "HOLD"
+}

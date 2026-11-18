@@ -1,0 +1,261 @@
+[
+  {
+    "path": "CREATOR_MODE_V0_TASK.md",
+    "tracked": false,
+    "type": "file",
+    "size_bytes": 5293,
+    "sha256": "b9f27f022ee7a79a08b39d21bae4b9f30ee0d5de78721315912af50638d75338"
+  },
+  {
+    "path": "K1_ONE_PASS_CLOSURE/GIT_DIFF_SUMMARY.txt",
+    "tracked": false,
+    "type": "file",
+    "size_bytes": 910,
+    "sha256": "6128368736e75c4315f9f15c4e9e19da861c0c4df12ec5d9d089abf20fd5488b"
+  },
+  {
+    "path": "K1_ONE_PASS_CLOSURE/GIT_STATUS_AFTER.txt",
+    "tracked": false,
+    "type": "file",
+    "size_bytes": 1158,
+    "sha256": "8af4dfff19fdf09c66fdb9858a978b674e421c3d4253e0992dc745fbbfe5980b"
+  },
+  {
+    "path": "K1_ONE_PASS_CLOSURE/GIT_STATUS_BEFORE.txt",
+    "tracked": false,
+    "type": "file",
+    "size_bytes": 1158,
+    "sha256": "8af4dfff19fdf09c66fdb9858a978b674e421c3d4253e0992dc745fbbfe5980b"
+  },
+  {
+    "path": "K1_ONE_PASS_CLOSURE/K1_CLOSURE_AUDIT.md",
+    "tracked": false,
+    "type": "file",
+    "size_bytes": 1624,
+    "sha256": "5d7672b3389f3a83133b4045283999741c12b1904a1010a56438647567ddfc9e"
+  },
+  {
+    "path": "K1_ONE_PASS_CLOSURE/K1_CLOSURE_INSTRUCTIONS.md",
+    "tracked": false,
+    "type": "file",
+    "size_bytes": 8901,
+    "sha256": "8274accbf7034c6cf325765a780765f56f38ecc3db9ea93f5590c661edc06298"
+  },
+  {
+    "path": "K1_ONE_PASS_CLOSURE/K1_CLOSURE_VERDICT.json",
+    "tracked": false,
+    "type": "file",
+    "size_bytes": 1836,
+    "sha256": "7f1ff0de1e11a2c305895041fccb5c9d2299afff03602e148bee7b3e141481db"
+  },
+  {
+    "path": "K1_ONE_PASS_CLOSURE/K1_INDEPENDENT_GATE.json",
+    "tracked": false,
+    "type": "file",
+    "size_bytes": 192,
+    "sha256": "93ee663febf85fe2a160db0b5d597efdcc7765a78104f7b1d66ffeba24c20e6f"
+  },
+  {
+    "path": "K1_ONE_PASS_CLOSURE/REVIEW_EVIDENCE/GIT_DIFF_STAT.txt",
+    "tracked": false,
+    "type": "file",
+    "size_bytes": 138,
+    "sha256": "5ac701b24089ef41f204f1b127026a4a1436a54f2770813d9323c0791ef7d4ff"
+  },
+  {
+    "path": "K1_ONE_PASS_CLOSURE/REVIEW_EVIDENCE/GIT_STATUS.txt",
+    "tracked": false,
+    "type": "file",
+    "size_bytes": 1161,
+    "sha256": "bfa84a04d4e887684560d397b951db1bdbfd148197e3f2fc979a80d0fa736e9b"
+  },
+  {
+    "path": "K1_ONE_PASS_CLOSURE/REVIEW_EVIDENCE/K1_BRANCH_INVENTORY.txt",
+    "tracked": false,
+    "type": "file",
+    "size_bytes": 4763,
+    "sha256": "62297d5ccf5d4f5874b52822bf3bfa9741f06ea325be7bc339ceedabe4c2a923"
+  },
+  {
+    "path": "K1_ONE_PASS_CLOSURE/REVIEW_EVIDENCE/K1_CLOSURE_AUDIT.md",
+    "tracked": false,
+    "type": "file",
+    "size_bytes": 1624,
+    "sha256": "5d7672b3389f3a83133b4045283999741c12b1904a1010a56438647567ddfc9e"
+  },
+  {
+    "path": "K1_ONE_PASS_CLOSURE/REVIEW_EVIDENCE/K1_CLOSURE_VERDICT.json",
+    "tracked": false,
+    "type": "file",
+    "size_bytes": 1836,
+    "sha256": "7f1ff0de1e11a2c305895041fccb5c9d2299afff03602e148bee7b3e141481db"
+  },
+  {
+    "path": "K1_ONE_PASS_CLOSURE/REVIEW_EVIDENCE/K1_FULL_CODE_DIFF.patch",
+    "tracked": false,
+    "type": "file",
+    "size_bytes": 55990,
+    "sha256": "474def58f847831851bf5eae1c65d39676abcf7e9c258a040e2f6d969055f7ee"
+  },
+  {
+    "path": "periphery/world_calls/k1_dpapi_bootstrap.py",
+    "tracked": false,
+    "type": "file",
+    "size_bytes": 3597,
+    "sha256": "58f6e76dfbf9a8a0d953c9d6df5a85c624a98b9a41042c087759661d65d4497c"
+  },
+  {
+    "path": "periphery/world_calls/sovereign_ticket.py",
+    "tracked": true,
+    "type": "file",
+    "size_bytes": 30423,
+    "sha256": "ef3ef0ddc529e68ea93f9caf1a81c53015e324e3c856a3fc454ef9c1c4523c64"
+  },
+  {
+    "path": "periphery/world_calls/ticket_store.py",
+    "tracked": true,
+    "type": "file",
+    "size_bytes": 11006,
+    "sha256": "33f75dd0474254963d3865162d54877166010619aec310b0fc87c5c114e29526"
+  },
+  {
+    "path": "scripts/obsidia_governed_execution_driver_v0.py",
+    "tracked": true,
+    "type": "file",
+    "size_bytes": 28131,
+    "sha256": "fb84fe8d84999e369194a3be4d34649a0fd90f723258e4cb53b8cf504d4ad5f1"
+  },
+  {
+    "path": "scripts/obsidia_kx108_decision_store.py",
+    "tracked": true,
+    "type": "file",
+    "size_bytes": 42752,
+    "sha256": "930778ab6c8448e6f01b9a5b24dec90325a2b2712e4b9d2326e1e501e68970cc"
+  },
+  {
+    "path": "sigma/guard.py",
+    "tracked": true,
+    "type": "file",
+    "size_bytes": 23595,
+    "sha256": "49d212a9d0615ac43e54fcbca849d48d9ec3da30f86c025aaebbad7b46f55562"
+  },
+  {
+    "path": "sigma/tests/test_k1_wal_authority_red_v1.py",
+    "tracked": false,
+    "type": "file",
+    "size_bytes": 1211,
+    "sha256": "e063c6e885a489eb0af0189637f347405e434aa8c0c8253f8ee91c30954bc626"
+  },
+  {
+    "path": "sigma/tests/test_k1_wal_path_boundary_red_v1.py",
+    "tracked": false,
+    "type": "file",
+    "size_bytes": 1746,
+    "sha256": "92511db148f49c352e4eacb7c17d2990478b7d2a9d0950d316f1423e07de3cee"
+  },
+  {
+    "path": "sigma/tests/test_kx108_pre_decision_write_safety.py",
+    "tracked": true,
+    "type": "file",
+    "size_bytes": 27176,
+    "sha256": "91c546d17924070cf858db75feca6ad01e2d43178f8140298018370c773758f0"
+  },
+  {
+    "path": "sigma/tests/test_kx108_pre_phase_gate_v1.py",
+    "tracked": false,
+    "type": "file",
+    "size_bytes": 2423,
+    "sha256": "0ef917b8c36728b63bd837754b71dcc1941c5c7e739e16ac5b54229bbca5e01b"
+  },
+  {
+    "path": "sigma/tests/test_kx108_pre_provenance_red_v1.py",
+    "tracked": false,
+    "type": "file",
+    "size_bytes": 2575,
+    "sha256": "ca54aafbbb67e5f8db96c13c1f099d7630333df926014faaab21f45cad49fc14"
+  },
+  {
+    "path": "sigma/tests/test_kx108_sovereign_ticket_security.py",
+    "tracked": true,
+    "type": "file",
+    "size_bytes": 30399,
+    "sha256": "3e4b95f76e569b6b3c8810576fd644ff77cbffb19bf75bb9ae0f74752bb17a39"
+  },
+  {
+    "path": "sigma/tests/test_kx108_zero_vote_guard_v1.py",
+    "tracked": false,
+    "type": "file",
+    "size_bytes": 1731,
+    "sha256": "e5642a530eb23c0d6afdb25c40299ff4c7717b5f06cf5be6037cc0c66d5ae2e7"
+  },
+  {
+    "path": "sigma/tooling/governed_bounded_apply.py",
+    "tracked": true,
+    "type": "file",
+    "size_bytes": 60852,
+    "sha256": "4d753c030d39dfd3b573ab45f43c48ab8f9234cb52aa12462c2f32c3a34e20f6"
+  },
+  {
+    "path": "tests/cli/test_governed_apply_preflight_v0.py",
+    "tracked": true,
+    "type": "file",
+    "size_bytes": 28709,
+    "sha256": "b0e5ed1d6214874d1f2072fc228a8ded3f71c80e02031bf74c6de00807a87279"
+  },
+  {
+    "path": "tests/cli/test_governed_content_apply_c2_v0.py",
+    "tracked": true,
+    "type": "file",
+    "size_bytes": 35004,
+    "sha256": "e678d209d7c0f9bf953fa57c1ed0b0ba21a06ce37c2e34a059fd166a5dd7bc84"
+  },
+  {
+    "path": "tests/cli/test_governed_rollback_v0.py",
+    "tracked": true,
+    "type": "file",
+    "size_bytes": 25932,
+    "sha256": "4414870bcec904c37881a009ff8b42b9eb223fcb8f3aedb45471011e92d2fafe"
+  },
+  {
+    "path": "tests/cli/test_k1_governed_singlewrite_v1.py",
+    "tracked": false,
+    "type": "file",
+    "size_bytes": 162209,
+    "sha256": "1eca5d0dd9444d86e77ed9e43f9f654e18baa4bb70740dcb42dfdfd1cdab9349"
+  },
+  {
+    "path": "tests/cli/test_k1_pre_action_binding_positive_v1.py",
+    "tracked": false,
+    "type": "file",
+    "size_bytes": 5918,
+    "sha256": "880aa6da0426f2f8cce8b8dc3480335e6d2d6ea815d77fb0b1abc339b009cbd2"
+  },
+  {
+    "path": "tests/cli/test_k1_pre_action_binding_red_v1.py",
+    "tracked": false,
+    "type": "file",
+    "size_bytes": 2013,
+    "sha256": "ab3f17b98e7819c8de7c4312d9303a921f56f8d1cc43e0352c65f5dc154348a2"
+  },
+  {
+    "path": "tests/cli/test_kx108_post_pre_binding_v0.py",
+    "tracked": true,
+    "type": "file",
+    "size_bytes": 20725,
+    "sha256": "1a590b3782c299d3856c45ebbac63ea1ab704cc620a1a7bea89e24a7854f8072"
+  },
+  {
+    "path": "tests/cli/test_kx108_pre_execution_gate_v0.py",
+    "tracked": true,
+    "type": "file",
+    "size_bytes": 25658,
+    "sha256": "60311cd957fb11af75151e3a3fa2d2dfe57115a2172f7c10de2ce5843077a45b"
+  },
+  {
+    "path": "tests/test_kx108_k1_ticket_decision_binding.py",
+    "tracked": false,
+    "type": "file",
+    "size_bytes": 19814,
+    "sha256": "5f4aac6cdaa79e0703259846cb7ad2b66889c48478b8be0638f164105e4f7b50"
+  }
+]

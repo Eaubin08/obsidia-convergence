@@ -1,0 +1,82 @@
+--- K1_101/test_k1_governed_singlewrite_v1.py
++++ K1_NOW/test_k1_governed_singlewrite_v1.py
+@@ -5557,3 +5557,79 @@
+         assert replay == []
+         assert wal.is_file()
+     print('RESIDUAL_RECOVERED_FAIL_CLOSED=True')
++
++def test_k1_toctou_drift_after_ticket_and_after_wal_v1(case, tmp_path, monkeypatch):
++    """Authenticated PRE, but external change after verification: no WAL or ACT."""
++    import json
++    from sigma.tooling import governed_bounded_apply as mod
++
++    world, target, proposal, _ = case
++    target.resolve().relative_to(tmp_path.resolve())
++    original = target.read_bytes()
++    altered = b"K1_EXTERNAL_CHANGE_AFTER_TICKET"
++    assert altered != original
++    real_verify = mod.verify_and_consume_sovereign_ticket
++    called = []
++
++    def genuine_verify_then_change(*args, **kwargs):
++        verified = real_verify(*args, **kwargs)
++        target.write_bytes(altered)
++        called.append(True)
++        return verified
++
++    with monkeypatch.context() as patch:
++        patch.setattr(mod, "verify_and_consume_sovereign_ticket", genuine_verify_then_change)
++        result = _engine(proposal.base_sha).apply_proposal_governed(
++            proposal, **_execution_args(world)
++        )
++
++    wal_dir = Path(proposal.target_worktree) / ".obsidia_wal"
++    assert called == [True]
++    assert result.status == "REFUSED_PRE_DECISION", (result.status, result.kx108_reason)
++    assert result.kx108_reason == "TOCTOU_PRE_WAL_REFUSED"
++    assert not result.disk_written and not result.rolled_back
++    assert target.read_bytes() == altered
++    assert not list(wal_dir.glob("wal_*.json"))
++    print("K1_TOCTOU_POST_TICKET_HOLD=True")
++
++
++def test_k1_toctou_drift_after_wal_holds_without_rollback_v1(case, tmp_path, monkeypatch):
++    """Authenticated WAL persists; third-party target change forbids ACT and rollback."""
++    import json
++    from sigma.tooling import governed_bounded_apply as mod
++
++    world, target, proposal, _ = case
++    target.resolve().relative_to(tmp_path.resolve())
++    changed = b"K1_EXTERNAL_CHANGE_AFTER_AUTHENTICATED_WAL"
++    original = target.read_bytes()
++    assert changed != original
++    ledger = tmp_path / "k1_toctou_post_wal_lifecycle.jsonl"
++    monkeypatch.setattr(mod, "_k1_wal_lifecycle_path", lambda: ledger)
++
++    real_persist = mod.SealedRollbackEvidence.persist_wal
++    called = []
++
++    def persist_real_wal_then_change(self, *args, **kwargs):
++        result = real_persist(self, *args, **kwargs)
++        target.write_bytes(changed)
++        called.append(True)
++        return result
++
++    with monkeypatch.context() as patch:
++        patch.setattr(mod.SealedRollbackEvidence, "persist_wal", persist_real_wal_then_change)
++        result = _engine(proposal.base_sha).apply_proposal_governed(
++            proposal, **_execution_args(world)
++        )
++
++    wal = Path(proposal.target_worktree) / ".obsidia_wal" / (
++        f"wal_{proposal.proposal_id}.json"
++    )
++    states = [json.loads(line)["state"] for line in ledger.read_text(encoding="utf-8").splitlines()]
++    assert called == [True]
++    assert result.status == "ERROR", (result.status, result.kx108_reason)
++    assert result.kx108_reason == "TOCTOU_TARGET_CHANGED_AFTER_WAL"
++    assert not result.disk_written and not result.rolled_back
++    assert wal.is_file() and states == ["PREPARED"]
++    assert target.read_bytes() == changed
++    print("K1_TOCTOU_POST_WAL_HOLD=True")
++    print("K1_EXTERNAL_CHANGE_NOT_ROLLED_BACK=True")

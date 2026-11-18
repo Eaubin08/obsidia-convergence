@@ -1,0 +1,145 @@
+--- K1_101/governed_bounded_apply.py
++++ K1_NOW/governed_bounded_apply.py
+@@ -118,6 +118,48 @@
+         return sorted({op.path.replace("\\", "/") for op in self.operations})
+ 
+ 
++
++
++def _k1_attest_existing_write_target(worktree, relative_path):
++    """Fail closed on target redirection, recreation or preimage drift.
++
++    This is a re-attestation, NOT an atomic stable-handle write.
++    Concurrency between last check and write remains an explicit limit.
++    """
++    root = Path(worktree).resolve(strict=True)
++    if not root.is_dir() or not isinstance(relative_path, str):
++        raise PermissionError("K1_TARGET_ROOT_INVALID")
++    if "\\" in relative_path or ":" in relative_path:
++        raise PermissionError("K1_TARGET_PATH_NONCANONICAL")
++    parts = relative_path.split("/")
++    if not parts or any(part in ("", ".", "..") for part in parts):
++        raise PermissionError("K1_TARGET_PATH_TRAVERSAL")
++    cursor = root
++    for index, part in enumerate(parts):
++        cursor = cursor / part
++        if cursor.is_symlink() or getattr(cursor, "is_junction", lambda: False)():
++            raise PermissionError("K1_TARGET_REDIRECTED")
++        metadata = os.lstat(cursor)
++        if getattr(metadata, "st_file_attributes", 0) & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0):
++            raise PermissionError("K1_TARGET_REPARSE_POINT_REFUSED")
++        if index < len(parts) - 1 and not stat.S_ISDIR(metadata.st_mode):
++            raise PermissionError("K1_TARGET_PARENT_NOT_DIRECTORY")
++    resolved = cursor.resolve(strict=True)
++    if not resolved.is_relative_to(root):
++        raise PermissionError("K1_TARGET_OUTSIDE_WORKTREE")
++    first = os.lstat(cursor)
++    if not stat.S_ISREG(first.st_mode):
++        raise PermissionError("K1_TARGET_NOT_REGULAR_FILE")
++    if first.st_nlink != 1:
++        raise PermissionError("K1_TARGET_HARDLINK_REFUSED")
++    digest = hashlib.sha256(cursor.read_bytes()).hexdigest()
++    last = os.lstat(cursor)
++    attributes = ("st_dev", "st_ino", "st_nlink", "st_size", "st_mtime_ns", "st_ctime_ns")
++    before = tuple(getattr(first, name) for name in attributes)
++    after = tuple(getattr(last, name) for name in attributes)
++    if before != after or not stat.S_ISREG(last.st_mode):
++        raise PermissionError("K1_TARGET_CHANGED_DURING_READ")
++    return (digest,) + after
+ 
+ def _validated_rollback_targets(worktree, original_files):
+     """Validate every rollback target before any physical effect."""
+@@ -1369,17 +1411,54 @@
+             proposal.target_worktree
+         )
+ 
++        # K1_PRE_ACT_REATTESTATION_V1
++        # Revalidate the canonical signed PRE binding after nonce consumption.
++        # Do not use a new local snapshot as an implicit authorization.
++        from periphery.world_calls.sovereign_ticket import (
++            verify_ticket_decision_binding as _k1_verify_pre_binding,
++        )
++        _k1_pre_kwargs = dict(
++            decision_store_dir=decision_store_dir,
++            action_payload=proposal.raw_payload,
++            target_worktree=proposal.target_worktree,
++            base_sha=proposal.base_sha,
++            approved_scope=proposal.approved_scope,
++            execution_dir=execution_dir,
++            pre_execution_context_dir=pre_execution_context_dir,
++            repo_root=repo_root,
++            derived_authority_context=derived_authority_context,
++        )
+         snapshot_original: Dict[str, Optional[str]] = {}
+         pre_hashes: Dict[str, Optional[str]] = {}
+-        for op in proposal.operations:
+-            target_file = worktree / op.path
+-            if target_file.exists():
+-                content = target_file.read_bytes().decode("utf-8")
+-                snapshot_original[op.path] = content
+-                pre_hashes[op.path] = hashlib.sha256(content.encode("utf-8")).hexdigest()
+-            else:
+-                snapshot_original[op.path] = None
+-                pre_hashes[op.path] = None
++        _k1_attested_targets = {}
++        try:
++            _k1_verify_pre_binding(verified_ticket, **_k1_pre_kwargs)
++            for op in proposal.operations:
++                if op.op_type != "WRITE":
++                    raise PermissionError("K1_WRITE_ONLY_ATTESTATION")
++                attestation = _k1_attest_existing_write_target(worktree, op.path)
++                content = (worktree / op.path).read_bytes()
++                if hashlib.sha256(content).hexdigest() != attestation[0]:
++                    raise PermissionError("K1_TARGET_SNAPSHOT_CHANGED")
++                snapshot_original[op.path] = content.decode("utf-8")
++                pre_hashes[op.path] = attestation[0]
++                _k1_attested_targets[op.path] = attestation
++        except Exception as exc:
++            fail_ticket_nonce(
++                verified_ticket.nonce, verified_ticket.ticket_id,
++                reason="TOCTOU_PRE_WAL_REFUSED",
++            )
++            return GovernedApplyResult(
++                status="REFUSED_PRE_DECISION",
++                proposal_id=proposal.proposal_id,
++                kx108_pre_gate=kx108_gate,
++                kx108_reason="TOCTOU_PRE_WAL_REFUSED",
++                ticket_id=verified_ticket.ticket_id,
++                disk_written=False,
++                rolled_back=False,
++                modified_files=[],
++                error_detail=str(exc),
++            )
+ 
+         rollback_evidence = SealedRollbackEvidence(
+             evidence_id=f"rollback-{uuid.uuid4().hex[:12]}",
+@@ -1405,6 +1484,29 @@
+         try:
+             for op in proposal.operations:
+                 target_file = worktree / op.path
++                # Fail closed AFTER WAL persistence, before any physical ACT.
++                # A third-party mutation must not be silently rolled back here.
++                try:
++                    _k1_verify_pre_binding(verified_ticket, **_k1_pre_kwargs)
++                    if (_k1_attest_existing_write_target(worktree, op.path)
++                            != _k1_attested_targets[op.path]):
++                        raise PermissionError("K1_TARGET_CHANGED_AFTER_WAL")
++                except Exception as exc:
++                    fail_ticket_nonce(
++                        verified_ticket.nonce, verified_ticket.ticket_id,
++                        reason="TOCTOU_TARGET_CHANGED_AFTER_WAL",
++                    )
++                    return GovernedApplyResult(
++                        status="ERROR",
++                        proposal_id=proposal.proposal_id,
++                        kx108_pre_gate=kx108_gate,
++                        kx108_reason="TOCTOU_TARGET_CHANGED_AFTER_WAL",
++                        ticket_id=verified_ticket.ticket_id,
++                        disk_written=False,
++                        rolled_back=False,
++                        modified_files=[],
++                        error_detail=str(exc),
++                    )
+                 target_file.parent.mkdir(parents=True, exist_ok=True)
+ 
+                 if simulate_crash_during_mutation and disk_written:
