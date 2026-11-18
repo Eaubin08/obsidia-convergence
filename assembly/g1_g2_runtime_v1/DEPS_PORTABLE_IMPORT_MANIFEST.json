@@ -1,0 +1,98 @@
+{
+  "schema": "OBSIDIA_G1G2_PORTABLE_MISSING_DEPS_V1",
+  "source_machine": "DESKTOP-Q5MD7J7",
+  "source_branch": "fix/kx108-zero-vote-guard-v1",
+  "source_head": "ecaf6729f1bcdb05bb8896b7c698d1ae90e56de7",
+  "captured_utc": "2026-11-18T19:14:44.772903+00:00",
+  "destination_branch": "build/g1-g2-runtime-v1",
+  "scope": "ONLY_MISSING_G1_G2_K1_DEPENDENCIES",
+  "source_worktree_modified": false,
+  "tests_executed": false,
+  "runtime_activated": false,
+  "files": [
+    {
+      "path": "scripts/obsidia_bounded_mission_v0.py",
+      "sha256": "bd070f4170882401226bb7ce7ceecab82fbe371758cbe9e86004fbef60c1294b",
+      "bytes": 130475,
+      "source_head": "ecaf6729f1bcdb05bb8896b7c698d1ae90e56de7"
+    },
+    {
+      "path": "scripts/obsidia_candidate_patch_v1.py",
+      "sha256": "b1fccc1624f5daaa5a9750d4c88ff9e795f9dbd84d4d86731f67f67ed0feb619",
+      "bytes": 10187,
+      "source_head": "ecaf6729f1bcdb05bb8896b7c698d1ae90e56de7"
+    },
+    {
+      "path": "scripts/obsidia_mission_authority_integration_v0.py",
+      "sha256": "902848ede227dd3a51cd3b1b57997cbf4d0678984bb7284e25ca1fe293f6e8ed",
+      "bytes": 15208,
+      "source_head": "ecaf6729f1bcdb05bb8896b7c698d1ae90e56de7"
+    },
+    {
+      "path": "scripts/obsidia_mission_authority_v0.py",
+      "sha256": "885a3bd08b385d71ead82bd858eb45cba75da6e310db773f91d4e6b266cf400b",
+      "bytes": 33336,
+      "source_head": "ecaf6729f1bcdb05bb8896b7c698d1ae90e56de7"
+    },
+    {
+      "path": "sigma/__init__.py",
+      "sha256": "f01a374e9c81e3db89b3a42940c4d6a5447684986a1296e42bf13f196eed6295",
+      "bytes": 5,
+      "source_head": "ecaf6729f1bcdb05bb8896b7c698d1ae90e56de7"
+    },
+    {
+      "path": "sigma/domains/__init__.py",
+      "sha256": "f01a374e9c81e3db89b3a42940c4d6a5447684986a1296e42bf13f196eed6295",
+      "bytes": 5,
+      "source_head": "ecaf6729f1bcdb05bb8896b7c698d1ae90e56de7"
+    },
+    {
+      "path": "sigma/domains/bank_agents.py",
+      "sha256": "8ed20af40f5f762cf82d9835a2b01f3ba517def9c1cc678d0f6905005c0d8565",
+      "bytes": 17156,
+      "source_head": "ecaf6729f1bcdb05bb8896b7c698d1ae90e56de7"
+    },
+    {
+      "path": "sigma/domains/ecom_agents.py",
+      "sha256": "cb322c6beceb6079f54875afab9226adee0362b10e231a523ddb4d4ae8527c8a",
+      "bytes": 21860,
+      "source_head": "ecaf6729f1bcdb05bb8896b7c698d1ae90e56de7"
+    },
+    {
+      "path": "sigma/domains/gps_defense_aviation_agents.py",
+      "sha256": "dea986d23417fb7c4e64f5775dc42ae582a3843235aff61b4ab224afcd238932",
+      "bytes": 11345,
+      "source_head": "ecaf6729f1bcdb05bb8896b7c698d1ae90e56de7"
+    },
+    {
+      "path": "sigma/domains/meta_agents.py",
+      "sha256": "3cc37b20b71e681f395740d85fddc2a05dac48f21a9612d5ced310920cf10155",
+      "bytes": 10101,
+      "source_head": "ecaf6729f1bcdb05bb8896b7c698d1ae90e56de7"
+    },
+    {
+      "path": "sigma/domains/tooling_build_agents.py",
+      "sha256": "7c29b833dc4fa1fb0b5a66a8078f0733a5c91a8a25520c66e062155b0db5c821",
+      "bytes": 7993,
+      "source_head": "ecaf6729f1bcdb05bb8896b7c698d1ae90e56de7"
+    },
+    {
+      "path": "sigma/domains/trading_agents.py",
+      "sha256": "f98c28ef9e11c74a684846e1cedce2832bdca72c2526d7393789c5ec84fd49fa",
+      "bytes": 20132,
+      "source_head": "ecaf6729f1bcdb05bb8896b7c698d1ae90e56de7"
+    },
+    {
+      "path": "sigma/registry.py",
+      "sha256": "a9552f6e1049b5efda4b24df59fe57bcd3f15d531821257fb77cbda19340a0a3",
+      "bytes": 3700,
+      "source_head": "ecaf6729f1bcdb05bb8896b7c698d1ae90e56de7"
+    },
+    {
+      "path": "tests/cli/test_governed_content_apply_c2_v0.py",
+      "sha256": "e678d209d7c0f9bf953fa57c1ed0b0ba21a06ce37c2e34a059fd166a5dd7bc84",
+      "bytes": 35004,
+      "source_head": "ecaf6729f1bcdb05bb8896b7c698d1ae90e56de7"
+    }
+  ]
+}
