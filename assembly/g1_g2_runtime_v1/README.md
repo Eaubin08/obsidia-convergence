@@ -471,5 +471,43 @@ py -3 -B -m unittest discover -s .\assembly\g1_g2_runtime_v1\tests\integration -
 ```
 
 Sur l'environnement d'assemblage Linux : **41 tests unittest PASS** (dont
-six nouveaux tests de frontière consultative). Les tests Windows du portable
-et le circuit K1/C2 complet restent à confirmer. **G1/G2 RELEASE HOLD**.
+six nouveaux tests de frontière consultative). Le portable
+`DESKTOP-Q5MD7J7` a également exécuté **41/41 PASS sur Windows** après
+`git pull --ff-only` jusqu'au commit `bd93f6b`. Le circuit K1/C2 complet
+reste à confirmer. **G1/G2 RELEASE HOLD**.
+
+### Obsidure → KX108 PRE : risque de représentation et relevé d'effets
+
+Inspection du pont **déjà publié**
+`scripts/obsidia_family_wiring_apply_bridge_v0.py` : sa sortie
+`BRIDGE_CHILD_READY` porte l'autorité `NON_SOVEREIGN` et
+`write_capability=false`. Cependant, le pont **fixe actuellement**
+`operation_type=UPDATE_TARGET_FROM_SOURCE`, même lorsque le fichier cible
+est absent (`target_pre_sha256=None`). Cette ambiguïté ne doit jamais être
+convertie silencieusement en CREATE : **HOLD contractuel avant KX108 PRE**.
+Le pont attribue aussi temporairement `_OBA.PROPOSALS_DIR` globalement ;
+l'absence d'effets de bord concurrents n'est pas démontrée. Il n'est **pas
+appelé depuis le runtime unifié** à ce stade.
+
+Le nouvel outil `tools/inspect_obsidure_effects_portable_v1.py` prépare la
+preuve complémentaire sur le **portable DESKTOP-Q5MD7J7 uniquement**. Il :
+
+- examine par AST **trois fichiers nommés** et leurs fonctions canoniques ;
+- refuse les écarts aux SHA256, au commit gelé ou au HEAD courant ;
+- émet seulement formes des retours, appels directs et indicateurs d'effets ;
+- n'importe ni n'exécute aucun code source du FIX et n'en publie aucun octet ;
+- ne certifie **pas** l'absence d'effets indirects (`INDETERMINATE_STATIC_ONLY`).
+
+Depuis `C:\Users\User\obsidia-convergence` sur le **portable** :
+
+```powershell
+git pull --ff-only
+$rapport = "$env:USERPROFILE\Downloads\OBSIDIA_OBSIDURE_EFFECTS_PORTABLE_20261118.txt"
+py -3 -B .\assembly\g1_g2_runtime_v1\tools\inspect_obsidure_effects_portable_v1.py |
+    Tee-Object -FilePath $rapport -Encoding utf8
+```
+
+Le fichier du rapport (sans corps de code) devra être examiné avant tout
+raccordement Obsidure → PRE. **46 tests autonomes PASS en assemblage** après
+l'ajout de cinq vérifications du relevé AST. Aucun changement de provenance
+du FIX, aucune activation C2, aucun APPLY. **RELEASE HOLD.**
