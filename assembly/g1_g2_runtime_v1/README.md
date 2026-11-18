@@ -47,8 +47,8 @@ constituent une permission d'exécution.
 
 ## Tests effectivement réalisés
 
-- **11/11 PASS** : suite `unittest` autonome (zéro vote, refus CREATE,
-  préparation K1 invalide, WORLD_ACTION forgé, Merkle, execute HOLD).
+- **16/16 PASS** : suites `unittest` autonomes (11 contrats du runtime,
+  5 contrôles du collecteur de dépendances : source bornée, secret, parcours).
 - **40 fichiers Python** analysés sans erreur syntaxique.
 - Import des classes K1 `GovernedBoundedApply` et du pilote
   `prepare_governed_execution` : **PASS**.
@@ -107,3 +107,37 @@ assert result["execution_authorized"] is False
 Le code doit être appelé avec `assembly/g1_g2_runtime_v1` dans
 `PYTHONPATH`. Les sorties observées sont des preuves et des propositions,
 pas une autorisation de production.
+
+## Régression Windows étendue du 18 novembre 2026 — fermeture du packaging
+
+Sur `DESKTOP-Q5MD7J7` : **100 PASS, 1 skip, 36 FAIL, 75 ERROR**.
+Les traces des FAIL/ERROR observés concernent des imports `sigma.domains`
+et d'anciennes références relatives `tests/cli/...` vers une fixture absente,
+pas des assertions démontrant une brèche de KX108. **G1/G2 reste HOLD.**
+
+Deux outils non souverains sont disponibles dans `tools/` :
+
+1. `export_k1_missing_deps_portable_v1.py` — sur le **portable seulement**,
+   sélectionne douze fichiers K1 attendus (+ deux `__init__.py` facultatifs),
+   compare les empreintes et refuse les erreurs de machine, de branche,
+   de chemin ou les secrets connus. Sans `--push`, il est en lecture seule.
+   Avec `--push`, il publie les sources et leur manifeste dans la branche
+   actuelle, sans modifier le worktree source.
+2. `verify_windows_g1_g2_v1.ps1` — bloque si les dépendances restent absentes,
+   se place temporairement à la **racine de l'assemblage** pour les anciennes
+   fixtures `runpy.run_path("tests/cli/...")`, puis lance la suite pytest ;
+   il ne démarre aucun serveur et ne modifie aucun FIX.
+
+Depuis `C:\Users\User\obsidia-convergence` et sur une branche propre :
+
+```powershell
+git pull --ff-only
+py -3 -B .\assembly\g1_g2_runtime_v1\tools\export_k1_missing_deps_portable_v1.py
+# Si la vérification confirme les fichiers et leur caractère publiable :
+py -3 -B .\assembly\g1_g2_runtime_v1\tools\export_k1_missing_deps_portable_v1.py --push
+& .\assembly\g1_g2_runtime_v1\tools\verify_windows_g1_g2_v1.ps1
+```
+
+Le script d'export effectue un contrôle limité des secrets courants, **pas**
+un audit exhaustif de confidentialité. Le dépôt étant **public**, consulter
+la liste des douze fichiers avant `--push`.
