@@ -10,6 +10,7 @@ jamais de décision souveraine de substitution.
 from __future__ import annotations
 
 import dataclasses
+import math
 import re
 import sys
 from pathlib import Path
@@ -25,7 +26,8 @@ from scripts.obsidia_kx108_decision_store import (
     persist_kx108_world_action_pre_execution_decision,
 )
 from proofs.audit_merkle_readonly_4a1 import build_merkle_root
-from sigma.contracts import DomainAggregate
+from sigma.aggregation import aggregate_tooling_build
+from sigma.contracts import AgentVote, AuthorityLevel, Domain, DomainAggregate
 from sigma.guard import GuardX108
 
 
@@ -45,6 +47,8 @@ class ObsidiaGovernanceRuntime:
             "decision_authority": self.authority,
             "engine": "OBSIDIA_GOUVERNANCE_UNIFIED",
             "sigma_aggregation": "K1_GUARD_AVAILABLE",
+            "sigma_tooling_advisory": "BOUNDED_FOUR_VOTE_INTAKE_NO_TICKET",
+            "obsidure_proposal": "CANONICAL_ABI_OBSERVED_EFFECTS_NOT_VERIFIED",
             "kx108_k1_pre_post": "SOURCE_ASSEMBLED_VALIDATION_PENDING",
             "update": "K1_PREPARE_AVAILABLE_EXECUTION_HOLD",
             "create": "PREFLIGHT_ONLY",
@@ -65,6 +69,68 @@ class ObsidiaGovernanceRuntime:
             "status": "EVALUATED_NOT_AUTHORIZED",
             "decision_authority": self.authority,
             "envelope": dataclasses.asdict(envelope),
+            "execution_authorized": False,
+            "target_mutated": False,
+        }
+
+    def evaluate_tooling_build_advisory(self, votes: list[AgentVote]) -> dict[str, Any]:
+        """Relie quatre observations Sigma a K1 sans creer de droit d'action.
+
+        Ce point d'entree prend des votes deja produits, non leurs origines
+        attestées. Il n'appelle pas le pipeline Sigma dependants de sigma.base,
+        ne fabrique pas de HumanApproval et ne retourne jamais de ticket.
+        """
+        if not isinstance(votes, list):
+            return self._hold("SIGMA_VOTES_LIST_REQUIRED")
+        if not votes:
+            # Le chemin zero-vote canonique doit encore passer par GuardX108.
+            aggregate = aggregate_tooling_build([])
+        else:
+            if len(votes) != 4:
+                return self._hold("SIGMA_TOOLING_FOUR_DISTINCT_VOTES_REQUIRED")
+            agent_ids: set[str] = set()
+            for vote in votes:
+                if type(vote) is not AgentVote:
+                    return self._hold("SIGMA_VOTE_TYPE_INVALID")
+                domain = vote.domain.value if isinstance(vote.domain, Domain) else vote.domain
+                if domain != Domain.TOOLING_BUILD.value:
+                    return self._hold("SIGMA_VOTE_DOMAIN_MISMATCH")
+                if not isinstance(vote.agent_id, str) or not vote.agent_id.strip() or vote.agent_id in agent_ids:
+                    return self._hold("SIGMA_VOTE_AGENT_ID_INVALID_OR_DUPLICATE")
+                agent_ids.add(vote.agent_id)
+                # Le transport d'avis n'a pas le droit d'usurper une regle
+                # contractuelle ou une autorite mandatory/non resolue.
+                if vote.rule_id or vote.authority_level != AuthorityLevel.ADVISORY:
+                    return self._hold("SIGMA_VOTE_AUTHORITY_NOT_ADVISORY")
+                if not isinstance(vote.confidence, (int, float)) or not math.isfinite(vote.confidence) or not 0 <= vote.confidence <= 1:
+                    return self._hold("SIGMA_VOTE_CONFIDENCE_INVALID")
+                if not isinstance(vote.claim, str) or not isinstance(vote.proposed_verdict, str):
+                    return self._hold("SIGMA_VOTE_CONTENT_INVALID")
+                for field in (vote.contradictions, vote.unknowns, vote.risk_flags):
+                    if not isinstance(field, list) or not all(isinstance(item, str) for item in field):
+                        return self._hold("SIGMA_VOTE_SIGNALS_INVALID")
+            aggregate = aggregate_tooling_build(votes)
+
+        evaluation = self.evaluate(aggregate)
+        if evaluation["status"] != "EVALUATED_NOT_AUTHORIZED":
+            return self._hold("SIGMA_ADVISORY_EVALUATION_UNAVAILABLE")
+        envelope = evaluation["envelope"]
+        # Pas d'enveloppe souveraine complete vers les consommateurs : les
+        # ids de ticket produits par GuardX108 ne sont pas des preuves HMAC.
+        return {
+            "status": "SIGMA_ADVISORY_ONLY",
+            "decision_authority": self.authority,
+            "advisory": {
+                "domain": Domain.TOOLING_BUILD.value,
+                "market_verdict": aggregate.market_verdict,
+                "guard_gate_observed": envelope["x108_gate"],
+                "reason_code": envelope["reason_code"],
+                "vote_count": len(votes),
+                "unknowns": list(aggregate.unknowns),
+                "contradictions": list(aggregate.contradictions),
+                "risk_flags": list(aggregate.risk_flags),
+            },
+            "action_ticket_issued": False,
             "execution_authorized": False,
             "target_mutated": False,
         }

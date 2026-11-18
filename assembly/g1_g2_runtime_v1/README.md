@@ -435,3 +435,41 @@ des dépendances. La prochaine opération utile est un contrat de frontière
 contre l'autorisation par avis Sigma ou par simple argument de l'appelant.
 
 **Aucun module privé supplémentaire n'a été publié et `FULL_FUNCTIONAL_G1_G2_HOLD` reste en vigueur.**
+
+### Frontiere Sigma → Gouvernance (candidat borné, sans APPLY)
+
+`ObsidiaGovernanceRuntime.evaluate_tooling_build_advisory(votes)` raccorde
+les classes **déjà assemblées** `sigma.contracts.AgentVote`,
+`sigma.aggregation.aggregate_tooling_build` et `sigma.guard.GuardX108`.
+Il ne crée ni nouvel algorithme souverain ni moteur concurrent.
+
+| Entrée | Contrôle d'admission | Sortie |
+|---|---|---|
+| 0 vote | Agrégation K1 zéro-vote conservée | `BUILD_BLOCK`, aucune autorisation |
+| 1–3 votes, plus de 4 votes, doublons | Quorum/identifiants refusés | `HOLD` |
+| 4 votes distincts `tooling_build` consultatifs | Validation des types, domaines, autorité et signaux | Avis + gate observé, **jamais de ticket** |
+| Contrat souverain injecté, domaine différent, confiance non finie | Refus de la frontière consultative | `HOLD` |
+
+La sortie ne propage pas `ticket_id`, `decision_id`, `HumanApproval` ni
+une enveloppe KX108 directement consommable. Même si le Guard observe
+`ALLOW`, `execution_authorized=false` et `action_ticket_issued=false`.
+Un vote `AgentVote` transmis par un appelant **n'est pas une preuve de son
+origine** : cette étape valide le comportement de la frontière, pas les
+agents Sigma canoniques absents (`sigma.base`, `sigma.domains`).
+
+La provenance et les signatures d'Obsidure sont consignées dans
+`contracts/K1_CANONICAL_ABI_SNAPSHOT_20261118.json`, mais **aucune méthode
+Obsidure n'est importée, exécutée ni promue en APPLY**. Une inspection des
+effets/retours du véritable `AgentObsidure` et du validateur C2 reste requise
+avant le raccordement proposition → PRE canonique.
+
+Tests autonomes :
+
+```powershell
+$env:PYTHONPATH = (Resolve-Path '.\assembly\g1_g2_runtime_v1').Path
+py -3 -B -m unittest discover -s .\assembly\g1_g2_runtime_v1\tests\integration -p 'test_*stdlib_v1.py' -q
+```
+
+Sur l'environnement d'assemblage Linux : **41 tests unittest PASS** (dont
+six nouveaux tests de frontière consultative). Les tests Windows du portable
+et le circuit K1/C2 complet restent à confirmer. **G1/G2 RELEASE HOLD**.
