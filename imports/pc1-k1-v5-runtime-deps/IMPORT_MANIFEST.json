@@ -1,0 +1,66 @@
+{
+  "schema": "OBSIDIA_G1_G2_PORTABLE_K1_RUNTIME_V5_SUPPLEMENT_V1",
+  "source_machine": "DESKTOP-Q5MD7J7",
+  "source_worktree": "C:\\Users\\User\\.codex\\visualizations\\2026\\11\\kx108_zero_vote_guard_fix",
+  "source_branch": "fix/kx108-zero-vote-guard-v1",
+  "source_head": "d48c3a885fca4d09584f77c353fd725d104aa863",
+  "captured_utc": "2026-11-18T18:05:51.863410+00:00",
+  "scope": "G1_G2_ONLY__NO_CLI__NO_API__NO_SERVER_START",
+  "status": "SOURCE_ONLY__FUNCTIONAL_HOLD",
+  "files": [
+    {
+      "path": "scripts/obsidia_build.py",
+      "sha256": "2e5dd8048aea3ea2b26324766cf0e8479eab26699498910ac131a4c3954b7c3c",
+      "bytes": 117450,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "scripts/obsidia_content_apply.py",
+      "sha256": "d5db9bdf1910f5f16977ab3ae319713ee53119b10e13e706866de988fae846fc",
+      "bytes": 30491,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "scripts/obsidia_governed_write_guard_v0.py",
+      "sha256": "b046cdeed5b147b47f80dc7a9adab8e4d85ae5bf83763ac52d8c0fdd510a890d",
+      "bytes": 9839,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "scripts/obsidia_kx108_evidence_adapter.py",
+      "sha256": "19b6ac38ad9969ee71566fb0e4b8fa58131879bbae97051e397c9550e491bf90",
+      "bytes": 28619,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "scripts/obsidia_mission_authority_freshness_lock_v0.py",
+      "sha256": "6f9a5192f9536590c52c9f3f1ef0f172a70524bdaac24389666144a6b0617b01",
+      "bytes": 5157,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "scripts/obsidia_mission_authority_pre_adapter_v0.py",
+      "sha256": "1d9843c2fcfd264965beafe02eb7cad9510b9a91d443a406d941b6f379dafd08",
+      "bytes": 27875,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "scripts/obsidia_post_execution_disposition_v0.py",
+      "sha256": "c7ed5f25a4df9778e2da06ee3bc9718692f2f84753afb53c8f0fc78f5a7d1bd2",
+      "bytes": 6026,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "scripts/obsidia_sealed_evidence_v0.py",
+      "sha256": "7ae5c0b511b3f0ec1ddb8a540dee66c99dacbd0e946fd696d4292a64e46b7cec",
+      "bytes": 19312,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "sigma/tooling/k1_windows_stable_write.py",
+      "sha256": "c1e8ecb32b914bb483d82ec5b5d40e8bdd719fd5af42781028d5dcc6d58e9d97",
+      "bytes": 13768,
+      "role": "K1_RUNTIME"
+    }
+  ]
+}
