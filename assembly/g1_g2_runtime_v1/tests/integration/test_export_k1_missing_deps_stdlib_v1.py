@@ -18,6 +18,7 @@ _TOOLS = Path(__file__).resolve().parents[2] / "tools"
 if str(_TOOLS) not in sys.path:
     sys.path.insert(0, str(_TOOLS))
 import export_k1_c2_bridge_deps_portable_v2 as C2_EXPORT  # noqa: E402
+import export_k1_obsidure_c2_deps_portable_v3 as OBA_EXPORT  # noqa: E402
 
 
 class ExporterGuardTests(unittest.TestCase):
@@ -63,6 +64,35 @@ class ExporterGuardTests(unittest.TestCase):
             "scripts/obsidia_build.py",
             "sigma/domains/meta_agents.py",
             "periphery/world_calls/ticket_store.py",
+        })
+
+    def test_c2_obsidure_import_resolution(self):
+        raw = (b"import obsidure_bounded_apply\n"
+               b"from obsidure_synth_session import load\n"
+               b"from scripts import obsidure_session\n")
+        self.assertEqual(C2_EXPORT._static_imports(raw, "scripts/test_bridge.py"), {
+            "scripts/obsidure_bounded_apply.py",
+            "scripts/obsidure_synth_session.py",
+            "scripts/obsidure_session.py",
+        })
+
+    def test_c2_validator_import_closure_follows_nested_dependencies(self):
+        source = self.root / "src"
+        dest = self.root / "dst"
+        (source / "scripts").mkdir(parents=True)
+        (dest / C2_EXPORT.ASSEMBLY / "scripts").mkdir(parents=True)
+        (source / "scripts/obsidure_bounded_apply.py").write_text(
+            "import obsidure_synth_session\n", encoding="utf-8")
+        (source / "scripts/obsidure_synth_session.py").write_text(
+            "import obsidia_mission_authority_v0\n", encoding="utf-8")
+        (source / "scripts/obsidia_mission_authority_v0.py").write_text(
+            "PASS = True\n", encoding="utf-8")
+        (dest / C2_EXPORT.ASSEMBLY / "scripts/obsidia_mission_authority_v0.py").write_text(
+            "PASS = True\n", encoding="utf-8")
+        selected = C2_EXPORT.select_static_closure(
+            source, dest, seeds=OBA_EXPORT.SEEDS, manifest_path=OBA_EXPORT.MANIFEST)
+        self.assertEqual(set(selected), {
+            "scripts/obsidure_bounded_apply.py", "scripts/obsidure_synth_session.py",
         })
 
     def test_c2_closure_selects_only_missing_static_deps(self):

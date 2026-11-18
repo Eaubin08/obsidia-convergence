@@ -47,8 +47,8 @@ constituent une permission d'exécution.
 
 ## Tests effectivement réalisés
 
-- **18/18 PASS** : suites `unittest` autonomes (11 contrats du runtime,
-  7 contrôles des collecteurs de dépendances, dont la clôture statique C2).
+- **20/20 PASS** : suites `unittest` autonomes (11 contrats du runtime,
+  9 contrôles des collecteurs de dépendances, dont la clôture statique C2).
 - **40 fichiers Python** analysés sans erreur syntaxique.
 - Import des classes K1 `GovernedBoundedApply` et du pilote
   `prepare_governed_execution` : **PASS**.
@@ -165,3 +165,30 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\assembly\g1_g2_runtim
 
 Le test Windows ne doit être relancé qu'après un `G1G2_C2_BRIDGE_GITHUB_PUSH_PASS=True`.
 Le mode `EVIDENCE_ONLY` et le veto `HOLD` sont inchangés.
+
+### Complément C2 Obsidure — dépendance découverte après publication V2
+
+Sur le **portable `DESKTOP-Q5MD7J7`**, la source bridge C2 a été publiée
+au commit `ad127294b8a75f27f314b7fe01b23422685f9de6`, SHA256
+`c15e7f4c255cd4648e20d4f5677b069dcafd452d29ac2ee4fb5f81e02ca2283c`.
+Lors de la collecte Windows suivante, le bridge charge le validateur canonique
+`scripts/obsidure_bounded_apply.py`, qui était absent de l'assemblage.
+Le sélecteur V2 ne reconnaissait pas les imports `obsidure_*` : c'est une
+erreur de fermeture de dépendances, **pas encore une régression fonctionnelle**.
+
+L'outil V3 part du validateur C2 et suit statiquement ses dépendances
+`obsidia_*`, `obsidure_*`, `sigma.*`, `periphery.world_calls.*`, avec seuils
+stricts (**30 fichiers / 2,5 Mo**), manifestes SHA256 et exclusion des autres
+composants. Aucune mutation de la source K1, aucun APPLY de production.
+
+```powershell
+cd "$env:USERPROFILE\obsidia-convergence"
+git pull --ff-only
+py -3 -B .\assembly\g1_g2_runtime_v1\tools\export_k1_obsidure_c2_deps_portable_v3.py
+# Après lecture de la liste des fichiers destinés au dépôt PUBLIC :
+py -3 -B .\assembly\g1_g2_runtime_v1\tools\export_k1_obsidure_c2_deps_portable_v3.py --push
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\assembly\g1_g2_runtime_v1\tools\verify_windows_g1_g2_v1.ps1"
+```
+
+Si le collecteur affiche `STOP=`, **ne pas forcer** la publication. Le
+résultat des tests fonctionnels reste `HOLD` jusqu'à un PASS Windows réel.

@@ -28,11 +28,11 @@ MAX_CAPTURE_BYTES = 1_400_000
 
 def _module_path(name: str) -> str | None:
     """Only source modules within the explicitly scoped governance rails."""
-    if name.startswith("obsidia_") and name not in (
+    if name.startswith(("obsidia_", "obsidure_")) and name not in (
         "obsidia_cli", "obsidia_gateway", "obsidia_api",
     ):
         return f"scripts/{name}.py"
-    if name.startswith("scripts.obsidia_"):
+    if name.startswith(("scripts.obsidia_", "scripts.obsidure_")):
         return f"scripts/{name.removeprefix('scripts.').replace('.', '/')}.py"
     for base in ("sigma.domains.", "sigma.", "periphery.world_calls."):
         if name.startswith(base):
@@ -75,8 +75,13 @@ def _static_imports(raw: bytes, source_name: str) -> set[str]:
     return deps
 
 
-def select_bridge_closure(source: Path, dest: Path) -> dict[str, bytes]:
-    queued = list(SEED)
+def select_static_closure(
+    source: Path, dest: Path, *, seeds: tuple[str, ...],
+    manifest_path: Path, max_files: int = MAX_CAPTURE_FILES,
+    max_bytes: int = MAX_CAPTURE_BYTES,
+) -> dict[str, bytes]:
+    """Recursively collect only source modules absent from the assembly."""
+    queued = list(seeds)
     visited: set[str] = set()
     selected: dict[str, bytes] = {}
     while queued:
@@ -93,16 +98,20 @@ def select_bridge_closure(source: Path, dest: Path) -> dict[str, bytes]:
             raise ExportHold(f"SOURCE_DEPENDENCY_MISSING:{rel}")
         raw = guarded_read(source, rel)
         selected[rel] = raw
-        if len(selected) > MAX_CAPTURE_FILES or sum(map(len, selected.values())) > MAX_CAPTURE_BYTES:
+        if len(selected) > max_files or sum(map(len, selected.values())) > max_bytes:
             raise ExportHold("C2_DEPENDENCY_CLOSURE_TOO_LARGE__REVIEW_REQUIRED")
         for found in sorted(_static_imports(raw, rel)):
             if found not in visited and (source / found).is_file():
                 queued.append(found)
     if not selected:
         raise ExportHold("C2_BRIDGE_ALREADY_CAPTURED__NO_CHANGES")
-    if (dest / MANIFEST).exists():
+    if (dest / manifest_path).exists():
         raise ExportHold("C2_BRIDGE_MANIFEST_ALREADY_EXISTS__NO_OVERWRITE")
     return selected
+
+
+def select_bridge_closure(source: Path, dest: Path) -> dict[str, bytes]:
+    return select_static_closure(source, dest, seeds=SEED, manifest_path=MANIFEST)
 
 
 def main() -> int:
