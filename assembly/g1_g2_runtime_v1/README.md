@@ -338,3 +338,43 @@ Obsidure dépasse les limites de publication prévues. Ne pas créer de faux
 substituts de ces modules et ne pas agrandir le dépôt GitHub public par
 copie massive. Il faut définir et valider l'interface d'intégration réelle
 avant de lever le `HOLD` complet.
+
+### Windows : confirmation du durcissement CREATE — 18/11/2026
+
+Exécution rapportée sur `DESKTOP-Q5MD7J7` après récupération du commit
+`b61dc328b27305f1fede12926070f3f5855d6247` :
+
+```
+89 passed, 1 skipped, 17 subtests passed in 0.62s
+```
+
+**Verdict : `G1_G2_AUTONOMOUS_INTEGRATION_TESTS_PASS` confirmé sur Windows.**
+Les 17 sous-tests couvrent notamment les refus des nouveaux chemins ambigus.
+Le skip Windows (création de symlink sans privilège) est préservé et les
+tests de jonction simulée restent exercés. La validation intégrale K1/C2 et
+l'APPLY réel ne sont **pas** couverts par ce résultat.
+
+### Prochaine frontière : relever les ABI canoniques sans exporter leur code
+
+L'assemblage autonome ne contient pas les véritables modules `sigma.base`
+et `periphery.agents`. Un export transitif complet d'Obsidure dépasse la
+portée autorisée du dépôt public. Avant de dessiner un raccordement effectif,
+`tools/inspect_canonical_k1_abi_portable_v1.py` inspecte **uniquement l'AST**
+de six modules K1 sur le portable, à HEAD `ecaf6729...` : noms, paramètres,
+imports statiques, tailles et empreintes SHA256. Il refuse les fichiers
+modifiés par rapport au commit figé, les liens hors source et les mauvais PC.
+Il n'exécute aucun module lu, ne démarre aucun serveur, ne copie aucune
+source et ne modifie ni le FIX ni le dépôt d'intégration.
+
+Depuis `C:\Users\User\obsidia-convergence` sur le **portable** :
+
+```powershell
+git pull --ff-only
+py -3 -B .\assembly\g1_g2_runtime_v1\tools\inspect_canonical_k1_abi_portable_v1.py
+```
+
+Résultat attendu de contrôle : `K1_CANONICAL_ABI_READONLY_PASS=True` ou un
+`STOP=...` expliquant précisément la pièce bloquante. La sortie contient des
+signatures de fonctions et hashes, **pas le contenu des fichiers**. Ne pas
+confondre cette inspection avec une validation fonctionnelle ni autoriser
+les écritures sur cette base seule.
