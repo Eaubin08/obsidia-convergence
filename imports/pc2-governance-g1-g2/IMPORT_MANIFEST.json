@@ -1,0 +1,1399 @@
+{
+  "schema": "OBSIDIA_G1_G2_PC2_SNAPSHOT_V1",
+  "status": "SOURCE_SNAPSHOT_ONLY__FUNCTIONAL_FUSION_HOLD",
+  "source_machine": "DESKTOP-SDOG0EL",
+  "source_user": "Aubin",
+  "captured_utc": "2026-11-18T12:06:24.356907+00:00",
+  "destination": "Eaubin08/obsidia-convergence:integration/g1-g2/imports/pc2-governance-g1-g2",
+  "rule": "Variants PC fixe isolees; ne remplacer aucun fichier K1 de PC1; WORLD_ACTION consultatif sans droit autonome d'egress; aucun ACT, aucun test importe ni serveur lance.",
+  "sources": [
+    {
+      "id": "4a1-write-closure",
+      "source_path": "C:\\Users\\Aubin\\Desktop\\obsidia-4a1-pc-v2-write-closure-v1",
+      "branch": "fix/4a1-pc-v2-global-write-closure-v1",
+      "source_head": "d4ef53766048fffd069b664232d57af36f4559ee",
+      "has_tracked_changes": false,
+      "files": [
+        {
+          "path": "scripts/obsidia_build.py",
+          "kind": "source",
+          "sha256": "988E16388497863EE6F058DE7B445B6AC69944FEFA6A411DDD64F1156D1179EA",
+          "audit_sha256_20261114": "988E16388497863EE6F058DE7B445B6AC69944FEFA6A411DDD64F1156D1179EA",
+          "changed_since_audit": false,
+          "bytes": 121507
+        },
+        {
+          "path": "audit_merkle.py",
+          "kind": "source",
+          "sha256": "71281606809BA38462A82F645C7F42E0CD643894822D7DC2721C40D03759BC58",
+          "audit_sha256_20261114": "71281606809BA38462A82F645C7F42E0CD643894822D7DC2721C40D03759BC58",
+          "changed_since_audit": false,
+          "bytes": 2456
+        },
+        {
+          "path": "sigma/contracts.py",
+          "kind": "source",
+          "sha256": "9F1C7787064C5991A3130A5C7BE7D6C2E78A1F47D3F52800930E200694967382",
+          "audit_sha256_20261114": "9F1C7787064C5991A3130A5C7BE7D6C2E78A1F47D3F52800930E200694967382",
+          "changed_since_audit": false,
+          "bytes": 24220
+        },
+        {
+          "path": "scripts/obsidia_kx108_pre_execution_evidence_adapter_v0.py",
+          "kind": "source",
+          "sha256": "C115650A6A32D0F0A5A7059DB23448F74D86885FCDA3B9A35BFCE8FB6D992B3A",
+          "audit_sha256_20261114": "C115650A6A32D0F0A5A7059DB23448F74D86885FCDA3B9A35BFCE8FB6D992B3A",
+          "changed_since_audit": false,
+          "bytes": 15054
+        },
+        {
+          "path": "tests/cli/test_capability_graph_v0.py",
+          "kind": "related_test",
+          "sha256": "7D308F726A249978C5782A9926330E5682538393175EFC39DF1405963781DF4F",
+          "bytes": 13516
+        },
+        {
+          "path": "tests/cli/test_mission_capability_scope_cgc2_v0.py",
+          "kind": "related_test",
+          "sha256": "869B4966B7F0D798B3B4600388CC1CD544031AF8EB8A156850090364F3458368",
+          "bytes": 55593
+        },
+        {
+          "path": "tests/cli/test_pretool_shadow_cgd_v0.py",
+          "kind": "related_test",
+          "sha256": "6E79D1A637AD8275D3BC04715DB9A1EFBFDFC594ACDDAB72505D1FD8AA51A2F3",
+          "bytes": 26946
+        },
+        {
+          "path": "tests/cli/test_relay_first_v0.py",
+          "kind": "related_test",
+          "sha256": "1D8D417D9935AA3870AC1F8C8C9B4C4D877E9D902B36F26912867675C5D0B6AD",
+          "bytes": 22718
+        },
+        {
+          "path": "tests/gates/test_obsidia_commit_scope_guard.py",
+          "kind": "related_test",
+          "sha256": "E202CE8DC62A5D4E4CCBCA830C9A8794A36C7177041C1422B9E13C7AED2D2DAB",
+          "bytes": 3077
+        },
+        {
+          "path": "tests/gates/test_obsidia_kernel_boundary_check.py",
+          "kind": "related_test",
+          "sha256": "04943F7355FE716921BC311B16F90A1BCCD744460947ADE141E1EF4FD6D288FD",
+          "bytes": 3411
+        },
+        {
+          "path": "tests/test_4a1_pc_v2_global_write_closure.py",
+          "kind": "related_test",
+          "sha256": "EBB858EFCB448AA02B04633A7EC2CF9D16F4481C71641749D4AE51B1D02A9443",
+          "bytes": 2568
+        },
+        {
+          "path": "tests/test_4a1c19_pre_decision_write_global_closure.py",
+          "kind": "related_test",
+          "sha256": "F0CD150FC31B442C6F77EA70E5B04D268CA0994AE5844174218BBA269B5605C2",
+          "bytes": 2741
+        },
+        {
+          "path": "tests/test_4a1c5_obsidia_build_fail_closed.py",
+          "kind": "related_test",
+          "sha256": "23ECC6304D5CDBA79C8DA8866ED9609E5AD3E47F74ED7A9EC9C8347FF1292CAF",
+          "bytes": 2261
+        },
+        {
+          "path": "tests/test_4a2c_pc_v2_protected_scope_red.py",
+          "kind": "related_test",
+          "sha256": "22160518EEE2391B813290615BAFAA79D8F8946F98C818B64A398F61063C4759",
+          "bytes": 2880
+        },
+        {
+          "path": "tests/test_4a4i_runtime_merkle_seal_v1_red.py",
+          "kind": "related_test",
+          "sha256": "888B33EE0EE82323241E17577D7E556551BD387E8C943D76CCC424671D6A61C2",
+          "bytes": 2198
+        },
+        {
+          "path": "tests/test_4a4j_runtime_merkle_seal_v1_semantics.py",
+          "kind": "related_test",
+          "sha256": "6ADAB0FC782DFB90A41454A04A6E745DB23C1754CFDAD40839D301B48DA0471F",
+          "bytes": 4435
+        },
+        {
+          "path": "tests/test_4a4l_runtime_merkle_seal_publisher_red.py",
+          "kind": "related_test",
+          "sha256": "640AAB41A7DE2F813AEDE2676BBD68D7E4E73E924335C3DCACF3F4E8E3A53F60",
+          "bytes": 3209
+        },
+        {
+          "path": "tests/test_4a4n2_runtime_merkle_seal_publisher_physical_temp.py",
+          "kind": "related_test",
+          "sha256": "6B84700D65A94E0FB6C5E8325BDD5C6CF2D681F1DE6010DCDEDA1BBB3D304A93",
+          "bytes": 10475
+        },
+        {
+          "path": "tests/test_4a4n_runtime_merkle_seal_publisher_behavior.py",
+          "kind": "related_test",
+          "sha256": "622716D3B52E8C94747350CEA98DD8CE007FE59C80D97C8BDA53F629BF498982",
+          "bytes": 13527
+        },
+        {
+          "path": "tests/test_4a4o_legacy_merkle_runtime_bypass_closure.py",
+          "kind": "related_test",
+          "sha256": "3F0A3D0540F46DD8E222CE1A523326A1E549EC1E5CD13759F8D1A530A81D114F",
+          "bytes": 2827
+        },
+        {
+          "path": "tests/test_4a5_legacy_merkle_archive_bypass_closure.py",
+          "kind": "related_test",
+          "sha256": "3ABDA20AB104BC4ED8C5126D21F8DF46978B83B2765D86DCB953AB2281111DBA",
+          "bytes": 2164
+        },
+        {
+          "path": "tests/test_4a5c_merkle_generic_mutation_reachability.py",
+          "kind": "related_test",
+          "sha256": "204BEA627E5F94C99852B49A2828FE01D839F90C9C92B4483F745AB9803EBF78",
+          "bytes": 617
+        },
+        {
+          "path": "tests/test_batch_selector_v0.py",
+          "kind": "related_test",
+          "sha256": "D49309A7114673D00A25A307907E5A4D25C1E62E5928DD81E0F3FDE0B8B6BC4E",
+          "bytes": 74483
+        },
+        {
+          "path": "tests/test_branching_ledger_v0.py",
+          "kind": "related_test",
+          "sha256": "D2783E6B859792DE21ECB10DAAFBF0A55A2838DAFF62B0CEA33A8FF8A1D91D99",
+          "bytes": 59681
+        },
+        {
+          "path": "tests/test_h1_red.py",
+          "kind": "related_test",
+          "sha256": "5971E1D692EA5767103F765B208E4F00ED3D2AD0E0BFBEBD8F5153747307D20E",
+          "bytes": 7479
+        },
+        {
+          "path": "tests/test_jarjar_bridge_v1_app_open.py",
+          "kind": "related_test",
+          "sha256": "4DA344D938F711CE2CF3E7DE5DAA0B277E447FC983BF2A170592BECD1B212E9F",
+          "bytes": 15076
+        },
+        {
+          "path": "tests/test_jarjar_bridge_v1_app_open_red.py",
+          "kind": "related_test",
+          "sha256": "C41CA057C1A829EA70AA6E6AAB6D7D6B453153EBE31E251B55447B648B53A1E7",
+          "bytes": 6824
+        },
+        {
+          "path": "tests/test_jarjar_bridge_v1_browser_navigate_red.py",
+          "kind": "related_test",
+          "sha256": "BBAA3DCF378F03F2C3AFB10ADE00EDA180080DE315F6E99B5A2D1D9A4A753552",
+          "bytes": 21714
+        },
+        {
+          "path": "tests/test_jarjar_bridge_v1_browser_read_red.py",
+          "kind": "related_test",
+          "sha256": "0ACFEF4DB27A2DB786E4CE3F2F15F5CCF29495CEE21956BFCFB3C6006839CB15",
+          "bytes": 16069
+        },
+        {
+          "path": "tests/test_jarjar_bridge_v1_browser_submit_get_navigation_red.py",
+          "kind": "related_test",
+          "sha256": "CD27B50CE3385C29656BFDE11A8E238BEEB10A28107E0B37B9583271D6D877AD",
+          "bytes": 11130
+        },
+        {
+          "path": "tests/test_jarjar_bridge_v1_uia_select_radio_red.py",
+          "kind": "related_test",
+          "sha256": "9F092DC41BE16B261A6D57291A8A43C46E291D9E9468A723490200A5F34A77BA",
+          "bytes": 10309
+        },
+        {
+          "path": "tests/test_jarjar_bridge_v1_uia_select_tab_red.py",
+          "kind": "related_test",
+          "sha256": "3D6A556A3412925ABE869C7223B7297CE05F4AF98B0BE8DF85D374A44930FDD7",
+          "bytes": 10627
+        },
+        {
+          "path": "tests/test_jarjar_bridge_v1_uia_set_checked_red.py",
+          "kind": "related_test",
+          "sha256": "CFDD6D44410A02A8A12E6A0A295025BD59B8476175EB55A016CFE41AF17420DB",
+          "bytes": 11210
+        },
+        {
+          "path": "tests/test_jarjar_bridge_v1_uia_set_text.py",
+          "kind": "related_test",
+          "sha256": "050C87CBA124519983657201B234B9DCCEB49E483BAACEB6A8C41E612DA69912",
+          "bytes": 12573
+        },
+        {
+          "path": "tests/test_jarjar_bridge_v1_window_focus.py",
+          "kind": "related_test",
+          "sha256": "7870F4C50D797762BB24BA739B4A2F865E9ADF2BF89AA60DAF4338CAEE40B0A7",
+          "bytes": 19312
+        },
+        {
+          "path": "tests/test_obsidia_build_v0.py",
+          "kind": "related_test",
+          "sha256": "33B8B28838A90C128FD11B1CA182F94C51338B28D15C24501268ED7CA7FB7031",
+          "bytes": 73228
+        },
+        {
+          "path": "tests/test_obsidure_bounded_apply_v1.py",
+          "kind": "related_test",
+          "sha256": "1E29854667586A6DD8BDC26C9A790F46D30EE6E9904619A8C1D26F1EDAB6A131",
+          "bytes": 28777
+        },
+        {
+          "path": "tests/test_r8_b1_canonical_receipt_envelope.py",
+          "kind": "related_test",
+          "sha256": "97228F67D58FE89D5B978E5E4CAEB4C20D6E860F08ECA252986F6C7D274A4939",
+          "bytes": 8821
+        },
+        {
+          "path": "tests/test_r8_b2_canonical_failure_receipts.py",
+          "kind": "related_test",
+          "sha256": "00EC19681631C1D8FA3BFB27C2E4701D5739362E3A6B91B9026B2DDAFC673563",
+          "bytes": 11566
+        },
+        {
+          "path": "tests/test_r8_b3_evidence_only_replay.py",
+          "kind": "related_test",
+          "sha256": "982DF681538A269159812251BF126227F437124AF48D7A36C91E905DA94A4D48",
+          "bytes": 17747
+        },
+        {
+          "path": "tests/test_r8_b6_realized_state_reconciliation.py",
+          "kind": "related_test",
+          "sha256": "5C2D02DF25D0B185DA618409BA4D3488FB255D8F8B90130EE15FDC04CC5C1CF2",
+          "bytes": 16254
+        },
+        {
+          "path": "tests/test_r8_b7_true_e2e_scenarios.py",
+          "kind": "related_test",
+          "sha256": "B443C41878331F41C6AF485C7F4EE2A447333913770A7B9D33D789DEC2893EA5",
+          "bytes": 20936
+        },
+        {
+          "path": "tests/test_source_content_apply_bridge_v0.py",
+          "kind": "related_test",
+          "sha256": "2BE73F1BA0B3248ACE4FB696547F4E20D2CCA823A908421FAC3726E6BAE061B6",
+          "bytes": 47236
+        },
+        {
+          "path": "periphery/tests/test_obsidure_python_route.py",
+          "kind": "related_test",
+          "sha256": "9560677C88C1CB9471B755D6E622770ED4A84DB269A6F07FCC6E94F824AE596D",
+          "bytes": 10720
+        }
+      ],
+      "test_count": 40
+    },
+    {
+      "id": "x108-create-pre",
+      "source_path": "C:\\Users\\Aubin\\Desktop\\obsidia-x108-create-pre-v1",
+      "branch": "feat/x108-create-kx108-pre-v1",
+      "source_head": "9461e09686259fd040c8d72b4a4578a2ee5e7b19",
+      "has_tracked_changes": false,
+      "files": [
+        {
+          "path": "scripts/obsidia_kx108_pre_execution_evidence_adapter_v0.py",
+          "kind": "source",
+          "sha256": "7B8B6388501D290A93710DC8EBD66DBFF2E051EB7E239C11393E93C23A9E80EF",
+          "audit_sha256_20261114": "7B8B6388501D290A93710DC8EBD66DBFF2E051EB7E239C11393E93C23A9E80EF",
+          "changed_since_audit": false,
+          "bytes": 14725
+        },
+        {
+          "path": "tests/cli/test_bounded_mission_v0.py",
+          "kind": "related_test",
+          "sha256": "F1A1F195387DFA9B6617A0E6A3D06D60C67697F1D532CF6F2731BB2209FF33D9",
+          "bytes": 82013
+        },
+        {
+          "path": "tests/cli/test_capability_graph_v0.py",
+          "kind": "related_test",
+          "sha256": "7D308F726A249978C5782A9926330E5682538393175EFC39DF1405963781DF4F",
+          "bytes": 13516
+        },
+        {
+          "path": "tests/cli/test_cognitive_capability_lease_cgc_v0.py",
+          "kind": "related_test",
+          "sha256": "0B6FA616F33C0E011127DB318B80B986AEE8D8995618EE2DF17062E486F94467",
+          "bytes": 32990
+        },
+        {
+          "path": "tests/cli/test_governed_apply_preflight_v0.py",
+          "kind": "related_test",
+          "sha256": "D9658CD52AA3F7951DE85D239EC16C51D78BD7418E3509640292FFB790DFFB53",
+          "bytes": 30568
+        },
+        {
+          "path": "tests/cli/test_governed_content_apply_c2_v0.py",
+          "kind": "related_test",
+          "sha256": "204CB820FE6D57357778259052912D7C5D423BA3C10D8EA0D9AD5CBA097A93A4",
+          "bytes": 38373
+        },
+        {
+          "path": "tests/cli/test_governed_rollback_v0.py",
+          "kind": "related_test",
+          "sha256": "0DDAB7018AE2192F40468E808FD2AAAE3A9A4DAB94004EAFD264016A4F02578D",
+          "bytes": 30192
+        },
+        {
+          "path": "tests/cli/test_isolated_work_unit_v0.py",
+          "kind": "related_test",
+          "sha256": "37E3C4CC962C79D0431908D836CE839C5581D4C1824625307186E4BB9B66CF64",
+          "bytes": 35605
+        },
+        {
+          "path": "tests/cli/test_jarvis_governed_mutation_v0.py",
+          "kind": "related_test",
+          "sha256": "3B0C761E51DAB2675A0603185B839277263F087C6EC1B5E185F00D7F77FBF5B0",
+          "bytes": 20811
+        },
+        {
+          "path": "tests/cli/test_kx108_post_pre_binding_v0.py",
+          "kind": "related_test",
+          "sha256": "9C2CF12638E6DEED4D111D8FACBAE29A7661301E6250C84EF00919A07D33AA14",
+          "bytes": 21104
+        },
+        {
+          "path": "tests/cli/test_kx108_pre_execution_gate_v0.py",
+          "kind": "related_test",
+          "sha256": "06BCC1639CEDA9B3B08DB44996377785DED189C238728A7248FD1DCFF835CC1D",
+          "bytes": 29618
+        },
+        {
+          "path": "tests/cli/test_mission_authority_conformance_v0.py",
+          "kind": "related_test",
+          "sha256": "D79EBE2F7B8A0E6624996E017BF2B4FBBC8A1084B17E6ED35C1FB36C2DFB6277",
+          "bytes": 27870
+        },
+        {
+          "path": "tests/cli/test_mission_authority_integration_v0.py",
+          "kind": "related_test",
+          "sha256": "14BB765731202527C3D93DA4900B631122196FBC6BDF8A9A599C7BD16CE11923",
+          "bytes": 30267
+        },
+        {
+          "path": "tests/cli/test_mission_authority_pre_integration_v0.py",
+          "kind": "related_test",
+          "sha256": "C396BBD30A9EFF936812030C8229F13358790501AA4D9D995CB41549F8E46C0B",
+          "bytes": 23281
+        },
+        {
+          "path": "tests/cli/test_mission_authority_seam_repair_v0.py",
+          "kind": "related_test",
+          "sha256": "3A53149CD7BBE3C608549C0C2140C9EBE71A319369EE9AF0921D931D16E3227D",
+          "bytes": 30688
+        },
+        {
+          "path": "tests/cli/test_mission_authority_v0.py",
+          "kind": "related_test",
+          "sha256": "352674E14D80521706C30F9F115FA073686654800D2AC79D87EE55B850932AB4",
+          "bytes": 29368
+        },
+        {
+          "path": "tests/cli/test_mission_capability_scope_cgc2_v0.py",
+          "kind": "related_test",
+          "sha256": "869B4966B7F0D798B3B4600388CC1CD544031AF8EB8A156850090364F3458368",
+          "bytes": 55593
+        },
+        {
+          "path": "tests/cli/test_mission_sequencer_v0.py",
+          "kind": "related_test",
+          "sha256": "E6514C8294D66A8FEE9FE209862F8E4ADC0B1E8C99DEB89B894220793E56540F",
+          "bytes": 28466
+        },
+        {
+          "path": "tests/cli/test_relay_first_v0.py",
+          "kind": "related_test",
+          "sha256": "1D8D417D9935AA3870AC1F8C8C9B4C4D877E9D902B36F26912867675C5D0B6AD",
+          "bytes": 22718
+        },
+        {
+          "path": "tests/cli/test_stage4_multi_action_mission_v0.py",
+          "kind": "related_test",
+          "sha256": "66F1B5BF9BCF8AC1548BEE4CC0C7EE321E8814F1936C615AE9FBC4E1A0E0C8B8",
+          "bytes": 29453
+        },
+        {
+          "path": "tests/test_execution_test_contract_v0.py",
+          "kind": "related_test",
+          "sha256": "4586AFE1379C84DCDFA72265DA6927EE0264ABA7626E80A9F08EBBED4079E0AC",
+          "bytes": 19745
+        },
+        {
+          "path": "tests/test_git_blob_source_registration_v0.py",
+          "kind": "related_test",
+          "sha256": "DF6225D3867FF7296AE58748379F247E9B1102FD0C0353FDB02818897318E9BA",
+          "bytes": 44517
+        },
+        {
+          "path": "tests/test_git_source_target_identity_binding_v0.py",
+          "kind": "related_test",
+          "sha256": "770D253C317BB914A5027B8334150F4E67F210C48C7289E4350D8541DF4C7C9F",
+          "bytes": 19256
+        },
+        {
+          "path": "tests/test_kx108_evidence_adapter_v0.py",
+          "kind": "related_test",
+          "sha256": "EB6BB46C4CDD7E2B5EEEBE6CC64DFE0D0502F9020D7639E8FB435F5994CACBA1",
+          "bytes": 16385
+        },
+        {
+          "path": "tests/test_pc_capabilities_v1_mutation.py",
+          "kind": "related_test",
+          "sha256": "ECE58B2C7E6B31657CA209C3C1DAEF168EAD2372CE338721FEFEBB34CC6B8156",
+          "bytes": 13481
+        },
+        {
+          "path": "tests/test_pc_capabilities_v2_governed_ops.py",
+          "kind": "related_test",
+          "sha256": "1B635C7F6C8DF8352E09BB661EBD9F00EC9BAB6C7D22980173CC2CDE80194D50",
+          "bytes": 27543
+        },
+        {
+          "path": "tests/test_pre_execution_context_v0.py",
+          "kind": "related_test",
+          "sha256": "78A19B317F77587D195705A390F7C53F73E72F038C09E9CD50B214886EE0EB12",
+          "bytes": 31567
+        },
+        {
+          "path": "tests/test_preexec_context_propagation_v0.py",
+          "kind": "related_test",
+          "sha256": "D685CCA436514ED3E117C544CA639BD316F1545EA1AAF07123F375CC3A7392B4",
+          "bytes": 26941
+        },
+        {
+          "path": "tests/test_r11_b1_self_build_prepare_adapter.py",
+          "kind": "related_test",
+          "sha256": "12C873B32ABF3BB56412C7F18F65D9917B6E57BFE51F08043DCAE86C71D3ADE1",
+          "bytes": 12097
+        },
+        {
+          "path": "tests/test_r11_b2_local_developer_mission_adapter.py",
+          "kind": "related_test",
+          "sha256": "204585748859AAECB1B76B539E91DAC41DF50062A411660323DFF5B892629CA4",
+          "bytes": 12839
+        },
+        {
+          "path": "tests/test_r12_b1_obsidure_mission_semantic_bridge.py",
+          "kind": "related_test",
+          "sha256": "4EB4A802AFCAECC56353319B810DDA04AE9FD60D5DEA49728BDAA3AEB8323072",
+          "bytes": 13494
+        },
+        {
+          "path": "tests/test_r12_b2_real_brody_local_runtime_bridge.py",
+          "kind": "related_test",
+          "sha256": "A04374ED4956B21BF03D1265198D336E14CFF6CB60E115ECC4932CA1BD9DB60B",
+          "bytes": 10441
+        },
+        {
+          "path": "tests/test_r12_f2_mission_candidate_supervised_state_adapter.py",
+          "kind": "related_test",
+          "sha256": "E5B030E0FB04A0128AF13A6BFE3AAE5DE76DDD1E7380D06A7AB8E910B69ECF14",
+          "bytes": 11736
+        },
+        {
+          "path": "tests/test_r12_f3a_supervised_mission_stepper.py",
+          "kind": "related_test",
+          "sha256": "849032608F9083E1418D417D473A692BB7407CC8456B6A56C6A8EACCEF87F69D",
+          "bytes": 8885
+        },
+        {
+          "path": "tests/test_r12_f3b_governed_prepare_handoff.py",
+          "kind": "related_test",
+          "sha256": "AF57115589DFAC92CEB0AD0D1B5BC37760CAAAE9980E542FC0602076491E5AEC",
+          "bytes": 13590
+        },
+        {
+          "path": "tests/test_r12_f5c1_supervised_execution_feedback_projection.py",
+          "kind": "related_test",
+          "sha256": "D2662BEBE36EA132BD64B2905A87F34D9CF1D57E75B7701A514AF803968DFD1F",
+          "bytes": 11793
+        },
+        {
+          "path": "tests/test_r12_f5c2_independent_verification.py",
+          "kind": "related_test",
+          "sha256": "2363E089797DBDBAAC20C4971C0CD4CC1B3EA3ADF1AC294CA7AB792167721953",
+          "bytes": 20506
+        },
+        {
+          "path": "tests/test_r12_f5d1_multi_ticket_loop.py",
+          "kind": "related_test",
+          "sha256": "CFBE5B73EB299AB6D9F492A2F7566111936309AD3E2E7DDAC2CBB1675994A12B",
+          "bytes": 10669
+        },
+        {
+          "path": "tests/test_r12_f5d2_governed_multi_ticket_execution_recovery.py",
+          "kind": "related_test",
+          "sha256": "18352F8B6D93AC39E627088634B02150879056276FF1767F5E218F6071AD8807",
+          "bytes": 12151
+        },
+        {
+          "path": "tests/test_source_content_apply_bridge_v0.py",
+          "kind": "related_test",
+          "sha256": "2BE73F1BA0B3248ACE4FB696547F4E20D2CCA823A908421FAC3726E6BAE061B6",
+          "bytes": 47236
+        },
+        {
+          "path": "periphery/tests/test_repair_execution_adapter_r3a.py",
+          "kind": "related_test",
+          "sha256": "E6B39590C8FCC7957160EF33E811FD877A45172C453708A5E31C95EE48BA62F2",
+          "bytes": 6919
+        },
+        {
+          "path": "periphery/tests/test_repair_execution_handoff.py",
+          "kind": "related_test",
+          "sha256": "A98C0D8F693E25645BC46BD45693FAFBD78EDFA4C8CC8743F007C896C4D5A054",
+          "bytes": 13021
+        },
+        {
+          "path": "periphery/tests/test_repair_work_unit_r3d.py",
+          "kind": "related_test",
+          "sha256": "5175B5F76F71D0E74DC8ADEEB7D095D310E426724ECFAFD5885C449272E566DE",
+          "bytes": 11506
+        }
+      ],
+      "test_count": 42
+    },
+    {
+      "id": "x108-create-integration",
+      "source_path": "C:\\Users\\Aubin\\Desktop\\obsidia-x108-create-integration-v1",
+      "branch": "integration/x108-create-c2-d2-v1",
+      "source_head": "df6ca2fd259170d155844a5229d93b017eca1fdc",
+      "has_tracked_changes": false,
+      "files": [
+        {
+          "path": "scripts/obsidia_kx108_pre_execution_evidence_adapter_v0.py",
+          "kind": "source",
+          "sha256": "C115650A6A32D0F0A5A7059DB23448F74D86885FCDA3B9A35BFCE8FB6D992B3A",
+          "audit_sha256_20261114": "C115650A6A32D0F0A5A7059DB23448F74D86885FCDA3B9A35BFCE8FB6D992B3A",
+          "changed_since_audit": false,
+          "bytes": 15054
+        },
+        {
+          "path": "tests/cli/test_bounded_mission_v0.py",
+          "kind": "related_test",
+          "sha256": "F1A1F195387DFA9B6617A0E6A3D06D60C67697F1D532CF6F2731BB2209FF33D9",
+          "bytes": 82013
+        },
+        {
+          "path": "tests/cli/test_capability_graph_v0.py",
+          "kind": "related_test",
+          "sha256": "7D308F726A249978C5782A9926330E5682538393175EFC39DF1405963781DF4F",
+          "bytes": 13516
+        },
+        {
+          "path": "tests/cli/test_cognitive_capability_lease_cgc_v0.py",
+          "kind": "related_test",
+          "sha256": "0B6FA616F33C0E011127DB318B80B986AEE8D8995618EE2DF17062E486F94467",
+          "bytes": 32990
+        },
+        {
+          "path": "tests/cli/test_governed_apply_preflight_v0.py",
+          "kind": "related_test",
+          "sha256": "C4F0111BCAAA218F2CC22073A896DBBDA89709AA9209D12FD472CE79612E3BA5",
+          "bytes": 31235
+        },
+        {
+          "path": "tests/cli/test_governed_content_apply_c2_v0.py",
+          "kind": "related_test",
+          "sha256": "8DFE3C0F9A0CE12BD247EAAE659E57767E9669D54948C5EF95E4453312133688",
+          "bytes": 39132
+        },
+        {
+          "path": "tests/cli/test_governed_execution_driver_v0.py",
+          "kind": "related_test",
+          "sha256": "DAB3CCF88EE30396877E761FE50791AC57DAA2A6F54D41C201BB5510484218C0",
+          "bytes": 15660
+        },
+        {
+          "path": "tests/cli/test_governed_rollback_v0.py",
+          "kind": "related_test",
+          "sha256": "81EEBA8E2A3F6ECBE3A5EDD7540725CDCAC5585191887320CF013B7155751562",
+          "bytes": 30856
+        },
+        {
+          "path": "tests/cli/test_isolated_work_unit_v0.py",
+          "kind": "related_test",
+          "sha256": "37E3C4CC962C79D0431908D836CE839C5581D4C1824625307186E4BB9B66CF64",
+          "bytes": 35605
+        },
+        {
+          "path": "tests/cli/test_jarvis_governed_human_surface_j8.py",
+          "kind": "related_test",
+          "sha256": "7288435341D8AE2C2F2A0184C95A606BDD5DF359C98791D32DC295DB690D8FB2",
+          "bytes": 25993
+        },
+        {
+          "path": "tests/cli/test_jarvis_governed_human_ux_j9.py",
+          "kind": "related_test",
+          "sha256": "BF0BA5BF8EEF3DC512183C4302E141641C66C97A7532C10224595EBB6A14FAC8",
+          "bytes": 7122
+        },
+        {
+          "path": "tests/cli/test_jarvis_governed_mutation_v0.py",
+          "kind": "related_test",
+          "sha256": "3B0C761E51DAB2675A0603185B839277263F087C6EC1B5E185F00D7F77FBF5B0",
+          "bytes": 20811
+        },
+        {
+          "path": "tests/cli/test_jarvis_governed_prepare_builder_j9b5.py",
+          "kind": "related_test",
+          "sha256": "6B22F8CE86EF99389A45C0A20F307DBD43E5D5EA22F4C6A4B61AAE092FB23E9F",
+          "bytes": 13392
+        },
+        {
+          "path": "tests/cli/test_jarvis_ingress_v0.py",
+          "kind": "related_test",
+          "sha256": "D189B7EA38F5B0B45AFEF596C16E23C0EFFA95781E496630C4EE94ECA3CF2069",
+          "bytes": 35297
+        },
+        {
+          "path": "tests/cli/test_kx108_pre_execution_gate_v0.py",
+          "kind": "related_test",
+          "sha256": "7EF7F97E0FA8926A02725930ABF8A806F960958BA9567D9BEE96973CF4ED697E",
+          "bytes": 30367
+        },
+        {
+          "path": "tests/cli/test_mission_authority_conformance_v0.py",
+          "kind": "related_test",
+          "sha256": "D79EBE2F7B8A0E6624996E017BF2B4FBBC8A1084B17E6ED35C1FB36C2DFB6277",
+          "bytes": 27870
+        },
+        {
+          "path": "tests/cli/test_mission_authority_integration_v0.py",
+          "kind": "related_test",
+          "sha256": "14BB765731202527C3D93DA4900B631122196FBC6BDF8A9A599C7BD16CE11923",
+          "bytes": 30267
+        },
+        {
+          "path": "tests/cli/test_mission_authority_pre_integration_v0.py",
+          "kind": "related_test",
+          "sha256": "C396BBD30A9EFF936812030C8229F13358790501AA4D9D995CB41549F8E46C0B",
+          "bytes": 23281
+        },
+        {
+          "path": "tests/cli/test_mission_authority_seam_repair_v0.py",
+          "kind": "related_test",
+          "sha256": "3A53149CD7BBE3C608549C0C2140C9EBE71A319369EE9AF0921D931D16E3227D",
+          "bytes": 30688
+        },
+        {
+          "path": "tests/cli/test_mission_authority_v0.py",
+          "kind": "related_test",
+          "sha256": "352674E14D80521706C30F9F115FA073686654800D2AC79D87EE55B850932AB4",
+          "bytes": 29368
+        },
+        {
+          "path": "tests/cli/test_mission_capability_scope_cgc2_v0.py",
+          "kind": "related_test",
+          "sha256": "869B4966B7F0D798B3B4600388CC1CD544031AF8EB8A156850090364F3458368",
+          "bytes": 55593
+        },
+        {
+          "path": "tests/cli/test_mission_local_snapshot_v0.py",
+          "kind": "related_test",
+          "sha256": "753CF5380546C247FCFA73C472E422A82D4126F28015312C2A830BE313D46059",
+          "bytes": 26110
+        },
+        {
+          "path": "tests/cli/test_mission_sequencer_v0.py",
+          "kind": "related_test",
+          "sha256": "E6514C8294D66A8FEE9FE209862F8E4ADC0B1E8C99DEB89B894220793E56540F",
+          "bytes": 28466
+        },
+        {
+          "path": "tests/cli/test_pretool_shadow_cgd_v0.py",
+          "kind": "related_test",
+          "sha256": "6E79D1A637AD8275D3BC04715DB9A1EFBFDFC594ACDDAB72505D1FD8AA51A2F3",
+          "bytes": 26946
+        },
+        {
+          "path": "tests/cli/test_relay_first_v0.py",
+          "kind": "related_test",
+          "sha256": "1D8D417D9935AA3870AC1F8C8C9B4C4D877E9D902B36F26912867675C5D0B6AD",
+          "bytes": 22718
+        },
+        {
+          "path": "tests/cli/test_relay_governed_execute_j7.py",
+          "kind": "related_test",
+          "sha256": "6397C2753AF0B65200B9E9066E08DA73475811B6D7747D6451FBC1591DEBE956",
+          "bytes": 37296
+        },
+        {
+          "path": "tests/cli/test_stage4_multi_action_mission_v0.py",
+          "kind": "related_test",
+          "sha256": "66F1B5BF9BCF8AC1548BEE4CC0C7EE321E8814F1936C615AE9FBC4E1A0E0C8B8",
+          "bytes": 29453
+        },
+        {
+          "path": "tests/test_execution_test_contract_v0.py",
+          "kind": "related_test",
+          "sha256": "4586AFE1379C84DCDFA72265DA6927EE0264ABA7626E80A9F08EBBED4079E0AC",
+          "bytes": 19745
+        },
+        {
+          "path": "tests/test_git_blob_source_registration_v0.py",
+          "kind": "related_test",
+          "sha256": "DF6225D3867FF7296AE58748379F247E9B1102FD0C0353FDB02818897318E9BA",
+          "bytes": 44517
+        },
+        {
+          "path": "tests/test_git_source_target_identity_binding_v0.py",
+          "kind": "related_test",
+          "sha256": "770D253C317BB914A5027B8334150F4E67F210C48C7289E4350D8541DF4C7C9F",
+          "bytes": 19256
+        },
+        {
+          "path": "tests/test_kx108_evidence_adapter_v0.py",
+          "kind": "related_test",
+          "sha256": "EB6BB46C4CDD7E2B5EEEBE6CC64DFE0D0502F9020D7639E8FB435F5994CACBA1",
+          "bytes": 16385
+        },
+        {
+          "path": "tests/test_obsidure_bounded_apply_v1.py",
+          "kind": "related_test",
+          "sha256": "1E29854667586A6DD8BDC26C9A790F46D30EE6E9904619A8C1D26F1EDAB6A131",
+          "bytes": 28777
+        },
+        {
+          "path": "tests/test_pc_capabilities_v1_mutation.py",
+          "kind": "related_test",
+          "sha256": "ECE58B2C7E6B31657CA209C3C1DAEF168EAD2372CE338721FEFEBB34CC6B8156",
+          "bytes": 13481
+        },
+        {
+          "path": "tests/test_pc_capabilities_v2_governed_ops.py",
+          "kind": "related_test",
+          "sha256": "1B635C7F6C8DF8352E09BB661EBD9F00EC9BAB6C7D22980173CC2CDE80194D50",
+          "bytes": 27543
+        },
+        {
+          "path": "tests/test_pre_execution_context_v0.py",
+          "kind": "related_test",
+          "sha256": "165A8F457AF9A29C9C0B416DBF6AA6581E8E120DC5E875CA5CAA6D44719E0856",
+          "bytes": 32257
+        },
+        {
+          "path": "tests/test_preexec_context_propagation_v0.py",
+          "kind": "related_test",
+          "sha256": "D685CCA436514ED3E117C544CA639BD316F1545EA1AAF07123F375CC3A7392B4",
+          "bytes": 26941
+        },
+        {
+          "path": "tests/test_r11_b1_self_build_prepare_adapter.py",
+          "kind": "related_test",
+          "sha256": "12C873B32ABF3BB56412C7F18F65D9917B6E57BFE51F08043DCAE86C71D3ADE1",
+          "bytes": 12097
+        },
+        {
+          "path": "tests/test_r11_b2_local_developer_mission_adapter.py",
+          "kind": "related_test",
+          "sha256": "204585748859AAECB1B76B539E91DAC41DF50062A411660323DFF5B892629CA4",
+          "bytes": 12839
+        },
+        {
+          "path": "tests/test_r12_b1_obsidure_mission_semantic_bridge.py",
+          "kind": "related_test",
+          "sha256": "4EB4A802AFCAECC56353319B810DDA04AE9FD60D5DEA49728BDAA3AEB8323072",
+          "bytes": 13494
+        },
+        {
+          "path": "tests/test_r12_b2_real_brody_local_runtime_bridge.py",
+          "kind": "related_test",
+          "sha256": "A04374ED4956B21BF03D1265198D336E14CFF6CB60E115ECC4932CA1BD9DB60B",
+          "bytes": 10441
+        },
+        {
+          "path": "tests/test_r12_f2_mission_candidate_supervised_state_adapter.py",
+          "kind": "related_test",
+          "sha256": "E5B030E0FB04A0128AF13A6BFE3AAE5DE76DDD1E7380D06A7AB8E910B69ECF14",
+          "bytes": 11736
+        },
+        {
+          "path": "tests/test_r12_f3a_supervised_mission_stepper.py",
+          "kind": "related_test",
+          "sha256": "849032608F9083E1418D417D473A692BB7407CC8456B6A56C6A8EACCEF87F69D",
+          "bytes": 8885
+        },
+        {
+          "path": "tests/test_r12_f3b_governed_prepare_handoff.py",
+          "kind": "related_test",
+          "sha256": "AF57115589DFAC92CEB0AD0D1B5BC37760CAAAE9980E542FC0602076491E5AEC",
+          "bytes": 13590
+        },
+        {
+          "path": "tests/test_r12_f5c1_supervised_execution_feedback_projection.py",
+          "kind": "related_test",
+          "sha256": "D2662BEBE36EA132BD64B2905A87F34D9CF1D57E75B7701A514AF803968DFD1F",
+          "bytes": 11793
+        },
+        {
+          "path": "tests/test_r12_f5c2_independent_verification.py",
+          "kind": "related_test",
+          "sha256": "2363E089797DBDBAAC20C4971C0CD4CC1B3EA3ADF1AC294CA7AB792167721953",
+          "bytes": 20506
+        },
+        {
+          "path": "tests/test_r12_f5d1_multi_ticket_loop.py",
+          "kind": "related_test",
+          "sha256": "CFBE5B73EB299AB6D9F492A2F7566111936309AD3E2E7DDAC2CBB1675994A12B",
+          "bytes": 10669
+        },
+        {
+          "path": "tests/test_r12_f5d2_governed_multi_ticket_execution_recovery.py",
+          "kind": "related_test",
+          "sha256": "18352F8B6D93AC39E627088634B02150879056276FF1767F5E218F6071AD8807",
+          "bytes": 12151
+        },
+        {
+          "path": "tests/test_source_content_apply_bridge_v0.py",
+          "kind": "related_test",
+          "sha256": "2BE73F1BA0B3248ACE4FB696547F4E20D2CCA823A908421FAC3726E6BAE061B6",
+          "bytes": 47236
+        },
+        {
+          "path": "periphery/tests/test_repair_execution_adapter_r3a.py",
+          "kind": "related_test",
+          "sha256": "E6B39590C8FCC7957160EF33E811FD877A45172C453708A5E31C95EE48BA62F2",
+          "bytes": 6919
+        },
+        {
+          "path": "periphery/tests/test_repair_execution_handoff.py",
+          "kind": "related_test",
+          "sha256": "A98C0D8F693E25645BC46BD45693FAFBD78EDFA4C8CC8743F007C896C4D5A054",
+          "bytes": 13021
+        },
+        {
+          "path": "periphery/tests/test_repair_work_unit_r3d.py",
+          "kind": "related_test",
+          "sha256": "5175B5F76F71D0E74DC8ADEEB7D095D310E426724ECFAFD5885C449272E566DE",
+          "bytes": 11506
+        }
+      ],
+      "test_count": 50
+    },
+    {
+      "id": "v01-c1-world-action",
+      "source_path": "C:\\Users\\Aubin\\Desktop\\OBSIDIA_WORLDS\\obsidia-v01-c1",
+      "branch": "feat/v01-c0-c1-company-model-contract-v0",
+      "source_head": "6d0b5c57bfe76bcfbd0bb74565abaca20a3959c6",
+      "has_tracked_changes": false,
+      "files": [
+        {
+          "path": "scripts/obsidia_kx108_decision_store.py",
+          "kind": "source",
+          "sha256": "70EA23C863495590F8154678BB1B3BA360010D8549D2DA393D3A691BA4140D5E",
+          "audit_sha256_20261114": "70EA23C863495590F8154678BB1B3BA360010D8549D2DA393D3A691BA4140D5E",
+          "changed_since_audit": false,
+          "bytes": 42922
+        },
+        {
+          "path": "scripts/obsidia_governed_runtime_cycle_v1.py",
+          "kind": "source",
+          "sha256": "C9EBF8AA681888645D17FF143A9E0E1603B82E197D595442741C03ABE1C24B6C",
+          "audit_sha256_20261114": "C9EBF8AA681888645D17FF143A9E0E1603B82E197D595442741C03ABE1C24B6C",
+          "changed_since_audit": false,
+          "bytes": 35102
+        },
+        {
+          "path": "tests/api/test_action_gateway_hold_block_sandbox_api_p54.py",
+          "kind": "related_test",
+          "sha256": "5F3A145BE6A77870A3BC877FF2C40E973C03DF5797CFE8A6FE0A61BC32E28312",
+          "bytes": 4020
+        },
+        {
+          "path": "tests/api/test_adapter_coverage_os_map_p48.py",
+          "kind": "related_test",
+          "sha256": "0B510E58A6A68F025CB7B0271FF389D649043504B1F05A4855FA05129D243CE1",
+          "bytes": 5719
+        },
+        {
+          "path": "tests/api/test_f16_live_sources.py",
+          "kind": "related_test",
+          "sha256": "AEAD8446E8338299465529822B2D1500A9116EE25E0904CB0698981492E9F77B",
+          "bytes": 7030
+        },
+        {
+          "path": "tests/api/test_os_trad_reverse_preview_p32.py",
+          "kind": "related_test",
+          "sha256": "7E47C841D0186C529091B87A5C440A6CFA5BDB8A907AA22B9049F15D6EEFF262",
+          "bytes": 8521
+        },
+        {
+          "path": "tests/api/test_source_runtime_status_p29.py",
+          "kind": "related_test",
+          "sha256": "1018706B9AFA2001136EB030C6E3B7984D66E0328508C28116FB35A126877811",
+          "bytes": 11598
+        },
+        {
+          "path": "tests/api/test_workbench_view_coverage_os_map_p46.py",
+          "kind": "related_test",
+          "sha256": "9EF1348ABCFD7100FC2794FE7F3D25F4D5FE11A412D08EE76E999A064CB784B0",
+          "bytes": 5774
+        },
+        {
+          "path": "tests/api/test_world_action_bus_dry_run_activation_api_p53.py",
+          "kind": "related_test",
+          "sha256": "D45C0FA78CE1CAB968BB15004005EA35A61BB297F1878B879428B286736AE3EA",
+          "bytes": 5884
+        },
+        {
+          "path": "tests/cli/kernel/test_kx108_proof_agent_boundary_v1.py",
+          "kind": "related_test",
+          "sha256": "1FBFBC9A95C758A2E7063BB4A6DC6DD7FD2623E47A9D6F31E2922449C7CB232B",
+          "bytes": 3262
+        },
+        {
+          "path": "tests/cli/kernel/test_kx108_proof_agent_governance_v1.py",
+          "kind": "related_test",
+          "sha256": "FDB58495DEE72C8A912AD2B20C11F9778E1CBA17A1C19D797CB02C6E752BE46F",
+          "bytes": 3089
+        },
+        {
+          "path": "tests/cli/kernel/test_kx108_proof_agent_interface_v1.py",
+          "kind": "related_test",
+          "sha256": "65AD5EF2E1B2B1C1995D4CB0313EA0E90E38B808BA835B4B6F668783BE7871DF",
+          "bytes": 3144
+        },
+        {
+          "path": "tests/cli/kernel/test_kx108_proof_agent_release_v1.py",
+          "kind": "related_test",
+          "sha256": "F36DBD6341E6C36545F33F6B218B8D2F17131B47D6BDB84051B48066A0568880",
+          "bytes": 4717
+        },
+        {
+          "path": "tests/cli/kernel/test_kx108_proof_agent_runtime_v1.py",
+          "kind": "related_test",
+          "sha256": "76DA1E07C9318043A2394C939A09DB5E312AB1F4516399AFB7E73EBE9301403E",
+          "bytes": 2781
+        },
+        {
+          "path": "tests/cli/kernel/test_kx108_proof_agent_security_v1.py",
+          "kind": "related_test",
+          "sha256": "333FCBC58B17A6CB8BA587EA9E87A4D3D0806A9C2AB5E84571446F0BE25263E5",
+          "bytes": 4073
+        },
+        {
+          "path": "tests/cli/kernel/test_kx108_proof_agent_validation_v1.py",
+          "kind": "related_test",
+          "sha256": "66F04D2C11F1D59023B4C2D367F29C5151C53469D9F4BC4FB96DEBE42DDB111B",
+          "bytes": 3732
+        },
+        {
+          "path": "tests/cli/kernel/test_kx108_proof_intention_boundary_v1.py",
+          "kind": "related_test",
+          "sha256": "16491515F858DEA1C763C3134A8EDEC28DD5AB9328F990533B1D801CBFFCEAD9",
+          "bytes": 1542
+        },
+        {
+          "path": "tests/cli/kernel/test_kx108_runtime_link_facts_v1.py",
+          "kind": "related_test",
+          "sha256": "D56693D975F080119F2D2CB43393D70149716B7120EB880D97ACF23FF80939B5",
+          "bytes": 4713
+        },
+        {
+          "path": "tests/cli/providers/test_obsidia_tooling_generator_v1.py",
+          "kind": "related_test",
+          "sha256": "B58E68BEDBBF4E2A910C1F44C43ECDF8B032FA161AECB49D2D700B000D7563F5",
+          "bytes": 13271
+        },
+        {
+          "path": "tests/cli/providers/test_tooling_generation_adapter_v1.py",
+          "kind": "related_test",
+          "sha256": "29172E46B83356556814735B9B4E47A9E41B45118DE3108133B631EA75B5249B",
+          "bytes": 13358
+        },
+        {
+          "path": "tests/cli/test_bounded_mission_v0.py",
+          "kind": "related_test",
+          "sha256": "F1A1F195387DFA9B6617A0E6A3D06D60C67697F1D532CF6F2731BB2209FF33D9",
+          "bytes": 82013
+        },
+        {
+          "path": "tests/cli/test_gateway_route_decision_cgb_v0.py",
+          "kind": "related_test",
+          "sha256": "4F1E53EB10FFBAF92EBD1537018A71B1724B84501D9E46D11252666D57EBD220",
+          "bytes": 18187
+        },
+        {
+          "path": "tests/cli/test_isolated_work_unit_v0.py",
+          "kind": "related_test",
+          "sha256": "37E3C4CC962C79D0431908D836CE839C5581D4C1824625307186E4BB9B66CF64",
+          "bytes": 35605
+        },
+        {
+          "path": "tests/cli/test_mission_local_snapshot_v0.py",
+          "kind": "related_test",
+          "sha256": "753CF5380546C247FCFA73C472E422A82D4126F28015312C2A830BE313D46059",
+          "bytes": 26110
+        },
+        {
+          "path": "tests/cli/test_mission_sequencer_v0.py",
+          "kind": "related_test",
+          "sha256": "E6514C8294D66A8FEE9FE209862F8E4ADC0B1E8C99DEB89B894220793E56540F",
+          "bytes": 28466
+        },
+        {
+          "path": "tests/cli/test_pretool_shadow_cgd_v0.py",
+          "kind": "related_test",
+          "sha256": "6E79D1A637AD8275D3BC04715DB9A1EFBFDFC594ACDDAB72505D1FD8AA51A2F3",
+          "bytes": 26946
+        },
+        {
+          "path": "tests/integration/test_canonical_governed_runtime_e2e_v1.py",
+          "kind": "related_test",
+          "sha256": "58E510E3434AF04CA1144385E34A67852624EA6C3D1CCBC618A598418F79B30B",
+          "bytes": 20572
+        },
+        {
+          "path": "tests/integration/test_canonical_governed_runtime_feedback_reentry_v1.py",
+          "kind": "related_test",
+          "sha256": "D426A1F0670E1FB297EE018A5CA3F163683F1798A4CAFECFB7A41A2330447F2A",
+          "bytes": 13520
+        },
+        {
+          "path": "tests/integration/test_canonical_governed_runtime_multidomain_v1.py",
+          "kind": "related_test",
+          "sha256": "86836A8C9C318B96304EFE273E73953D44FED6CE34ED8979E07D4104AB8009B9",
+          "bytes": 15465
+        },
+        {
+          "path": "tests/integration/test_enterprise_office_full_loop_e2e_v0.py",
+          "kind": "related_test",
+          "sha256": "AD85B045FC69CEB54AC6D0DA3DF2D150200747CEF70812867CC19978B7507C0D",
+          "bytes": 5396
+        },
+        {
+          "path": "tests/integration/test_full_stack_static_bank.py",
+          "kind": "related_test",
+          "sha256": "0788C90CAC52FC788170D2F1279BEC18541D17AFF158A6ED8907582CAD4125C3",
+          "bytes": 2481
+        },
+        {
+          "path": "tests/integration/test_full_stack_static_gps.py",
+          "kind": "related_test",
+          "sha256": "05F0D615BB78CBE7E1A644572CA4D79B97159D0842AA5DED3A3A59C492B6118E",
+          "bytes": 2304
+        },
+        {
+          "path": "tests/integration/test_full_stack_static_trading.py",
+          "kind": "related_test",
+          "sha256": "6EF1DB51E589BEBC4BAC2E2A8A4BE67234AC54EA3382BD62762E2A3C0DDEC5BE",
+          "bytes": 2325
+        },
+        {
+          "path": "tests/integration/test_gmail_draft_governed_real_pilot_v0.py",
+          "kind": "related_test",
+          "sha256": "815A852868DC685556EEFA79347DF88467F0C447FA3BA23BC9840EE98FB97AB9",
+          "bytes": 2369
+        },
+        {
+          "path": "tests/integration/test_google_calendar_governed_real_pilot_v0.py",
+          "kind": "related_test",
+          "sha256": "FBF7E1C06E9D5ACB4602B4EA1E075D78A49B302C74805172060177AEFD97BF85",
+          "bytes": 2538
+        },
+        {
+          "path": "tests/integration/test_monde_native_read_model_v0.py",
+          "kind": "related_test",
+          "sha256": "204C14C129525001B5CE07536EB1D593CC8175AAB007B23F9F3020C5926564C4",
+          "bytes": 4814
+        },
+        {
+          "path": "tests/integration/test_native_tasks_crm_v0.py",
+          "kind": "related_test",
+          "sha256": "DA78C1E59BC52285E3BC6D4E536D902AC9C1DB1D5BC43A27AC68C38A827DF09C",
+          "bytes": 27052
+        },
+        {
+          "path": "tests/integration/test_native_work_to_action_projection_v0.py",
+          "kind": "related_test",
+          "sha256": "52B292F1BEDEF6F454E3036582871BAC512965789DE4216AAFE9AB1D8AF45E63",
+          "bytes": 9779
+        },
+        {
+          "path": "tests/integration/test_obsidia_universal_cross_domain_conformance_v0.py",
+          "kind": "related_test",
+          "sha256": "9FD8D85AC9CFBAB099E5EFA862F0F1C7874A36303C36454BEAB61B129927074A",
+          "bytes": 17272
+        },
+        {
+          "path": "tests/integration/test_portable_domain_resolver_seam_v0.py",
+          "kind": "related_test",
+          "sha256": "DC7D47A42F5F9D378DFD0E37A11FA06A2A08DF74A05F6F3771C2074CF4B260EE",
+          "bytes": 10014
+        },
+        {
+          "path": "tests/integration/test_preforge_enterprise_stack_freeze_v0.py",
+          "kind": "related_test",
+          "sha256": "AD57C3B235BB426D14F4729BA1DC4350419AA80949576DB6D756032C6855786D",
+          "bytes": 5848
+        },
+        {
+          "path": "tests/integration/test_source_interpretation_native_v0.py",
+          "kind": "related_test",
+          "sha256": "AC6464E3194050AA785F559036D0CFEDC8CED2C2F28F2FD1E83A9FE96B4BB38A",
+          "bytes": 10106
+        },
+        {
+          "path": "tests/integration/test_universal_enterprise_stack_adapter_v0.py",
+          "kind": "related_test",
+          "sha256": "163DFED47752617E77371F39F10030FA8D323BC6C99340B3ED929E4EFFF53CA6",
+          "bytes": 16972
+        },
+        {
+          "path": "tests/integration/test_v3_full_pipeline_bank.py",
+          "kind": "related_test",
+          "sha256": "D956797931671BA478143461BB4512FF85542EA2D7DE1A4A5C979EF2826D8B6C",
+          "bytes": 2931
+        },
+        {
+          "path": "tests/integration/test_v3_full_pipeline_gps.py",
+          "kind": "related_test",
+          "sha256": "8EA273E5687C3E856B6C152EADB992B9ACDD197D2F101899E27FECC3BD8D8360",
+          "bytes": 2159
+        },
+        {
+          "path": "tests/integration/test_v3_full_pipeline_trading.py",
+          "kind": "related_test",
+          "sha256": "8B1D37CBB2C9B13AF5DD7DF51DF4571C703563DC93028B085190A090674AA9D0",
+          "bytes": 2189
+        },
+        {
+          "path": "tests/integration/test_v4_controlled_runtime_pipeline.py",
+          "kind": "related_test",
+          "sha256": "BAC4E7C5D36CE569FC9B4F9EF617DDED4DDC2AED7BD950C32AC1CDB0BDC2FFA6",
+          "bytes": 3746
+        },
+        {
+          "path": "tests/integration/test_v4_gencoin_world_action_bus_chain.py",
+          "kind": "related_test",
+          "sha256": "440D037DDC470A4B6B8708171DDA5B67F16325B4415C92D49A89B6D03EBC068F",
+          "bytes": 4019
+        },
+        {
+          "path": "tests/integration/test_v4_world_call_gateway_pipeline.py",
+          "kind": "related_test",
+          "sha256": "14479739E3F5BFF369DD0C8A0407E2EEFDB4CAABA384BCF9D5CC82C58EE6411E",
+          "bytes": 3454
+        },
+        {
+          "path": "tests/integration/test_world_action_bounded_executor_v0.py",
+          "kind": "related_test",
+          "sha256": "C8C5679E9052B6F6B380C1BBB34ACB6C26FF11EB59AE0EBC82FCC21B98EAA8D0",
+          "bytes": 18656
+        },
+        {
+          "path": "tests/integration/test_world_action_calendar_real_provider_pilot_v0.py",
+          "kind": "related_test",
+          "sha256": "0A280C0918A001D75E2D409B9174A612B7B441908D6E6C1BDF823AA66D773F11",
+          "bytes": 1901
+        },
+        {
+          "path": "tests/integration/test_world_action_live_gateway_v0.py",
+          "kind": "related_test",
+          "sha256": "688FA5F83F655A20F94B1C4D9E0CF2F395D04F0A0F9FB4D0E732A1A9A7F864AD",
+          "bytes": 16804
+        },
+        {
+          "path": "tests/integration/test_world_action_multidomain_conformance_v0.py",
+          "kind": "related_test",
+          "sha256": "BA7B574EA6D3DCD226E6895B36A0AD609990904EEA43B99B44FBA9E81206FB60",
+          "bytes": 12682
+        },
+        {
+          "path": "tests/integration/test_world_action_pre_execution_v0.py",
+          "kind": "related_test",
+          "sha256": "9EB81D0A985E0250F6E7250BD5394BE638D4AF3F3ED6DF67DD98073FF679497E",
+          "bytes": 13945
+        },
+        {
+          "path": "tests/non_sovereignty/test_agents_cannot_emit_act.py",
+          "kind": "related_test",
+          "sha256": "D574399C455B75A0A536069E82CA74FF68B9C28E1EF190F13003B546F5E8523B",
+          "bytes": 2184
+        },
+        {
+          "path": "tests/non_sovereignty/test_world_action_gateway_dry_run.py",
+          "kind": "related_test",
+          "sha256": "EE2CB5B917BF503D1E87AC4ADB7759FAE8E1D0E81656A533B31BD2797A43A6EA",
+          "bytes": 214
+        },
+        {
+          "path": "tests/non_sovereignty/test_world_action_no_real_act_v4.py",
+          "kind": "related_test",
+          "sha256": "59DC60BD25B849B90CAC9488DF66A9CB95B802C9E22AF1041D657000769ADEA1",
+          "bytes": 2120
+        },
+        {
+          "path": "tests/periphery/test_agent_registry_v3_v4.py",
+          "kind": "related_test",
+          "sha256": "679FF3E40CAF27AFABFC515A40240E24041BB3E9DE0B5430FB225E5AFAF890A9",
+          "bytes": 2142
+        },
+        {
+          "path": "tests/periphery/test_agent_test_and_proof_system.py",
+          "kind": "related_test",
+          "sha256": "38778A0350CCF59B4125AE5F886A2D8324CEF50AD16FE16085BDFF53FC358097",
+          "bytes": 18200
+        },
+        {
+          "path": "tests/periphery/test_brody_governance_element_system.py",
+          "kind": "related_test",
+          "sha256": "2CDF6BBFD5B14AD3DFAAFCD3301A43924AAB92C0C1030E4B64185C470F56C3A0",
+          "bytes": 14613
+        },
+        {
+          "path": "tests/periphery/test_os3_replay_runner.py",
+          "kind": "related_test",
+          "sha256": "3392BC06E1057C271536DEE5477221FFAA9FDDE1781DBA5081F66570AF3A30C8",
+          "bytes": 2371
+        },
+        {
+          "path": "tests/periphery/test_sigma_readonly_signal_cognitive_bridge_v1.py",
+          "kind": "related_test",
+          "sha256": "5EB3CDDFE6BA995C9E959E05908F2AF9C0CFFC01FDC1C07786D921C258D1BBBA",
+          "bytes": 9667
+        },
+        {
+          "path": "tests/periphery/test_tree_signal_cognitive_bridge_v1.py",
+          "kind": "related_test",
+          "sha256": "F4F96C24F40692CC171216D45E3BF25CDDD4D14A3D64A8BC71EB1D617ADC19CB",
+          "bytes": 10913
+        },
+        {
+          "path": "tests/periphery/test_world_action_controlled_runtime_stub.py",
+          "kind": "related_test",
+          "sha256": "9CB6F5D6759F5F5897CDFC94606A9C010D9E90BA9289DFD746DC038C2B5B3A4B",
+          "bytes": 2559
+        },
+        {
+          "path": "tests/periphery/test_world_action_gateway.py",
+          "kind": "related_test",
+          "sha256": "BF6A221390A736FE995BD770569326AD5CD0C388F3A723DEEC14798C8571AA58",
+          "bytes": 1054
+        },
+        {
+          "path": "tests/sigma/test_f62_sigma_domain_packets_normalization.py",
+          "kind": "related_test",
+          "sha256": "F7E6C2492C49A43DF5666D20FA58C85AA74091249E600A7840F2F659D25B4DE8",
+          "bytes": 25487
+        },
+        {
+          "path": "tests/test_api_runtime_wiring_preview_p10d.py",
+          "kind": "related_test",
+          "sha256": "B1E3A69A5BA2A70C801A8ED1A7279D7F5D343D8E98BE99FFB5AAAEEEEAA0605C",
+          "bytes": 13755
+        },
+        {
+          "path": "tests/test_bounded_execution_policy_v1.py",
+          "kind": "related_test",
+          "sha256": "E19134E59AA8B7ED820C21AF8ABCEB6AB569FC95A46D380E1BED969CBD836AD1",
+          "bytes": 6759
+        },
+        {
+          "path": "tests/test_brody_readonly_activation_p51.py",
+          "kind": "related_test",
+          "sha256": "C40B61954808EE9B31A6178AEC1EAE18B34A46CAD6111C6B8FF559E453885C30",
+          "bytes": 7363
+        },
+        {
+          "path": "tests/test_controlled_activation_matrix_p50.py",
+          "kind": "related_test",
+          "sha256": "F19267C81EBFBCF72E552921EF432CCD101F487A521564CEC4A1D8CACA65E76B",
+          "bytes": 7719
+        },
+        {
+          "path": "tests/test_engine_bridge_p10c.py",
+          "kind": "related_test",
+          "sha256": "5601DEA2ABA6B26080BD6933786BBE61FFDBAECB03CA344E61E76333A5E2345A",
+          "bytes": 26486
+        },
+        {
+          "path": "tests/test_p67_boundary_semantic_split_audit.py",
+          "kind": "related_test",
+          "sha256": "88073BDB1DBC68E0D6A70BE4B892881CF560EFF8229DC7877CCF94A87BB4618F",
+          "bytes": 8529
+        },
+        {
+          "path": "tests/test_p69_filesystem_path_exposure_audit.py",
+          "kind": "related_test",
+          "sha256": "8677746010825BDB1FEAB72D4534957B7B8505E5EBBEB3BB39C5D0BA6DA1D848",
+          "bytes": 10257
+        },
+        {
+          "path": "tests/test_p70_network_egress_connectors_audit.py",
+          "kind": "related_test",
+          "sha256": "B6B10378AE6641F5D5F50A92767521ADB27D1F7908F1E77C9A56523B36231C28",
+          "bytes": 13260
+        },
+        {
+          "path": "tests/test_p78_presentation_proof_public_private_split.py",
+          "kind": "related_test",
+          "sha256": "2FC629275ADCCD3EE9F4A81A5D6F18EEECFD857678CB3B7BFF0510A8BF719050",
+          "bytes": 17432
+        },
+        {
+          "path": "tests/test_p79_rssi_evidence_pack_github_security_audit.py",
+          "kind": "related_test",
+          "sha256": "E5CA222990C0E9C2767852D1DFEC001A5801E1436EBF055C789C5B809B612B55",
+          "bytes": 22508
+        },
+        {
+          "path": "tests/test_p80_full_regression_freeze.py",
+          "kind": "related_test",
+          "sha256": "7A95CEEC25003B1F63CE3ED0330B200748957E825C19DF0ADB700091755D14BC",
+          "bytes": 19700
+        },
+        {
+          "path": "tests/test_r8_obsidure_candidate_export_v1.py",
+          "kind": "related_test",
+          "sha256": "A0B747B68932DE4475DBD004D1A2A18DC30E96FA941A7BB351F5B577B55D5D39",
+          "bytes": 10051
+        },
+        {
+          "path": "tests/test_r8_obsidure_tooling_candidate_v1.py",
+          "kind": "related_test",
+          "sha256": "2A04BB6B85DC1FB710E4BCEFC677625019B81592810E966F5712A33476A3955B",
+          "bytes": 11187
+        },
+        {
+          "path": "tests/test_tooling_build_domain.py",
+          "kind": "related_test",
+          "sha256": "932993127CACBE9F9526FDAF24BB18E1A13BDEADBD2E93258A5ABA2FE46988A1",
+          "bytes": 27182
+        },
+        {
+          "path": "tests/test_top4_v3_guard_domain_enum_false_act.py",
+          "kind": "related_test",
+          "sha256": "4A317D9DA359733C5D31FD72A0C17D7858386A92DF62C770D12EFFCD7D436BDE",
+          "bytes": 16124
+        },
+        {
+          "path": "tests/test_workbench_runtime_wiring_preview_p11a.py",
+          "kind": "related_test",
+          "sha256": "C51393C47584A3954743F71F0BBE3A34367D72CC7D76D2863434C239B38178B9",
+          "bytes": 12497
+        },
+        {
+          "path": "tests/test_world_action_bus_dry_run_activation_p53.py",
+          "kind": "related_test",
+          "sha256": "6E9B10CCFB59742BD986F32B60D11155C8FD1FE79F0C95EA55E2E2A92D68934A",
+          "bytes": 8162
+        },
+        {
+          "path": "sigma/tests/test_sigma_readonly_signal_v1.py",
+          "kind": "related_test",
+          "sha256": "58E75B822A4445D80A6518E0C6F2B8A0F5088803A18AD6AA5B49AE610DFDFA80",
+          "bytes": 3860
+        }
+      ],
+      "test_count": 82
+    }
+  ]
+}
