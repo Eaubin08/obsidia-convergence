@@ -47,8 +47,8 @@ constituent une permission d'exécution.
 
 ## Tests effectivement réalisés
 
-- **23/23 PASS** : suites `unittest` autonomes (11 contrats du runtime,
-  12 contrôles des collecteurs de dépendances et de la reprise C2).
+- **25/25 PASS** : suites `unittest` autonomes (11 contrats du runtime,
+  14 contrôles des collecteurs de dépendances et de la reprise C2).
 - **40 fichiers Python** analysés sans erreur syntaxique.
 - Import des classes K1 `GovernedBoundedApply` et du pilote
   `prepare_governed_execution` : **PASS**.
@@ -232,3 +232,20 @@ En cas de `STOP=`, ne pas forcer ; garder l'état local et partager la sortie.
 `G1G2_C2_RECOVERY_GITHUB_PUSH_PASS=True` ne signifie que **publication des
 sources**, pas validation fonctionnelle du runtime. Le vrai verdict G1/G2
 reste `HOLD` jusqu'au passage de ses gates Windows et KX108.
+
+#### Évolution de branche du FIX portable — même commit figé
+
+Le portable a été observé sur `feat/gencoin-world-bus-dryrun-v1` avec le **même
+HEAD `ecaf6729f1bcdb05bb8896b7c698d1ae90e56de7`** que le FIX K1 à la
+collecte précédente. Le seul fichier modifié signalé par `git status -sb -uno`
+est `periphery/world_calls/world_action_bus.py` (chantier parallèle).
+
+Le récupérateur V4 reconnaît désormais **uniquement** les branches
+`fix/kx108-zero-vote-guard-v1` et `feat/gencoin-world-bus-dryrun-v1`, à
+condition que le HEAD reste exactement `ecaf6729` et que la source V3 garde
+son SHA256 attendu. Il **exclut** `world_action_bus.py` et bloque toute autre
+source sélectionnée qui serait modifiée ou non suivie, sans changer de branche
+et sans toucher aux modifications concurrentes.
+
+Après `git pull --ff-only`, réutiliser le même outil V4 en mode de contrôle,
+puis en `--push` uniquement après revue de la liste de fichiers.

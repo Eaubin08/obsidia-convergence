@@ -50,6 +50,18 @@ class C2RecoverTests(unittest.TestCase):
             "import json, pathlib\n", encoding="utf-8")
         self.assertEqual(RECOVERY.collect_recovery(self.source, self.dest), {})
 
+    def test_validated_same_head_two_portable_branches(self):
+        self.assertEqual(RECOVERY.SOURCE_FROZEN_HEAD,
+                         "ecaf6729f1bcdb05bb8896b7c698d1ae90e56de7")
+        self.assertEqual(RECOVERY.SOURCE_ACCEPTED_BRANCHES, {
+            "fix/kx108-zero-vote-guard-v1", "feat/gencoin-world-bus-dryrun-v1",
+        })
+
+    def test_concurrent_world_bus_wip_never_enters_export(self):
+        with self.assertRaises(RECOVERY.ExportHold):
+            RECOVERY.guard_selected_source_changes(
+                self.source, {"periphery/world_calls/world_action_bus.py": b"WIP"})
+
 
 if __name__ == "__main__":
     unittest.main()

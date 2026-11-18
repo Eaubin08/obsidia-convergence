@@ -24,6 +24,12 @@ from export_k1_missing_deps_portable_v1 import (
 
 V3_SOURCE = "scripts/obsidure_bounded_apply.py"
 V3_SHA256 = "4908e421a031752057a7b92c35ab942dafffb2b726f235be3fadb2bd86fca5cf"
+SOURCE_FROZEN_HEAD = "ecaf6729f1bcdb05bb8896b7c698d1ae90e56de7"
+SOURCE_ACCEPTED_BRANCHES = frozenset({
+    SOURCE_BRANCH,
+    "feat/gencoin-world-bus-dryrun-v1",
+})
+EXCLUDED_CONCURRENT_WIP = frozenset({"periphery/world_calls/world_action_bus.py"})
 V3_MANIFEST = ASSEMBLY / "DEPS_PORTABLE_C2_OBSIDURE_MANIFEST.json"
 V4_MANIFEST = ASSEMBLY / "DEPS_PORTABLE_C2_RECOVERY_MANIFEST.json"
 KNOWN_STAGED = {
@@ -39,15 +45,19 @@ def sha256(raw: bytes) -> str:
     return hashlib.sha256(raw).hexdigest()
 
 
-def validate_recovery(source: Path, dest: Path) -> tuple[str, str]:
+def validate_recovery(source: Path, dest: Path) -> tuple[str, str, str]:
     if os.environ.get("COMPUTERNAME", "").upper() != SOURCE_MACHINE:
         raise ExportHold("WRONG_MACHINE__PORTABLE_ONLY")
     if not source.is_dir() or not dest.is_dir():
         raise ExportHold("SOURCE_OR_DEST_MISSING")
     if Path(git(source, "rev-parse", "--show-toplevel")).resolve() != source.resolve():
         raise ExportHold("SOURCE_IS_NOT_K1_FIX")
-    if git(source, "branch", "--show-current") != SOURCE_BRANCH:
-        raise ExportHold("SOURCE_BRANCH_MISMATCH")
+    source_branch = git(source, "branch", "--show-current")
+    if source_branch not in SOURCE_ACCEPTED_BRANCHES:
+        raise ExportHold("SOURCE_BRANCH_NOT_IN_VERIFIED_SET")
+    source_head = git(source, "rev-parse", "HEAD")
+    if source_head != SOURCE_FROZEN_HEAD:
+        raise ExportHold("SOURCE_HEAD_CHANGED__REVIEW_REQUIRED")
     if Path(git(dest, "rev-parse", "--show-toplevel")).resolve() != dest.resolve():
         raise ExportHold("DEST_REPO_MISMATCH")
     if git(dest, "branch", "--show-current") != DEST_BRANCH:
@@ -87,7 +97,19 @@ def validate_recovery(source: Path, dest: Path) -> tuple[str, str]:
             or len(items) != 1 or items[0].get("path") != V3_SOURCE
             or items[0].get("sha256") != V3_SHA256):
         raise ExportHold("STAGED_V3_MANIFEST_CONTRACT_MISMATCH")
-    return git(source, "rev-parse", "HEAD"), head
+    return source_head, head, source_branch
+
+
+def guard_selected_source_changes(source: Path, selected: dict[str, bytes]) -> None:
+    """Never publish the concurrent world-bus WIP or unstaged source edits."""
+    if EXCLUDED_CONCURRENT_WIP.intersection(selected):
+        raise ExportHold("CONCURRENT_WORLD_BUS_WIP_OUT_OF_SCOPE")
+    changed = set(git(source, "diff", "--name-only").splitlines())
+    changed.update(git(source, "diff", "--cached", "--name-only").splitlines())
+    changed.update(git(source, "ls-files", "--others", "--exclude-standard").splitlines())
+    conflicted = changed.intersection(selected)
+    if conflicted:
+        raise ExportHold("SELECTED_SOURCE_HAS_UNREVIEWED_WIP:" + ",".join(sorted(conflicted)))
 
 
 def _project_file(module: str, source: Path, dest: Path) -> str | None:
@@ -202,10 +224,12 @@ def main() -> int:
     source = Path.home() / SOURCE_REL
     dest = Path(__file__).resolve().parents[3]
     try:
-        source_head, base_sha = validate_recovery(source, dest)
+        source_head, base_sha, source_branch = validate_recovery(source, dest)
         selected = collect_recovery(source, dest)
+        guard_selected_source_changes(source, selected)
         print(f"MACHINE_VERIFIED={SOURCE_MACHINE}")
         print(f"MODE={'PUBLIC_PUSH' if args.push else 'CHECK_ONLY'}")
+        print(f"SOURCE_BRANCH={source_branch}")
         print(f"SOURCE_HEAD={source_head}")
         print(f"DEST_BASE={base_sha}")
         print("RECOVERING_STAGED_V3_FILES=2")
@@ -229,7 +253,7 @@ def main() -> int:
         manifest = {
             "schema": "OBSIDIA_G1G2_C2_PORTABLE_STAGED_RECOVERY_V4",
             "source_machine": SOURCE_MACHINE,
-            "source_branch": SOURCE_BRANCH,
+            "source_branch": source_branch,
             "source_head": source_head,
             "destination_base_sha": base_sha,
             "captured_utc": datetime.now(timezone.utc).isoformat(),
