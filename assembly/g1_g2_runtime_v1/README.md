@@ -47,8 +47,8 @@ constituent une permission d'exécution.
 
 ## Tests effectivement réalisés
 
-- **16/16 PASS** : suites `unittest` autonomes (11 contrats du runtime,
-  5 contrôles du collecteur de dépendances : source bornée, secret, parcours).
+- **18/18 PASS** : suites `unittest` autonomes (11 contrats du runtime,
+  7 contrôles des collecteurs de dépendances, dont la clôture statique C2).
 - **40 fichiers Python** analysés sans erreur syntaxique.
 - Import des classes K1 `GovernedBoundedApply` et du pilote
   `prepare_governed_execution` : **PASS**.
@@ -141,3 +141,27 @@ py -3 -B .\assembly\g1_g2_runtime_v1\tools\export_k1_missing_deps_portable_v1.py
 Le script d'export effectue un contrôle limité des secrets courants, **pas**
 un audit exhaustif de confidentialité. Le dépôt étant **public**, consulter
 la liste des douze fichiers avant `--push`.
+
+### Complément C2 après le premier export (portable `ecaf6729`)
+
+Le premier complément a publié 14 fichiers dans le commit `e36017dbe31beb103a6c2c7727beaa8ce82b2836`.
+La nouvelle collecte Windows s'arrête sur :
+`ModuleNotFoundError: obsidia_family_wiring_apply_bridge_v0`.
+Ce n'est pas encore une assertion métier sur KX108 ; la collecte est bloquée
+avant exécution des tests.
+
+Le collecteur V2 `tools/export_k1_c2_bridge_deps_portable_v2.py` cible
+le bridge et ses dépendances **statiquement identifiables** dans les
+modules G1/G2 seulement ; il n'écrase aucun fichier déjà assemblé et
+refuse une collecte excessive.
+
+```powershell
+git pull --ff-only
+py -3 -B .\assembly\g1_g2_runtime_v1\tools\export_k1_c2_bridge_deps_portable_v2.py
+# Vérifier la liste avant publication sur GitHub PUBLIC :
+py -3 -B .\assembly\g1_g2_runtime_v1\tools\export_k1_c2_bridge_deps_portable_v2.py --push
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\assembly\g1_g2_runtime_v1\tools\verify_windows_g1_g2_v1.ps1"
+```
+
+Le test Windows ne doit être relancé qu'après un `G1G2_C2_BRIDGE_GITHUB_PUSH_PASS=True`.
+Le mode `EVIDENCE_ONLY` et le veto `HOLD` sont inchangés.

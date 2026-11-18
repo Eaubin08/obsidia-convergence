@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.util
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -12,6 +13,11 @@ _SPEC = importlib.util.spec_from_file_location("k1_missing_exporter", _FILE)
 assert _SPEC and _SPEC.loader
 EXPORT = importlib.util.module_from_spec(_SPEC)
 _SPEC.loader.exec_module(EXPORT)
+
+_TOOLS = Path(__file__).resolve().parents[2] / "tools"
+if str(_TOOLS) not in sys.path:
+    sys.path.insert(0, str(_TOOLS))
+import export_k1_c2_bridge_deps_portable_v2 as C2_EXPORT  # noqa: E402
 
 
 class ExporterGuardTests(unittest.TestCase):
@@ -44,6 +50,32 @@ class ExporterGuardTests(unittest.TestCase):
     def test_blocks_missing_file(self):
         with self.assertRaises(EXPORT.ExportHold):
             EXPORT.guarded_read(self.root, "sigma/registry.py")
+
+    def test_c2_static_import_closure_is_bounded_to_rails(self):
+        raw = (b"import obsidia_candidate_patch_v1\n"
+               b"from scripts import obsidia_build\n"
+               b"from sigma.domains.meta_agents import build_meta_agents\n"
+               b"from periphery.world_calls import ticket_store\n"
+               b"import unrelated_module\n")
+        found = C2_EXPORT._static_imports(raw, "scripts/bridge.py")
+        self.assertEqual(found, {
+            "scripts/obsidia_candidate_patch_v1.py",
+            "scripts/obsidia_build.py",
+            "sigma/domains/meta_agents.py",
+            "periphery/world_calls/ticket_store.py",
+        })
+
+    def test_c2_closure_selects_only_missing_static_deps(self):
+        source = self.root / "src"
+        dest = self.root / "dst"
+        (source / "scripts").mkdir(parents=True)
+        (dest / C2_EXPORT.ASSEMBLY / "scripts").mkdir(parents=True)
+        bridge = source / "scripts/obsidia_family_wiring_apply_bridge_v0.py"
+        bridge.write_text("import obsidia_test_contract\n", encoding="utf-8")
+        (source / "scripts/obsidia_test_contract.py").write_text("PASS = True\n", encoding="utf-8")
+        (dest / C2_EXPORT.ASSEMBLY / "scripts/obsidia_test_contract.py").write_text("PASS = True\n")
+        result = C2_EXPORT.select_bridge_closure(source, dest)
+        self.assertEqual(set(result), {"scripts/obsidia_family_wiring_apply_bridge_v0.py"})
 
 
 if __name__ == "__main__":
