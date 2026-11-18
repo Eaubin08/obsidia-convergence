@@ -1,0 +1,76 @@
+{
+  "schema": "OBSIDIA_G1_G2_CANONICAL_ABI_SNAPSHOT_V1",
+  "source_machine": "DESKTOP-Q5MD7J7",
+  "frozen_k1_head": "ecaf6729f1bcdb05bb8896b7c698d1ae90e56de7",
+  "observed_head": "6fb69ec45e1aec31e382eee58510fe691ed27e7f",
+  "observed_branch": "feat/gencoin-world-bus-dryrun-v1",
+  "observation": "K1_CANONICAL_ABI_READONLY_PASS=True",
+  "six_files_equal_to_frozen_and_observed_head": true,
+  "inspection_method": "AST_ONLY_NO_IMPORT_NO_COPY_NO_EXECUTION",
+  "authority": "KX108_ONLY",
+  "release_authorization": false,
+  "files": [
+    {
+      "path": "sigma/base.py",
+      "sha256": "6f344dcd0e3e253d0c7d1d50fb42aaa0869c47cafbc39e00e3d3d1e093e9b4b8",
+      "entrypoints": {"BaseAgent.evaluate": ["self", "state"]}
+    },
+    {
+      "path": "sigma/registry.py",
+      "sha256": "a9552f6e1049b5efda4b24df59fe57bcd3f15d531821257fb77cbda19340a0a3",
+      "entrypoints": {
+        "get_sigma_domain": ["domain"],
+        "validate_sigma_registry": []
+      }
+    },
+    {
+      "path": "sigma/protocols.py",
+      "sha256": "78d68e77d69b0fae17ac5a9f6942b899a752f3357e163f1ade813dd2d4644b35",
+      "entrypoints": {"run_tooling_build_pipeline": ["state"]}
+    },
+    {
+      "path": "periphery/agents/agent_obsidure.py",
+      "sha256": "fbf8f84de0f21e74f2b5faa55a6e6cef38b2a3fc812e26a6636935da06030d25",
+      "entrypoints": {
+        "AgentObsidure.evaluate_repair_proposal": ["self", "proposal_source", "run_tests"],
+        "AgentObsidure.get_last_repair_runtime_evidence": ["self"],
+        "AgentObsidure.apply_proposal": ["self", "proposal_id", "target_root", "proposals_dir"]
+      }
+    },
+    {
+      "path": "scripts/obsidure_bounded_apply.py",
+      "sha256": "4908e421a031752057a7b92c35ab942dafffb2b726f235be3fadb2bd86fca5cf",
+      "entrypoints": {
+        "load_and_validate_proposal": ["proposal_id", "session_id", "base_sha", "worktree", "approved_scope"],
+        "dryrun_bounded": ["session"],
+        "run_bounded_apply": ["session", "agent", "worktree_root"],
+        "run_obsidure_bounded_apply_pipeline": [
+          "proposal_id", "session_id", "base_sha", "worktree", "approved_scope",
+          "worktree_root", "agent", "dry_run_only", "test_commands",
+          "gate_commands", "injected_operations"
+        ]
+      }
+    },
+    {
+      "path": "scripts/obsidia_family_wiring_apply_bridge_v0.py",
+      "sha256": "c15e7f4c255cd4648e20d4f5677b069dcafd452d29ac2ee4fb5f81e02ca2283c",
+      "entrypoints": {
+        "build_child_execution_from_obsidure_proposal": [
+          "proposal_id", "session_id", "base_sha", "worktree", "approved_scope",
+          "family_candidate", "proposals_dir", "repo_root"
+        ]
+      }
+    }
+  ],
+  "direct_mutation_entrypoints_not_released": [
+    "AgentObsidure.apply_proposal",
+    "run_bounded_apply",
+    "run_obsidure_bounded_apply_pipeline"
+  ],
+  "limitations": [
+    "AST proves naming and argument shape only; not runtime behavior or return types.",
+    "The six files have not been copied to public GitHub by this snapshot.",
+    "Canonical dependency closure and K1/C2 full functional tests remain HOLD.",
+    "No production APPLY or connector egress is authorized."
+  ]
+}

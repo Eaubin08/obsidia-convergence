@@ -399,3 +399,39 @@ test avec un dépôt Git temporaire : avancement du HEAD sans changement des
 modules = acceptation ; divergence de code du module = refus. Ce PASS prouve
 le fonctionnement du garde, pas les signatures des sources canoniques qui
 restent à lire sur le portable.
+
+### ABI canonique : six sources vérifiées sur le portable — 18/11/2026
+
+Le second relevé sur `DESKTOP-Q5MD7J7` a finalement produit :
+
+```
+CURRENT_HEAD=6fb69ec45e1aec31e382eee58510fe691ed27e7f
+SOURCE_BRANCH=feat/gencoin-world-bus-dryrun-v1
+K1_CANONICAL_ABI_READONLY_PASS=True
+ALL_SIX_FILES_MATCH_FROZEN_K1_AND_CURRENT_HEAD=True
+RELEASE_AUTHORIZATION=False
+```
+
+Les **six fichiers** ont la même identité octet par octet dans le FIX K1
+gelé (`ecaf6729...`) et le HEAD courant de la branche Gencoin. Leurs SHA256
+et **12 points d'entrée pertinents** sont gelés dans
+`contracts/K1_CANONICAL_ABI_SNAPSHOT_20261118.json`. La concordance de ce
+snapshot avec les six lignes `ABI=` du relevé Windows a été revérifiée :
+**6/6 empreintes et 12/12 signatures conformes**.
+
+| Rail | Points d'entrée observés | Décision d'intégration |
+|---|---|---|
+| Sigma | `BaseAgent.evaluate(state)`, `run_tooling_build_pipeline(state)` | Contrat identifié, implémentation canonique non chargée |
+| Sigma registry | `get_sigma_domain(domain)`, `validate_sigma_registry()` | Contrat identifié, tests effectifs HOLD |
+| Obsidure | `evaluate_repair_proposal`, `get_last_repair_runtime_evidence` | Capacité à examiner sans APPLY direct |
+| Validateur C2 | `load_and_validate_proposal`, `dryrun_bounded` | Signatures identifiées, effets et retours à vérifier |
+| Bridge C2 | `build_child_execution_from_obsidure_proposal` | Signature identifiée, raccordement fonctionnel HOLD |
+
+Les méthodes `AgentObsidure.apply_proposal`, `run_bounded_apply` et
+`run_obsidure_bounded_apply_pipeline` restent **non activées**. Une signature
+AST n'établit ni les effets, ni les valeurs de retour, ni la compatibilité
+des dépendances. La prochaine opération utile est un contrat de frontière
+*observation/proposition → preuve PRE canonique*, suivi de tests négatifs
+contre l'autorisation par avis Sigma ou par simple argument de l'appelant.
+
+**Aucun module privé supplémentaire n'a été publié et `FULL_FUNCTIONAL_G1_G2_HOLD` reste en vigueur.**
