@@ -23,6 +23,7 @@ if str(_SCRIPTS) not in sys.path:
 
 from scripts.obsidia_create_pre_contract_v0 import prepare_create_target_pre_evidence
 from obsidure_governed_boundary_v1 import admit_obsidure_bridge_pre
+from obsidure_r10_repair_intake_v1 import inspect_obsidure_r10_repair
 from scripts.obsidia_kx108_decision_store import (
     persist_kx108_world_action_pre_execution_decision,
 )
@@ -50,6 +51,7 @@ class ObsidiaGovernanceRuntime:
             "sigma_aggregation": "K1_GUARD_AVAILABLE",
             "sigma_tooling_advisory": "BOUNDED_FOUR_VOTE_INTAKE_NO_TICKET",
             "obsidure_proposal": "C2_BRIDGE_READONLY_PRE_ADMISSION_NO_EXECUTION",
+            "obsidure_r10_repair": "F7_REPAIR_CANDIDATES_READONLY_INSPECTION_NO_EXECUTION",
             "kx108_k1_pre_post": "SOURCE_ASSEMBLED_VALIDATION_PENDING",
             "update": "K1_PREPARE_AVAILABLE_EXECUTION_HOLD",
             "create": "PREFLIGHT_ONLY",
@@ -170,6 +172,25 @@ class ObsidiaGovernanceRuntime:
             bridge_result=bridge_result,
             worktree_root=worktree_root,
             approved_scope=approved_scope,
+        )
+
+    def inspect_obsidure_r10_repair(
+        self, *, repair_request: dict[str, Any], repair_proposal: dict[str, Any],
+        c278_evidence: dict[str, Any], repair_verdict: dict[str, Any],
+        worktree_root: Path, declared_targets: list[str],
+    ) -> dict[str, Any]:
+        """Lit la proposition native F7/R10 et ses preuves declarees.
+
+        Les donnees ne valent ni attestation de sandbox, ni HumanApproval.
+        Aucun adaptateur R9/F7 n'est execute a cette frontiere.
+        """
+        return inspect_obsidure_r10_repair(
+            repair_request=repair_request,
+            repair_proposal=repair_proposal,
+            c278_evidence=c278_evidence,
+            repair_verdict=repair_verdict,
+            worktree_root=worktree_root,
+            declared_targets=declared_targets,
         )
 
     def prepare_existing_update(self, **canonical_inputs: Any) -> dict[str, Any]:

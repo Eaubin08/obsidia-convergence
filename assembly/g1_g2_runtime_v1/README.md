@@ -576,3 +576,51 @@ py -3 -B -m unittest discover -s .\assembly\g1_g2_runtime_v1\tests\integration -
 La fermeture des dépendances F7, les tests Windows, le raccordement de la
 véritable sortie C2, les preuves HumanApproval, PRE/POST KX108 et la protection
 au point d'écriture restent à traiter. **Un seul runtime, `RELEASE HOLD`.**
+
+### Obsidure F7/R10 : ingestion native RepairRequest → RepairVerdict
+
+**Source de contrat revue** : dépôt `Eaubin08/obsidia-x108-proofs`, branche
+`codex/obsidure-f7-r10-isolated`, fichiers :
+
+- `periphery/agents/obsidure_repair_contract.py` : structures sérialisées
+  `RepairRequest`, `RepairProposal`, `RepairCandidateFile`, `RepairVerdict`,
+  frontière `REPAIR_BOUNDARY`, cibles autorisées et protégées ;
+- `scripts/obsidure_repair_r9_adapter_v1.py` : liaison des identifiants
+  request/proposal/C278/verdict, hash des artefacts testés, contrôle de base ;
+- `scripts/obsidure_governed_patch_prepare_adapter_v1.py` : chemin R9 de
+  préparation réutilisé, distinct de toute autorisation ;
+- `OBSIDURE_DIFF_G1G2_20261118_231613.zip` (portable) : écarts locaux F7
+  R10/R12/R12-F6, **pas une source complète à substituer**.
+
+Le nouvel appel **sur la même façade** est
+`ObsidiaGovernanceRuntime.inspect_obsidure_r10_repair(...)`. Ses entrées
+sont les dictionnaires sérialisés par les classes F7 existantes, sans
+chargement d'agent F7, sans script ajouté à la CLI et sans demande à
+Ragnarok.
+
+| Contrat F7 | Contrôle appliqué | Interprétation |
+|---|---|---|
+| RepairRequest/RepairProposal/C278/RepairVerdict | Autorité `KX108_ONLY`, aucun auto-apply ; identifiants cohérents ; C278 `CONTINUOUS` et verdict `PASS` | **Déclarations inspectées**, origine non attestée |
+| RepairCandidateFile | Contenu complet, `change_kind=MODIFY/CREATE`, cible et extension dans le scope F7+K1 | Proposition seulement |
+| `tested_artifacts[]` | Identités exactes, SHA256 complet du contenu UTF-8, absence de doublon | Contrôle de substitution |
+| MODIFY | Cible existante, absence de reparse, SHA256 de base réel, différence effective | Inspection lecture seule |
+| CREATE | Préimage absente, G2 preflight canonique, aucun fichier créé | **Ne convertit pas vers le rail R9 UPDATE** |
+| Handoff / HumanApproval / KX108 / R8 replay | Non appelés ; `r9_prepare_executed=false` | **HOLD exécution** |
+
+Cette frontière ne valide **pas** la provenance réelle du sandbox : un appelant
+peut encore fabriquer `PASS` et `CONTINUOUS`. Elle ne fabrique jamais de
+ticket HMAC, de décision PRE, ni d'approbation humaine. Le contrôle SHA du
+fichier cible est un instantané : il devra être refait sous verrou au point
+d'écriture. Le R9-B1 historique prépare des fichiers mais ne supporte pas
+CREATE sur cible absente ; aucune adaptation implicite n'a été créée.
+
+F7 R12 reste exclu des entrées exécutables : `LeanSandbox` dépend d'une
+racine globale dans une voie, le handoff R12 contient un hash factice et
+la reprise R12 fabrique un booléen de confirmation humaine. Les capacités
+de réparation/replay pourront être reprises **après** tests et attestation
+de provenance, sans substitution de source K1.
+
+Tests : `test_obsidure_r10_repair_intake_stdlib_v1.py` couvre l'acceptation
+lecture seule, CREATE absent, refus des liens, de l'identité incohérente,
+des SHA modifiés, des cibles protégées et d'un résultat synthétique.
+**La validation Windows et la fermeture canonique restent à effectuer.**
