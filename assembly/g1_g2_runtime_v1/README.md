@@ -47,8 +47,8 @@ constituent une permission d'exécution.
 
 ## Tests effectivement réalisés
 
-- **25/25 PASS** : suites `unittest` autonomes (11 contrats du runtime,
-  14 contrôles des collecteurs de dépendances et de la reprise C2).
+- **26/26 PASS** : suites `unittest` autonomes (11 contrats du runtime,
+  15 contrôles des collecteurs de dépendances, de la reprise C2 et des fins de ligne).
 - **40 fichiers Python** analysés sans erreur syntaxique.
 - Import des classes K1 `GovernedBoundedApply` et du pilote
   `prepare_governed_execution` : **PASS**.
@@ -249,3 +249,31 @@ et sans toucher aux modifications concurrentes.
 
 Après `git pull --ff-only`, réutiliser le même outil V4 en mode de contrôle,
 puis en `--push` uniquement après revue de la liste de fichiers.
+
+### Lecture de la régression Windows étendue — 18/11/2026
+
+La commande de diagnostic qui ignorait directement la fixture C2 n'a **pas**
+isolé la totalité de ses consommateurs. Plusieurs suites K1 chargent encore
+`tests/cli/test_governed_content_apply_c2_v0.py` via `runpy.run_path()`.
+
+Rapport de 7 171 lignes : `113 passed, 1 skipped, 37 failed, 75 errors,
+3 subtests passed` (campagne non validante). Les **112 FAIL/ERROR** affichés
+se classent exhaustivement ainsi :
+
+| Cause observée | Nombre | Interprétation |
+| --- | ---: | --- |
+| `ModuleNotFoundError: periphery.agents` | 78 | Validation Obsidure complète requise par C2/K1 |
+| `ModuleNotFoundError: sigma.base` | 33 | Base canonique Sigma absente du paquet assemblé |
+| Différence CRLF/LF dans un test du collecteur | 1 | Test portable corrigé en écrivant les octets explicitement |
+
+Ce comptage ne révèle **aucune assertion d'autorité KX108 évaluée puis
+échouée** parmi ces 112 cas : ils sont bloqués par import ou par un test
+de fins de ligne. Il ne prouve pas non plus l'absence de faille une fois
+la stack canonique chargée.
+
+**Décision :** arrêter l'extension automatique du paquet public de sources
+Obsidure, qui dépasse les seuils bornés. Faire passer et publier les preuves
+du socle effectivement autonome séparément ; conserver explicitement les
+gates K1/C2 et leurs consommateurs transitifs en `HOLD`, sans les considérer
+comme des PASS. Réexaminer ensuite un raccordement contrôlé au runtime
+canonique complet, sans fusion par copie brute.

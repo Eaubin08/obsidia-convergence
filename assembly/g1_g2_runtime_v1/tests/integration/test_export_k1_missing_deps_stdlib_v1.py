@@ -35,8 +35,13 @@ class ExporterGuardTests(unittest.TestCase):
         self.assertFalse(any("obsidia_cli.py" in s for s in EXPORT.REQUIRED))
 
     def test_source_code_can_be_read_without_execution(self):
-        (self.root / "sigma/registry.py").write_text("VALUE = 108\n", encoding="utf-8")
+        # Exact LF bytes on Windows too: Path.write_text may translate to CRLF.
+        (self.root / "sigma/registry.py").write_bytes(b"VALUE = 108\n")
         self.assertEqual(EXPORT.guarded_read(self.root, "sigma/registry.py"), b"VALUE = 108\n")
+
+    def test_source_code_crlf_bytes_are_preserved(self):
+        (self.root / "sigma/registry.py").write_bytes(b"VALUE = 108\r\n")
+        self.assertEqual(EXPORT.guarded_read(self.root, "sigma/registry.py"), b"VALUE = 108\r\n")
 
     def test_blocks_parent_escape(self):
         with self.assertRaises(EXPORT.ExportHold):
