@@ -1,0 +1,162 @@
+{
+  "schema": "OBSIDIA_G1_G2_PORTABLE_K1_RUNTIME_V5_SOURCE_CAPTURE_V1",
+  "source_machine": "DESKTOP-Q5MD7J7",
+  "source_worktree": "C:\\Users\\User\\.codex\\visualizations\\2026\\11\\kx108_zero_vote_guard_fix",
+  "source_branch": "fix/kx108-zero-vote-guard-v1",
+  "source_head": "d48c3a885fca4d09584f77c353fd725d104aa863",
+  "captured_utc": "2026-11-18T14:56:58.380399+00:00",
+  "scope": "G1_G2_ONLY__NO_CLI__NO_API__NO_SERVER_START",
+  "status": "SOURCE_ONLY__FUNCTIONAL_HOLD",
+  "files": [
+    {
+      "path": "periphery/world_calls/k1_dpapi_bootstrap.py",
+      "sha256": "58f6e76dfbf9a8a0d953c9d6df5a85c624a98b9a41042c087759661d65d4497c",
+      "bytes": 3597,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "periphery/world_calls/sovereign_ticket.py",
+      "sha256": "ef3ef0ddc529e68ea93f9caf1a81c53015e324e3c856a3fc454ef9c1c4523c64",
+      "bytes": 30423,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "periphery/world_calls/ticket_store.py",
+      "sha256": "33f75dd0474254963d3865162d54877166010619aec310b0fc87c5c114e29526",
+      "bytes": 11006,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "scripts/obsidia_batch_execution.py",
+      "sha256": "7d6f95ee6cf45626d7d9c8730ea8e22f116ebeb0053f02b2c48724e51d500498",
+      "bytes": 59652,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "scripts/obsidia_batch_selector.py",
+      "sha256": "37b00f2e352bd662ae6141f36a7293c385f8fc33bbf0723fd1a3617c184c5f3e",
+      "bytes": 45343,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "scripts/obsidia_branching_ledger.py",
+      "sha256": "e68518f77c92cefa639e14eada6146dc27fb5a37f4029305de9c191e919dd9f7",
+      "bytes": 48806,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "scripts/obsidia_governed_apply_v0.py",
+      "sha256": "e07f72d073d2fc0c2ce4b6a877b4169593cec29fc27088f8092484ff832f8091",
+      "bytes": 43106,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "scripts/obsidia_governed_execution_driver_v0.py",
+      "sha256": "fb84fe8d84999e369194a3be4d34649a0fd90f723258e4cb53b8cf504d4ad5f1",
+      "bytes": 28131,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "scripts/obsidia_governed_rollback_v0.py",
+      "sha256": "6496f3ae6fa9a6700a09d6e142de28818378aaa745121d769bbe619004a4b62f",
+      "bytes": 41115,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "scripts/obsidia_kx108_decision_store.py",
+      "sha256": "930778ab6c8448e6f01b9a5b24dec90325a2b2712e4b9d2326e1e501e68970cc",
+      "bytes": 42752,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "scripts/obsidia_kx108_pre_execution_evidence_adapter_v0.py",
+      "sha256": "11bf7e1dd7e817c6c81e3cdbd124ff76c172157925a8b7fac06146466e87a342",
+      "bytes": 14476,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "scripts/obsidia_pre_execution_context.py",
+      "sha256": "80bf042cf873a10b9a13d4662ea6e3284c11d14a7afd508e2e3878090ed140cf",
+      "bytes": 17893,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "scripts/obsidia_test_contract.py",
+      "sha256": "d236e439318c27833a5727e4210754e8a3199bda77586a06441d991b822cb169",
+      "bytes": 17488,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "sigma/aggregation.py",
+      "sha256": "3ee17993b04af99440b007eb2951c7830523e522855e93fccb2422526364691a",
+      "bytes": 11822,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "sigma/contracts.py",
+      "sha256": "1bb807593b58563442e03d80ecdd4aa5c21d8087a021fc01ee1adfa85f036026",
+      "bytes": 47805,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "sigma/guard.py",
+      "sha256": "49d212a9d0615ac43e54fcbca849d48d9ec3da30f86c025aaebbad7b46f55562",
+      "bytes": 23595,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "sigma/protocols.py",
+      "sha256": "78d68e77d69b0fae17ac5a9f6942b899a752f3357e163f1ade813dd2d4644b35",
+      "bytes": 3230,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "sigma/tests/test_kx108_zero_vote_guard_v1.py",
+      "sha256": "e5642a530eb23c0d6afdb25c40299ff4c7717b5f06cf5be6037cc0c66d5ae2e7",
+      "bytes": 1731,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "sigma/tooling/governed_bounded_apply.py",
+      "sha256": "1b4c29c49d855e5e49272a64c2bc71ceedbebdd6875057b31f3855b56c11b3c7",
+      "bytes": 65089,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "tests/cli/test_k1_governed_singlewrite_v1.py",
+      "sha256": "35ae3f820b4a222112305feb529c7aa1dd0799eca7e27a3671bf62c5cb5afc93",
+      "bytes": 177188,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "tests/cli/test_k1_pre_action_binding_positive_v1.py",
+      "sha256": "880aa6da0426f2f8cce8b8dc3480335e6d2d6ea815d77fb0b1abc339b009cbd2",
+      "bytes": 5918,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "tests/cli/test_k1_pre_action_binding_red_v1.py",
+      "sha256": "ab3f17b98e7819c8de7c4312d9303a921f56f8d1cc43e0352c65f5dc154348a2",
+      "bytes": 2013,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "tests/cli/test_kx108_post_pre_binding_v0.py",
+      "sha256": "1a590b3782c299d3856c45ebbac63ea1ab704cc620a1a7bea89e24a7854f8072",
+      "bytes": 20725,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "tests/cli/test_kx108_pre_execution_gate_v0.py",
+      "sha256": "60311cd957fb11af75151e3a3fa2d2dfe57115a2172f7c10de2ce5843077a45b",
+      "bytes": 25658,
+      "role": "K1_RUNTIME"
+    },
+    {
+      "path": "tests/test_kx108_k1_ticket_decision_binding.py",
+      "sha256": "5f4aac6cdaa79e0703259846cb7ad2b66889c48478b8be0638f164105e4f7b50",
+      "bytes": 19814,
+      "role": "K1_RUNTIME"
+    }
+  ]
+}
