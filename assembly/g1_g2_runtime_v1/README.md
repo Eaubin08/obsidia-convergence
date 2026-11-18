@@ -47,8 +47,8 @@ constituent une permission d'exécution.
 
 ## Tests effectivement réalisés
 
-- **20/20 PASS** : suites `unittest` autonomes (11 contrats du runtime,
-  9 contrôles des collecteurs de dépendances, dont la clôture statique C2).
+- **23/23 PASS** : suites `unittest` autonomes (11 contrats du runtime,
+  12 contrôles des collecteurs de dépendances et de la reprise C2).
 - **40 fichiers Python** analysés sans erreur syntaxique.
 - Import des classes K1 `GovernedBoundedApply` et du pilote
   `prepare_governed_execution` : **PASS**.
@@ -192,3 +192,43 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\assembly\g1_g2_runtim
 
 Si le collecteur affiche `STOP=`, **ne pas forcer** la publication. Le
 résultat des tests fonctionnels reste `HOLD` jusqu'à un PASS Windows réel.
+
+### Reprise V4 du V3 arrêté avant commit (18/11/2026)
+
+Le V3 a sélectionné `scripts/obsidure_bounded_apply.py`, empreinte SHA256
+`4908e421a031752057a7b92c35ab942dafffb2b726f235be3fadb2bd86fca5cf`,
+mais son `--push` s'est arrêté sur `git diff --cached --check`. **Aucun push V3
+n'a été effectué.** Les deux chemins V3 (source + manifeste) sont restés
+indexés localement. Le test Windows lancé ensuite a chargé cette copie locale
+et signalé l'absence de `periphery.agents.agent_obsidure` : ce n'est toujours
+pas une assertion fonctionnelle KX108.
+
+Le récupérateur `tools/recover_c2_portable_v4.py` est conçu pour **cet état
+indexé précis** du portable `DESKTOP-Q5MD7J7` :
+
+1. Vérifie exactement les deux chemins indexés et leurs SHA256, la branche,
+   l'URL du dépôt, le HEAD distant, et refuse toute modification annexe.
+2. Analyse statiquement les imports Python du validateur Obsidure, y compris
+   `periphery.agents.*`, les imports transitifs et les `__init__.py` utiles.
+3. Sélectionne uniquement les fichiers Python manquants (50 fichiers/3 Mo
+   maximum), sans importer leur code ni modifier le FIX source.
+4. En `--push` uniquement, publie la source V3 déjà indexée avec les nouvelles
+   dépendances et un second manifeste de provenance. La source K1 est conservée
+   **octet par octet** : une anomalie de blancs préexistante ne doit pas être
+   corrigée dans le FIX à l'occasion d'un transfert.
+
+**Ne pas relancer V3 ; ne pas effacer ni désindexer ses fichiers.** Depuis la
+racine `C:\Users\User\obsidia-convergence` :
+
+```powershell
+git pull --ff-only
+py -3 -B .\assembly\g1_g2_runtime_v1\tools\recover_c2_portable_v4.py
+# Relire la liste des nouveaux fichiers avant de publier sur le dépôt PUBLIC.
+py -3 -B .\assembly\g1_g2_runtime_v1\tools\recover_c2_portable_v4.py --push
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\assembly\g1_g2_runtime_v1\tools\verify_windows_g1_g2_v1.ps1"
+```
+
+En cas de `STOP=`, ne pas forcer ; garder l'état local et partager la sortie.
+`G1G2_C2_RECOVERY_GITHUB_PUSH_PASS=True` ne signifie que **publication des
+sources**, pas validation fonctionnelle du runtime. Le vrai verdict G1/G2
+reste `HOLD` jusqu'au passage de ses gates Windows et KX108.

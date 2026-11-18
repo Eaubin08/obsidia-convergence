@@ -13,7 +13,8 @@ $required = @(
     "scripts\obsidia_mission_authority_v0.py",
     "scripts\obsidia_mission_authority_integration_v0.py",
     "scripts\obsidia_family_wiring_apply_bridge_v0.py",
-    "scripts\obsidure_bounded_apply.py"
+    "scripts\obsidure_bounded_apply.py",
+    "periphery\agents\agent_obsidure.py"
 )
 
 foreach ($rel in $required) {
