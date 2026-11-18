@@ -140,5 +140,23 @@ si une condition de sûreté échoue.
 Sous Windows sans droits symlink, deux tests de création de vrais liens
 symboliques peuvent être `SKIP`.
 
+### Complément d'import après le premier PUSH
+
+La vérification de l'import K1 V5 a identifié **9 dépendances directes**
+absentes des 25 fichiers initiaux, dont
+`sigma/tooling/k1_windows_stable_write.py` (nouveau point d'écriture Windows
+à handle stable). Le premier import reste immuable. Pour les récupérer
+dans `imports/pc1-k1-v5-runtime-deps/` :
+
+```powershell
+git pull --ff-only
+py -3 candidate/g1_g2/tools/export_portable_k1_runtime_v5.py --supplement
+py -3 candidate/g1_g2/tools/export_portable_k1_runtime_v5.py --supplement --push
+```
+
+Le supplément exige le même `SOURCE_HEAD` et le même portable que la
+première collecte. Aucun fichier du premier lot n'est écrasé.
+**56 tests PASS** pour le candidat et l'outil en Linux isolé.
+
 **Règle : aucun remplacement de K1, aucun APPLY direct, aucune activation
 de Ragnarok, aucun WORLD_ACTION egress sans preuve souveraine complète.**
