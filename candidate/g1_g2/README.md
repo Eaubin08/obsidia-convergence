@@ -52,7 +52,7 @@ Il refuse :
 
 - `UPDATE_TARGET_FROM_SOURCE` lorsque la cible n'existe pas ;
 - cible déjà présente, parcours `..`, lecteur Windows, UNC, ADS,
-  lien symbolique intermédiaire, parent non-répertoire ;
+  lien symbolique ou jonction NTFS intermédiaire, parent non-répertoire ;
 - SHA256 source absent ou invalide ;
 - politique de protection canonique absente, en échec ou défavorable.
 
@@ -66,10 +66,15 @@ instant **ne remplace pas** l'anti-TOCTOU au point d'écriture.
 python -m pytest -q -p no:cacheprovider candidate/g1_g2/tests
 ```
 
-**44 tests PASS** dans un environnement isolé Linux/Python 3.12 :
+**45 tests PASS** dans un environnement isolé Linux/Python 3.12 :
 tests de refus, non-autorisation, intégrité des champs WORLD_ACTION,
 idempotence, préflight CREATE, protection des chemins et conservation des
 fonctions K1. Aucun test de production Obsidia n'a été exécuté.
+
+Sous Windows sans le privilège de création de liens symboliques,
+le test avec un vrai symlink est marqué `SKIP` (WinError 1314).
+Un test distinct vérifie le refus d'une jonction NTFS simulée :
+**résultat Windows attendu : 44 PASS, 1 SKIP**.
 
 ## GATES à fermer avant fusion/activation
 
