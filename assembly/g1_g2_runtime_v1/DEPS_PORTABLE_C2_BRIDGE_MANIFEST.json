@@ -1,0 +1,17 @@
+{
+  "schema": "OBSIDIA_G1G2_PORTABLE_C2_DEPENDENCY_CLOSURE_V2",
+  "source_machine": "DESKTOP-Q5MD7J7",
+  "source_head": "ecaf6729f1bcdb05bb8896b7c698d1ae90e56de7",
+  "destination_base_sha": "fc8718dda110fcec44dda363fdd457ce9cd6c4fb",
+  "captured_utc": "2026-11-18T19:23:02.365541+00:00",
+  "scope": "C2_BRIDGE_STATIC_DEPENDENCY_CLOSURE_ONLY",
+  "source_worktree_modified": false,
+  "tests_executed": false,
+  "files": [
+    {
+      "path": "scripts/obsidia_family_wiring_apply_bridge_v0.py",
+      "sha256": "c15e7f4c255cd4648e20d4f5677b069dcafd452d29ac2ee4fb5f81e02ca2283c",
+      "bytes": 8620
+    }
+  ]
+}
