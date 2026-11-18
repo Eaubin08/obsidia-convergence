@@ -504,10 +504,31 @@ Depuis `C:\Users\User\obsidia-convergence` sur le **portable** :
 git pull --ff-only
 $rapport = "$env:USERPROFILE\Downloads\OBSIDIA_OBSIDURE_EFFECTS_PORTABLE_20261118.txt"
 py -3 -B .\assembly\g1_g2_runtime_v1\tools\inspect_obsidure_effects_portable_v1.py |
-    Tee-Object -FilePath $rapport -Encoding utf8
+    Out-File -FilePath $rapport -Encoding utf8
+Get-Content $rapport -Tail 10
 ```
 
 Le fichier du rapport (sans corps de code) devra être examiné avant tout
 raccordement Obsidure → PRE. **46 tests autonomes PASS en assemblage** après
 l'ajout de cinq vérifications du relevé AST. Aucun changement de provenance
 du FIX, aucune activation C2, aucun APPLY. **RELEASE HOLD.**
+
+**Retour portable 18/11/2026** : après remplacement de `Tee-Object`
+(`-Encoding` indisponible sur Windows PowerShell 5.1) par `Out-File`, le
+rapport a été obtenu sur `DESKTOP-Q5MD7J7` avec HEAD
+`2289e0ca2d36b20f3bbb64b0c8072e4f9833b423` : trois fichiers conformes
+aux SHA256 gelés, `K1_OBSIDURE_EFFECTS_READONLY_PASS=True`,
+`RUNTIME_BEHAVIOR_PROVEN=False`, `RELEASE_AUTHORIZATION=False`.
+
+| Fonction canonique examinée | Constat AST (non preuve d'absence d'effets) |
+|---|---|
+| `AgentObsidure.evaluate_repair_proposal` | Appelle `test_repair_proposal`, qui nécessite une revue séparée de ses effets indirects ; met à jour des champs d'état de l'agent |
+| `get_last_repair_runtime_evidence` | Forme de retour incluant statut, proposition, décision et `readonly` ; provenance à confirmer |
+| `load_and_validate_proposal` / `dryrun_bounded` | Lecture de proposition ; retourne/actualise une `BoundedApplySession` |
+| `run_bounded_apply` | Appelle `agent.apply_proposal` : **voie d'écriture à ne pas raccorder** |
+| `run_obsidure_bounded_apply_pipeline` | Contient les appels d'APPLY, tests et reçus : **voie non activée** |
+| `build_child_execution_from_obsidure_proposal` | Lit source/cible et modifie temporairement `_OBA.PROPOSALS_DIR` ; CREATE/UPDATE ambigu : **HOLD** |
+
+L'analyse sur le portable ne couvre pas les variantes Obsidure des **autres
+branches, dépôts ou worktrees**. Le choix d'une source canonique globale
+reste ouvert : ne rien remplacer par simple copie d'un fichier tiers.
