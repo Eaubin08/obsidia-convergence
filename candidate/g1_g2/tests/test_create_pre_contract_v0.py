@@ -78,7 +78,21 @@ def test_existing_file_as_parent_is_rejected(tmp_path):
 
 def test_parent_symlink_is_rejected(tmp_path):
     (tmp_path / "real").mkdir()
-    (tmp_path / "src").symlink_to(tmp_path / "real", target_is_directory=True)
+    try:
+        (tmp_path / "src").symlink_to(tmp_path / "real", target_is_directory=True)
+    except OSError as exc:
+        if getattr(exc, "winerror", None) == 1314:
+            pytest.skip("Windows: creation de symlink sans privilege indisponible")
+        raise
+    assert invoke(tmp_path)["reason"] == "TARGET_PATH_SYMLINK_COMPONENT"
+
+
+def test_parent_junction_is_rejected_without_privileged_creation(tmp_path, monkeypatch):
+    """La garde NTFS reste testée même sans privilège de création de symlink."""
+    real_is_junction = type(tmp_path).is_junction
+    def fake_is_junction(path):
+        return path == tmp_path / "src" or real_is_junction(path)
+    monkeypatch.setattr(type(tmp_path), "is_junction", fake_is_junction)
     assert invoke(tmp_path)["reason"] == "TARGET_PATH_SYMLINK_COMPONENT"
 
 
