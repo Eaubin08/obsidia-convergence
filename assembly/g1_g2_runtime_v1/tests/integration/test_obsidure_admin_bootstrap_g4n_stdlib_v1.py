@@ -74,7 +74,8 @@ class FounderAndTeamBootstrapG4N(unittest.TestCase):
         result = self.check(activation=True)
         self.assert_no_authority(result)
         self.assertTrue(result["founder_activation_proposal_signature_verified"])
-        self.assertTrue(result["founder_key_separate_from_pc"])
+        self.assertFalse(result["founder_key_separate_from_pc"])
+        self.assertTrue(result["founder_key_registry_conflict_absent"])
         self.assertEqual(result["reason"],
                          "G4N_FOUNDER_SIGNED_TEAM_SWITCH_PROPOSAL_NOT_TRUSTED_OR_ACTIVE")
 

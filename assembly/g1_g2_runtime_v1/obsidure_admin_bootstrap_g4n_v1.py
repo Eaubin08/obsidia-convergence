@@ -56,6 +56,7 @@ def _hold(reason: str, **fields: Any) -> dict[str, Any]:
         "decision_authority": "KX108_ONLY", "startup_mode": "FOUNDER_ONLY",
         "founder_only_plan_valid": False, "team_plan_prepared": False,
         "founder_key_separate_from_pc": False,
+        "founder_key_registry_conflict_absent": False,
         "founder_activation_proposal_signature_verified": False,
         "founder_independently_enrolled": False,
         "founder_trust_anchor_verified": False,
@@ -82,6 +83,30 @@ def _verify_founder_certificate(cert64: str, pin: str) -> tuple[bytes | None, st
             or hashlib.sha256(raw).hexdigest() != pin):
         return None, "G4N_FOUNDER_CERTIFICATE_PIN_MISMATCH"
     return raw, None
+
+
+def _rsa_public_material_digest(cert_bytes: bytes) -> tuple[str | None, str | None]:
+    """Empreinte du RSA SPKI, stable même en cas de réémission du certificat.
+
+    Comparer les seuls SHA256 du certificat DER ne détecte pas deux
+    certificats différents construits avec la même clé privée RSA.
+    """
+    try:
+        from cryptography import x509
+        from cryptography.hazmat.primitives import serialization
+        from cryptography.hazmat.primitives.asymmetric import rsa
+        cert = x509.load_der_x509_certificate(cert_bytes)
+        key = cert.public_key()
+        if not isinstance(key, rsa.RSAPublicKey) or key.key_size < 3072:
+            return None, "G4O_PUBLIC_KEY_NOT_RSA3072"
+        raw = key.public_bytes(
+            encoding=serialization.Encoding.DER,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo)
+        return hashlib.sha256(raw).hexdigest(), None
+    except ImportError:
+        return None, "G4O_CRYPTOGRAPHY_DEPENDENCY_MISSING"
+    except (ValueError, TypeError, AttributeError):
+        return None, "G4O_PUBLIC_CERTIFICATE_UNPARSABLE"
 
 
 def _verify_founder_signature(cert_bytes: bytes, signature: bytes, payload: bytes) -> str | None:
@@ -159,12 +184,26 @@ def inspect_obsidure_admin_bootstrap(
 
     ids = {FOUNDER_ID}
     pins = set()
+    machine_spkis = set()
     for entry in machine_registry["machine_identities"]:
         if entry["public_certificate_sha256"] is not None:
             pins.add(entry["public_certificate_sha256"])
+            try:
+                machine_bytes = base64.b64decode(entry["public_certificate_der_base64"], validate=True)
+            except (ValueError, binascii.Error):
+                return _hold("G4O_MACHINE_CERTIFICATE_INVALID")
+            machine_spki, err = _rsa_public_material_digest(machine_bytes)
+            if err is not None:
+                return _hold("G4O_MACHINE_CERTIFICATE_NOT_CRYPTO_VERIFIABLE:" + err)
+            machine_spkis.add(machine_spki)
     if founder["public_certificate_sha256"] is not None:
         if founder["public_certificate_sha256"] in pins:
             return _hold("G4N_FOUNDER_KEY_MUST_BE_DISTINCT_FROM_PC")
+        founder_spki, err = _rsa_public_material_digest(founder_bytes)
+        if err is not None:
+            return _hold("G4O_FOUNDER_CERTIFICATE_NOT_CRYPTO_VERIFIABLE:" + err)
+        if founder_spki in machine_spkis:
+            return _hold("G4O_FOUNDER_REISSUED_CERTIFICATE_SAME_PC_KEY_DENIED")
         pins.add(founder["public_certificate_sha256"])
 
     for member in team["administrators"]:
@@ -191,7 +230,10 @@ def inspect_obsidure_admin_bootstrap(
 
     ready = {
         "founder_only_plan_valid": True, "team_plan_prepared": True,
-        "founder_key_separate_from_pc": True,
+        # Le registre public ne couvre pas forcément toutes les clés PC
+        # installées : l'indépendance réelle sera prouvée sur Windows.
+        "founder_key_separate_from_pc": False,
+        "founder_key_registry_conflict_absent": founder_bytes is not None,
         "founder_admin_id": FOUNDER_ID,
         "proposed_team_count": len(team["administrators"]),
     }

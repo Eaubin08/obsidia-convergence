@@ -1416,3 +1416,23 @@ approuver une machine, attester C278 ou créer un ticket KX108.
 
 **Activation réelle non implémentée.** Voir
 `G4N_FOUNDER_TEAM_ADMIN_BOOTSTRAP_V1.md`. `KX108_ONLY`, `RELEASE=HOLD`.
+
+### G4O — Préparation d'une clé fondateur distincte, sans enrôlement automatique
+
+**G4N Windows PASS** transmis par `DESKTOP-Q5MD7J7`, commit
+`bff7d7b931e448c8cf58df82b6c0fd9186c20808` :
+393 tests `unittest` OK (9 ignorés), 54 contrats G1/G2 PASS (2 ignorés),
+mode fondateur seul + équipe préparée et proposition signée synthétique
+vérifiés. Aucune identité réelle du fondateur enrôlée ou approuvée.
+
+G4O durcit la séparation des identités : la différence de SHA256 **des
+certificats** ne suffit pas si les deux certificats partagent **la même
+clé RSA**. Le contrôle compare donc aussi les empreintes SPKI.
+
+Un outil **PowerShell Windows**, en `CHECK_ONLY` par défaut, prépare la
+création éventuelle d'une clé **administrateur du fondateur** indépendante
+de la clé Obsidure du portable. La création persistante exige l'option
+explicite `-Enroll`, jamais exécutée automatiquement ni par les tests.
+L'export prévu contient seulement le certificat public, sans racine de
+confiance déjà approuvée. Voir `G4O_FOUNDER_ADMIN_IDENTITY_PREPARATION_V1.md`.
+`KX108_ONLY`, `RELEASE=HOLD`.
