@@ -84,6 +84,46 @@ def _hold(reason: str) -> dict[str, Any]:
     return _result("HOLD", reason)
 
 
+def _verify_machine_rsa_signature_bytes(
+    *, cert_bytes: bytes, expected_machine_id: str,
+    signature: bytes, message: bytes,
+) -> str | None:
+    """Vérifie le même contrat certificat/RSA pour C278 et le challenge Windows.
+
+    Retourne None uniquement lorsque RSA.verify a réussi ; sinon un motif
+    fail-closed. Ce contrôle n'approuve ni le certificat ni l'émetteur.
+    """
+    try:
+        from cryptography import x509
+        from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
+        from cryptography.hazmat.primitives import hashes
+        from cryptography.hazmat.primitives.asymmetric import padding, rsa
+        from cryptography.x509.oid import NameOID
+    except ImportError:
+        return "C278_MACHINE_RSA_VERIFIER_DEPENDENCY_MISSING"
+    try:
+        cert = x509.load_der_x509_certificate(cert_bytes)
+        names = cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
+        key = cert.public_key()
+        now = datetime.now(timezone.utc)
+        if (len(names) != 1 or names[0].value != "OBSIDIA-OBSIDURE-" + expected_machine_id
+                or not isinstance(key, rsa.RSAPublicKey) or key.key_size < 3072
+                or not cert.not_valid_before_utc <= now <= cert.not_valid_after_utc):
+            return "C278_MACHINE_CERTIFICATE_CONTRACT_INVALID"
+        try:
+            usage = cert.extensions.get_extension_for_class(x509.KeyUsage).value
+        except x509.ExtensionNotFound:
+            return "C278_MACHINE_CERTIFICATE_DIGITAL_SIGNATURE_REQUIRED"
+        if not usage.digital_signature:
+            return "C278_MACHINE_CERTIFICATE_DIGITAL_SIGNATURE_REQUIRED"
+        key.verify(signature, message, padding.PKCS1v15(), hashes.SHA256())
+    except InvalidSignature:
+        return "C278_MACHINE_RSA_SIGNATURE_MISMATCH"
+    except (ValueError, TypeError, AttributeError, UnsupportedAlgorithm):
+        return "C278_MACHINE_CERTIFICATE_OR_SIGNATURE_INVALID"
+    return None
+
+
 def inspect_c278_machine_rsa_receipt(
     *, r10_inspection: dict[str, Any], repair_request: dict[str, Any],
     repair_proposal: dict[str, Any], c278_evidence: dict[str, Any],
@@ -171,34 +211,12 @@ def inspect_c278_machine_rsa_receipt(
     if canonical is None:
         return _hold("C278_MACHINE_RECEIPT_SERIALIZATION_INVALID")
 
-    try:
-        from cryptography import x509
-        from cryptography.exceptions import InvalidSignature
-        from cryptography.hazmat.primitives import hashes
-        from cryptography.hazmat.primitives.asymmetric import padding, rsa
-        from cryptography.x509.oid import NameOID
-    except ImportError:
-        return _hold("C278_MACHINE_RSA_VERIFIER_DEPENDENCY_MISSING")
-    try:
-        cert = x509.load_der_x509_certificate(cert_bytes)
-        names = cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)
-        key = cert.public_key()
-        now = datetime.now(timezone.utc)
-        if (len(names) != 1 or names[0].value != "OBSIDIA-OBSIDURE-" + expected_machine_id
-                or not isinstance(key, rsa.RSAPublicKey) or key.key_size < 3072
-                or not cert.not_valid_before_utc <= now <= cert.not_valid_after_utc):
-            return _hold("C278_MACHINE_CERTIFICATE_CONTRACT_INVALID")
-        try:
-            usage = cert.extensions.get_extension_for_class(x509.KeyUsage).value
-        except x509.ExtensionNotFound:
-            return _hold("C278_MACHINE_CERTIFICATE_DIGITAL_SIGNATURE_REQUIRED")
-        if not usage.digital_signature:
-            return _hold("C278_MACHINE_CERTIFICATE_DIGITAL_SIGNATURE_REQUIRED")
-        key.verify(signature, _DOMAIN + canonical, padding.PKCS1v15(), hashes.SHA256())
-    except InvalidSignature:
-        return _hold("C278_MACHINE_RSA_SIGNATURE_MISMATCH")
-    except (ValueError, TypeError, AttributeError):
-        return _hold("C278_MACHINE_CERTIFICATE_OR_SIGNATURE_INVALID")
+    error = _verify_machine_rsa_signature_bytes(
+        cert_bytes=cert_bytes, expected_machine_id=expected_machine_id,
+        signature=signature, message=_DOMAIN + canonical,
+    )
+    if error is not None:
+        return _hold(error)
 
     return _result(
         "C278_MACHINE_RSA_SIGNATURE_MATCH_ORIGIN_UNATTESTED", None,

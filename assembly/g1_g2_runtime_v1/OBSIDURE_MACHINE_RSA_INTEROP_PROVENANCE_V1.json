@@ -1,0 +1,33 @@
+{
+  "schema": "OBSIDIA_OBSIDURE_MACHINE_RSA_INTEROP_PROVENANCE_V1",
+  "source_branch": "build/g1-g2-obsidure-per-machine-rsa-verify-v1",
+  "source_commit": "339ccbee12610d98a882f5dfc29183ae4ac6bea7",
+  "portable_machine": "DESKTOP-Q5MD7J7",
+  "fixed_machine": "DESKTOP-SDOG0EL",
+  "portable_windows_previous_gate": {
+    "tests_run": 146,
+    "tests_skipped": 6,
+    "cryptography_available": true,
+    "reported_result": "PASS"
+  },
+  "new_gate": {
+    "windows_private_key_operation": "EXISTING_CERTIFICATE_RSA_SIGNDATA_IN_MEMORY",
+    "python_verification": "RSA_PKCS1V15_SHA256_SAME_PUBLIC_VERIFIER_AS_C278",
+    "public_certificate_pin": "EXPLICIT_PARAMETER_AND_LOCAL_ENROLLMENT_PROPOSAL",
+    "cryptographic_domain": "OBSIDIA_OBSIDURE_MACHINE_INTEROP_V1_NULL",
+    "challenge_nonce": "NEW_GUID_128_BITS",
+    "private_key_export": false,
+    "files_written": false,
+    "certificates_created": false,
+    "historical_c278_signature_produced": false,
+    "historical_runner_attested": false,
+    "machine_enrollment_approved": false,
+    "responsible_person_authenticated": false,
+    "kx108_action_ticket_issued": false,
+    "execution_authorized": false,
+    "release_authorized": false
+  },
+  "local_dev_tests": "155_PASS_SYNTHETIC",
+  "new_windows_gate": "PENDING",
+  "release": "HOLD"
+}

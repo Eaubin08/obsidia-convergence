@@ -992,8 +992,43 @@ anti-rejeu, HumanApproval, ticket KX108, APPLY et release.
 Le code ne signe rien et ne consomme aucune clé privée : les 17 nouveaux
 tests utilisent uniquement une clé éphémère synthétique en mémoire.
 
-**Tests Linux de développement : 146 tests OK** ; **Windows de ce nouveau
-jalon non encore vérifié**. La série précédente Windows avait 129 tests OK
+**Tests Linux de développement : 146 tests OK**. **Windows portable : 146 tests
+OK, dont 6 ignorés** (résultat communiqué le 19/11/2026), dépendance
+`cryptography` disponible. La série antérieure avait 129 tests OK
 (6 ignorés) et le challenge Windows réel signé/refusé correctement.
 `RELEASE HOLD` reste maintenu jusqu'à preuve de runner contemporain,
 enrôlement contrôlé, politique de révocation et registre anti-rejeu.
+
+### Challenge interopérable Windows/.NET → Python (après 146 tests Windows)
+
+**But de ce jalon** : démontrer que le certificat public utilisé par le rail
+C278 Python correspond bien à la clé privée RSA-3072 **déjà présente** dans
+`Cert:\CurrentUser\My` sur le portable. Ce n'est toujours pas une preuve
+historique du runner C278, ni une validation de l'enrôlement.
+
+Deux outils coopèrent sans toucher aux sources ou aux worktrees du FIX :
+
+1. `tools/verify_obsidure_machine_rsa_interop_windows_v1.ps1` (portable
+   uniquement) relit le magasin de certificats existant, exige un
+   `-ExpectedPublicSha256` explicite, confronte le certificat au JSON public
+   créé lors de l'enrôlement et signe **en mémoire** un défi aléatoire. Il ne
+   crée aucun certificat et ne produit aucun fichier.
+2. `tools/verify_obsidure_machine_challenge_v1.py` reçoit uniquement des
+   octets publics par STDIN. Il utilise le **même validateur de certificat et
+   de signature RSA** que `inspect_obsidure_c278_machine_rsa_receipt`, avec
+   un domaine cryptographique distinct pour que le challenge ne devienne
+   jamais un faux reçu C278.
+
+Une concordance exige certificat SHA256 épinglé, machine attendue, CN exact,
+RSA >= 3072 bits, `KeyUsage=digitalSignature`, validité temporelle,
+signature PKCS#1 v1.5 / SHA256 et refus d'un défi altéré. Elle rapporte
+`MACHINE_RSA_INTEROP_VERIFIED_NOT_C278_PROVENANCE`, avec
+`machine_signature_verified=True` mais **aucune admission KX108**.
+
+Ne jamais présenter un `PASS` de ce challenge comme un reçu C278 signé par
+le runner historique. Le certificat auto-signé peut être un indice de
+continuité de machine, pas une preuve hardware, pas une approbation humaine.
+
+**Développement : 155 tests synthétiques OK (Linux)** ; validation réelle
+Windows/.NET → Python de ce jalon **en attente**. Le fixe
+`DESKTOP-SDOG0EL` reste non enrôlé. `RELEASE HOLD` et `KX108_ONLY` inchangés.
