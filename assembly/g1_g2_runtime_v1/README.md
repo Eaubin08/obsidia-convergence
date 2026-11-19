@@ -1237,3 +1237,24 @@ universelle des écritures. Voir
 
 **Développement : 254 tests `unittest` PASS en environnement isolé Linux.**
 La vérification Windows G4E reste à effectuer. `KX108_ONLY` et `RELEASE=HOLD`.
+
+### G4F — Fenêtre d'interruption C2, observation en lecture seule
+
+**G4E Windows PASS** transmis par `DESKTOP-Q5MD7J7` au commit
+`30e9bb20abb82b35546d1cc4c00d19978d34c319` : 254 tests `unittest` OK
+(6 ignorés), 54 contrats G1/G2 PASS (2 ignorés).
+
+G4F ajoute à **la même façade** `inspect_kx108_c2_crash_window()` : relecture
+du PRE signé HMAC K1 et de la préimage structurellement scellée C2, contrôle
+de leurs liaisons, confinement et inspection du SHA256 de la cible actuelle.
+Les états `PREIMAGE_OBSERVED`, `SOURCE_IMAGE_OBSERVED` et `UNKNOWN_CONTENT`
+restent tous en `HOLD` ; aucune restauration automatique, aucune autorisation
+et aucune attestation de crash ou de producteur n'en découlent. Une cible
+inconnue ou en état source appelle une revue de quarantaine.
+
+**13 tests de simulation** nouveaux couvrent corruption, faux scellé,
+traversal, symlink (skip attendu sans privilège Windows), état source ou
+inconnu et lecture sans écriture. Voir
+`G4F_C2_CRASH_WINDOW_READONLY_V1.md`. Le WAL durable, l'identité du runner,
+la coordination interprocessus de reprise et une restauration après crash
+**restent à construire et à prouver**. `RELEASE=HOLD`.

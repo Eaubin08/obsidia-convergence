@@ -37,6 +37,7 @@ from obsidure_r12_r8_outcome_v1 import inspect_obsidure_r12_r8_outcome
 from kx108_pre_post_closure_readonly_v1 import inspect_pre_post_write_closure
 from kx108_c2_receipts_readonly_v1 import inspect_c2_actual_receipts
 from kx108_c2_signed_post_readonly_v1 import inspect_c2_signed_post_receipts
+from kx108_c2_crash_window_readonly_v1 import inspect_c2_crash_window
 from scripts.obsidia_kx108_decision_store import (
     persist_kx108_world_action_pre_execution_decision,
 )
@@ -75,6 +76,7 @@ class ObsidiaGovernanceRuntime:
             "kx108_k1_pre_post": "G4_PRE_HMAC_POST_STRUCTURAL_BINDING_INSPECTOR_READONLY",
             "global_write_closure": "G4B_C2_CANONICAL_RECEIPTS_RELOAD_AND_STRUCTURAL_LINK_RELEASE_HOLD",
             "kx108_c2_signed_post": "G4D_POST_K1_HMAC_WITH_C2_STRUCTURE_READONLY_RELEASE_HOLD",
+            "kx108_c2_crash_window": "G4F_PREIMAGE_HMAC_LINKED_LIVE_OBSERVATION_READONLY_NO_RESTORE",
             "update": "K1_PREPARE_AVAILABLE_EXECUTION_HOLD",
             "create": "PREFLIGHT_ONLY",
             "world_action": "EVIDENCE_ONLY",
@@ -478,6 +480,10 @@ class ObsidiaGovernanceRuntime:
     def inspect_kx108_c2_signed_post_receipts(self, **canonical_inputs: Any) -> dict[str, Any]:
         """G4D : joint POST HMAC K1 et reçus C2, sans attester une écriture."""
         return inspect_c2_signed_post_receipts(**canonical_inputs)
+
+    def inspect_kx108_c2_crash_window(self, **canonical_inputs: Any) -> dict[str, Any]:
+        """G4F : observe une préimage C2 et la cible, sans reprise automatique."""
+        return inspect_c2_crash_window(**canonical_inputs)
 
     def record_world_action_evidence(
         self,
