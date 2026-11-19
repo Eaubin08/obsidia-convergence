@@ -1258,3 +1258,22 @@ inconnu et lecture sans écriture. Voir
 `G4F_C2_CRASH_WINDOW_READONLY_V1.md`. Le WAL durable, l'identité du runner,
 la coordination interprocessus de reprise et une restauration après crash
 **restent à construire et à prouver**. `RELEASE=HOLD`.
+
+### G4G — Contrat autonome de WAL C2 (non raccordé au writer)
+
+**G4F Windows PASS** confirmé sur le portable `DESKTOP-Q5MD7J7` :
+267 tests `unittest` OK (7 ignorés) et 54 contrats G1/G2 PASS (2 ignorés),
+commit `3b5de9c8f927c16726360d35c02e9010e8bb4477`.
+
+G4G ajoute `c2_write_intent_wal_v1.py` : un contrat d'intention C2
+déterministe, publication exclusive append-only (`fsync` des octets avant
+publication, `os.link`, absence d'écrasement), un reçu de résultat également
+immuable et un inspecteur `HOLD` dans le **même runtime**. Les traces restent
+non souveraines et non authentifiées par un producteur de confiance.
+
+Les tests isolés incluent un arrêt abrupt du sous-processus juste après
+publication : l'intention demeure lisible et **non résolue** au redémarrage.
+Ce protocole n'est **pas encore branché avant le vrai C2 APPLY** et ne fait
+aucune reprise automatique ; Windows ne garantit pas par ce test la durabilité
+après coupure de courant. Voir `G4G_C2_WRITE_INTENT_WAL_CONTRACT_V1.md`.
+`KX108_ONLY`, `RELEASE=HOLD`.
