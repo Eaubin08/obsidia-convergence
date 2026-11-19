@@ -836,3 +836,48 @@ avec enregistrement de l'identité runner, du commit, du digest de sandbox,
 du transcript et de la liaison C278/R9, puis une vérification indépendante.
 Ce contrat n'existe pas encore dans les sources inspectées. **`RELEASE HOLD`**
 et `KX108_ONLY` restent inchangés.
+
+### C278 : contrat de reçu HMAC détaché (vérification seule, provenance HOLD)
+
+Après le **PASS Windows portable `DESKTOP-Q5MD7J7`** sur la branche
+`build/g1-g2-c278-r9-r12-sandbox-observation-v1` (commit `85cd5cf` :
+**107 tests OK, 6 ignorés**), le chantier suivant formalise la frontière
+cryptographique **sans fabriquer de preuve historique**.
+
+L'entrée `ObsidiaGovernanceRuntime.inspect_obsidure_c278_signed_receipt(...)`
+réutilise obligatoirement le contrôle C278 + sandbox réel en lecture seule,
+puis vérifie une enveloppe détachée `{payload, hmac_sha256}` avec un secret
+**Obsidure distinct de la clé HMAC souveraine KX108/K1**. Le code présent
+est **uniquement vérificateur** : aucun runner historique, producteur signé,
+magasin de clés ni serveur n'a été activé.
+
+| Contrat vérifié | Limite conservée |
+|---|---|
+| `issuer_id`, `key_id`, schéma et liste exacte des champs | La configuration de l'émetteur est fournie par l'appelant ; aucun certificat de runner |
+| HMAC-SHA256 avec séparation de domaine | Authentifie seulement la possession du secret fourni ; jamais la source de ce secret |
+| IDs Request / Proposal / Verdict et SHA256 de leurs objets canoniques | Refuse un remplacement de lignée ou de C278, pas une fausse exécution originelle |
+| SHA256 des candidats vérifiés contre les fichiers de sandbox présents | La sandbox pourrait avoir été réécrite après les tests historiques |
+| `source_git_head`, digest code runner, digest transcript | Champs couverts par le MAC mais **non recoupés** avec un Git HEAD vivant ou un témoin de test indépendant |
+| Nonce de 256 bits dans le reçu | **Pas d'antirejeu garanti** sans registre monotone persistant |
+| Champ `execution_authorized`, champ supplémentaire ou clé souveraine déguisée | Refus `HOLD` |
+
+Une correspondance retourne **`C278_RECEIPT_HMAC_MATCH_ORIGIN_UNATTESTED`**,
+avec `receipt_hmac_verified=True` et **tous les attributs d'attestation,
+approbation humaine, release et exécution à `False`**. Un reçu n'est donc
+jamais un ticket KX108. Une clé de test synthétique est utilisée **uniquement
+dans les fixtures** ; aucune clé réelle n'est écrite dans le dépôt.
+
+Gates de suite avant tout statut `ATTESTED` :
+
+1. Choisir et auditer un **runner Obsidure réel** capable de signer au moment
+   de l'exécution, avec identité et stockage de clé autonomes (pas la clé K1).
+2. Relier le digest transcript aux tests effectivement lancés, le HEAD Git
+   vivant et le code du runner via un témoin indépendant.
+3. Implémenter un registre anti-rejeu robuste, contrôler la durée de vie et
+   la révocation des clés et vérifier le comportement Windows.
+4. Repasser la chaîne entière R10 → C278 → R9 → R12 puis les gates KX108
+   PRE/POST et HumanApproval, sans raccourci d'autorité.
+
+**`RELEASE HOLD` / `FULL_FUNCTIONAL_G1_G2_HOLD` maintenus**. Ce jalon
+construit le vérificateur et les tests négatifs, **pas** le signer ni une
+autorisation d'action. Voir `C278_SIGNED_RECEIPT_PROVENANCE_V1.json`.

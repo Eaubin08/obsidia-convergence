@@ -1,0 +1,30 @@
+{
+  "schema": "OBSIDIA_C278_SIGNED_RECEIPT_VERIFIER_PROVENANCE_V1",
+  "target_repository": "Eaubin08/obsidia-convergence",
+  "source_commit": "85cd5cff38cf219314aaecd8c62eb2e47f3d415a",
+  "source_branch": "build/g1-g2-c278-r9-r12-sandbox-observation-v1",
+  "windows_validation": {
+    "machine": "DESKTOP-Q5MD7J7",
+    "tests_run": 107,
+    "tests_skipped": 6,
+    "status": "OK"
+  },
+  "historical_obsidure_producer": {
+    "source_repository": "Eaubin08/obsidia-x108-proofs",
+    "source_ref": "codex/obsidure-f7-r10-isolated",
+    "source_path": "periphery/agents/obsidure_repair_bridge.py",
+    "source_git_blob_sha1": "7b39edac8e1a1edc92a7b96e89d3c6f869cfcc04",
+    "method": "test_repair_proposal",
+    "signed_test_receipt_available": false
+  },
+  "implementation_scope": "STDLIB_HMAC_RECEIPT_VERIFIER_ONLY_SYNTHETIC_TESTS",
+  "kx108_kernel_hmac_key_reused": false,
+  "external_runner_invoked": false,
+  "trusted_issuer_provisioned": false,
+  "anti_replay_ledger_available": false,
+  "historical_sandbox_origin_attested": false,
+  "human_approval_verified": false,
+  "execution_authorized": false,
+  "release_authorized": false,
+  "source_worktrees_modified": false
+}

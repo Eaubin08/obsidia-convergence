@@ -29,6 +29,7 @@ from obsidure_c278_sandbox_observation_v1 import (
     inspect_obsidure_c278_sandbox_observation,
     reconstruct_r9_patch_without_execution,
 )
+from obsidure_c278_signed_receipt_v1 import inspect_c278_detached_hmac_receipt
 from obsidure_r9_prepare_provenance_v1 import inspect_obsidure_r9_prepare_provenance
 from obsidure_r12_r8_outcome_v1 import inspect_obsidure_r12_r8_outcome
 from scripts.obsidia_kx108_decision_store import (
@@ -60,6 +61,7 @@ class ObsidiaGovernanceRuntime:
             "obsidure_proposal": "C2_BRIDGE_READONLY_PRE_ADMISSION_NO_EXECUTION",
             "obsidure_r10_repair": "F7_REPAIR_CANDIDATES_READONLY_INSPECTION_NO_EXECUTION",
             "obsidure_c278_sandbox": "CANONICAL_C278_REPLAY_AND_SANDBOX_BYTES_UNATTESTED",
+            "obsidure_c278_signed_receipt": "DETACHED_HMAC_VERIFICATION_ONLY_ORIGIN_UNATTESTED",
             "obsidure_r9_prepare": "CANONICAL_V2_DESCRIPTOR_AND_PATCH_REPLAY_UNATTESTED",
             "obsidure_r9_r12_link": "R9_TO_R8_HISTORICAL_READONLY_HOLD",
             "obsidure_r12_r8_outcome": "CANONICAL_HISTORICAL_REPLAY_READONLY_NO_RETRY",
@@ -242,6 +244,26 @@ class ObsidiaGovernanceRuntime:
             r10_inspection=r10_inspection, repair_request=repair_request,
             repair_proposal=repair_proposal, c278_evidence=c278_evidence,
             repair_verdict=repair_verdict, repo_root=repo_root,
+        )
+
+    def inspect_obsidure_c278_signed_receipt(
+        self, *, r10_inspection: dict[str, Any], repair_request: dict[str, Any],
+        repair_proposal: dict[str, Any], c278_evidence: dict[str, Any],
+        repair_verdict: dict[str, Any], repo_root: Path,
+        receipt: dict[str, Any], trusted_issuer_id: str,
+        trusted_key_id: str, verifier_key: bytes | None,
+    ) -> dict[str, Any]:
+        """Vérifie un MAC Obsidure sans accorder d'autorité ni attester le runner.
+
+        La clé doit être indépendante du secret souverain KX108 K1.
+        Aucun producteur ou magasin de confiance n'est provisionné ici.
+        """
+        return inspect_c278_detached_hmac_receipt(
+            r10_inspection=r10_inspection, repair_request=repair_request,
+            repair_proposal=repair_proposal, c278_evidence=c278_evidence,
+            repair_verdict=repair_verdict, repo_root=repo_root,
+            receipt=receipt, trusted_issuer_id=trusted_issuer_id,
+            trusted_key_id=trusted_key_id, verifier_key=verifier_key,
         )
 
     def inspect_obsidure_c278_r9_r12_outcome(
