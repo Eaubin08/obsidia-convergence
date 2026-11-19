@@ -1395,3 +1395,24 @@ responsable ou une référence de revue ne prouve pas son approbation.
 **Développement : 16 nouveaux tests G4M ciblés PASS ;** régression complète
 et validation Windows encore nécessaires. Voir
 `G4M_OBSIDURE_MACHINE_ROLE_PROPOSAL_V1.md`. `KX108_ONLY`, `RELEASE=HOLD`.
+
+### G4N — Fondateur seul + équipe préparée, bascule signée à venir
+
+**G4M Windows PASS** transmis par le portable `DESKTOP-Q5MD7J7`,
+commit `1d7a9d353956fc11d3947a4f80ed133b4d51eda2` :
+371 tests `unittest` OK (9 ignorés), 54 contrats G1/G2 PASS
+(2 ignorés) et épinglage du certificat machine du portable vérifié.
+
+Décision d'architecture du 19 novembre 2026 : **mode 1 (fondateur seul)
+au démarrage**, mais construire simultanément les contrats du **mode 2
+(équipe)**, dont la bascule nécessitera une **décision du fondateur
+signée puis vérifiée contre une racine de confiance indépendante**.
+
+G4N ajoute un **plan public non approuvé** `FOUNDER_ONLY` + `PREPARED` et
+un vérificateur de **propositions** de bascule RSA domain-separated. Les
+tests n'utilisent que des clés éphémères synthétiques. Une signature
+concordante ne suffit pas à authentifier le fondateur, activer l'équipe,
+approuver une machine, attester C278 ou créer un ticket KX108.
+
+**Activation réelle non implémentée.** Voir
+`G4N_FOUNDER_TEAM_ADMIN_BOOTSTRAP_V1.md`. `KX108_ONLY`, `RELEASE=HOLD`.

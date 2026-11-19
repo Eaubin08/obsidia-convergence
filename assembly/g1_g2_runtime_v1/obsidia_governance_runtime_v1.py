@@ -43,6 +43,7 @@ from c2_wal_outcome_observer_v1 import inspect_c2_wal_outcome_state
 from c2_wal_machine_rsa_receipt_v1 import inspect_wal_machine_rsa_receipt
 from c2_wal_runner_observation_g4k_v1 import inspect_c2_wal_synthetic_runner_observation
 from obsidure_machine_role_proposal_g4m_v1 import inspect_obsidure_machine_role_proposal
+from obsidure_admin_bootstrap_g4n_v1 import inspect_obsidure_admin_bootstrap
 from scripts.obsidia_kx108_decision_store import (
     persist_kx108_world_action_pre_execution_decision,
 )
@@ -86,6 +87,7 @@ class ObsidiaGovernanceRuntime:
             "c2_wal_machine_receipt": "G4J_PER_MACHINE_RSA_PINNED_VERIFICATION_ONLY_NO_TRUST_ROOT",
             "c2_runner_observation": "G4K_SYNTHETIC_SUBPROCESS_TRACE_HASH_BINDING_READONLY_NO_PRODUCER_TRUST",
             "machine_role_boundary": "G4M_PER_MACHINE_ROLE_PROPOSAL_PINNED_NOT_ENROLLED_OR_AUTHORIZED",
+            "obsidure_admin_bootstrap": "G4N_FOUNDER_ONLY_TEAM_PREPARED_FOUNDER_SIGNED_PROPOSAL_NOT_ACTIVE",
             "update": "K1_PREPARE_AVAILABLE_EXECUTION_HOLD",
             "create": "PREFLIGHT_ONLY",
             "world_action": "EVIDENCE_ONLY",
@@ -515,6 +517,10 @@ class ObsidiaGovernanceRuntime:
     def inspect_obsidure_machine_role_proposal(self, **canonical_inputs: Any) -> dict[str, Any]:
         """G4M : compare registre/rôle et signature, sans approuver l'enrôlement."""
         return inspect_obsidure_machine_role_proposal(**canonical_inputs)
+
+    def inspect_obsidure_admin_bootstrap(self, **canonical_inputs: Any) -> dict[str, Any]:
+        """G4N : V1 fondateur et V2 équipe préparée, aucune activation automatique."""
+        return inspect_obsidure_admin_bootstrap(**canonical_inputs)
 
     def record_world_action_evidence(
         self,

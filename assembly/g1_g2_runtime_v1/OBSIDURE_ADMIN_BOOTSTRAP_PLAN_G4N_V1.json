@@ -1,0 +1,16 @@
+{
+  "schema": "OBSIDIA_G4N_FOUNDER_TEAM_ADMIN_PLAN_V1",
+  "decision_authority": "KX108_ONLY",
+  "admin_scope": "OBSIDURE_MACHINE_ENROLLMENT_REVIEW_ONLY",
+  "startup_mode": "FOUNDER_ONLY",
+  "founder": {
+    "admin_id": "FOUNDER-ETIENNE",
+    "enrollment_state": "PLANNED",
+    "public_certificate_der_base64": null,
+    "public_certificate_sha256": null
+  },
+  "team": {
+    "state": "PREPARED",
+    "administrators": []
+  }
+}
