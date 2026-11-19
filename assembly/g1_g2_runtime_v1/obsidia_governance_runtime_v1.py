@@ -42,6 +42,7 @@ from c2_write_intent_wal_v1 import inspect_intent as inspect_c2_write_intent_wal
 from c2_wal_outcome_observer_v1 import inspect_c2_wal_outcome_state
 from c2_wal_machine_rsa_receipt_v1 import inspect_wal_machine_rsa_receipt
 from c2_wal_runner_observation_g4k_v1 import inspect_c2_wal_synthetic_runner_observation
+from obsidure_machine_role_proposal_g4m_v1 import inspect_obsidure_machine_role_proposal
 from scripts.obsidia_kx108_decision_store import (
     persist_kx108_world_action_pre_execution_decision,
 )
@@ -84,6 +85,7 @@ class ObsidiaGovernanceRuntime:
             "c2_write_intent_wal": "G4H_OPTIN_PREWRITE_G4I_READONLY_OUTCOME_INSPECTION_NO_RESTORE",
             "c2_wal_machine_receipt": "G4J_PER_MACHINE_RSA_PINNED_VERIFICATION_ONLY_NO_TRUST_ROOT",
             "c2_runner_observation": "G4K_SYNTHETIC_SUBPROCESS_TRACE_HASH_BINDING_READONLY_NO_PRODUCER_TRUST",
+            "machine_role_boundary": "G4M_PER_MACHINE_ROLE_PROPOSAL_PINNED_NOT_ENROLLED_OR_AUTHORIZED",
             "update": "K1_PREPARE_AVAILABLE_EXECUTION_HOLD",
             "create": "PREFLIGHT_ONLY",
             "world_action": "EVIDENCE_ONLY",
@@ -509,6 +511,10 @@ class ObsidiaGovernanceRuntime:
     def inspect_c2_wal_synthetic_runner_observation(self, **canonical_inputs: Any) -> dict[str, Any]:
         """G4K : rapproche trace synthétique et RSA G4J, sans exécuter."""
         return inspect_c2_wal_synthetic_runner_observation(**canonical_inputs)
+
+    def inspect_obsidure_machine_role_proposal(self, **canonical_inputs: Any) -> dict[str, Any]:
+        """G4M : compare registre/rôle et signature, sans approuver l'enrôlement."""
+        return inspect_obsidure_machine_role_proposal(**canonical_inputs)
 
     def record_world_action_evidence(
         self,

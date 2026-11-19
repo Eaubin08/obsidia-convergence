@@ -1376,3 +1376,22 @@ autoriser ainsi une nouvelle réservation. Aucune prétention de protection
 distribuée, de survie à une coupure d'alimentation, d'identité du vrai
 producteur C278 ou de reprise gouvernée. Voir
 `G4L_C2_LOCAL_NONCE_LEDGER_V1.md`. `KX108_ONLY`, `RELEASE=HOLD`.
+
+### G4M — Rôle Obsidure par machine, en attente d'enrôlement
+
+**G4L Windows PASS** transmis par le portable `DESKTOP-Q5MD7J7`,
+commit `62a70cc138d3482d4bfd8c090c7108a1f5619165` :
+355 tests `unittest` OK (9 ignorés), 54 contrats G1/G2 PASS
+(2 ignorés), réservation RSA d'un nonce synthétique et refus du rejeu
+dans un second processus Python Windows.
+
+G4M relie le **registre de machines déjà existant** à la vérification
+cryptographique G4K dans un point d'entrée en lecture seule. Le portable
+reste `ENROLLED_AWAITING_REVIEW`, le fixe `PLANNED` : aucune clé du fixe
+n'est créée ou supposée. Révocation, faux rôle KX108, certificat croisé,
+doublon de machine et signature incohérente sont refusés. Un nom de
+responsable ou une référence de revue ne prouve pas son approbation.
+
+**Développement : 16 nouveaux tests G4M ciblés PASS ;** régression complète
+et validation Windows encore nécessaires. Voir
+`G4M_OBSIDURE_MACHINE_ROLE_PROPOSAL_V1.md`. `KX108_ONLY`, `RELEASE=HOLD`.
