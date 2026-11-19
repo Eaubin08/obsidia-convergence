@@ -1296,3 +1296,22 @@ dans un répertoire temporaire.
 La vérification Windows G4H reste à effectuer. Pas d'outcome fermé, pas
 d'attestation de reprise après crash, pas d'activation de l'APPLY réel.
 Voir `G4H_C2_PREWRITE_WAL_OPTIN_V1.md`. `KX108_ONLY`, `RELEASE=HOLD`.
+
+### G4I — Résultat WAL déclaré et inspection à froid
+
+**G4H Windows PASS** transmis par le portable `DESKTOP-Q5MD7J7` au commit
+`a20a6e2fc3304c35c6f790b50e2abc95527400bb` : 286 tests `unittest`
+OK (8 ignorés) et 54 contrats G1/G2 PASS (2 ignorés).
+
+G4I ajoute l'observateur `c2_wal_outcome_observer_v1.py`, une méthode
+**lecture seule** dans le runtime unifié et un **reporter expérimental
+extérieur à cette façade** pour publier une seule issue WAL append-only.
+Un claim KEEP exige l'observation du contenu POST, un claim ROLLBACK
+l'observation PRE ; sinon refus ou déclaration de quarantaine.
+Même une correspondance exacte reste `HOLD` : elle ne prouve ni le producteur,
+ni l'histoire de l'exécution, ni le rollback, ni l'autorité KX108.
+
+Les tests ne touchent que des fichiers synthétiques temporaires et incluent
+un passage WAL G4H → rollback simulé → résultat G4I. Voir
+`G4I_C2_WAL_OUTCOME_OBSERVATION_V1.md`.
+**Windows G4I à valider ; APPLY réel et RELEASE en HOLD.**

@@ -39,6 +39,7 @@ from kx108_c2_receipts_readonly_v1 import inspect_c2_actual_receipts
 from kx108_c2_signed_post_readonly_v1 import inspect_c2_signed_post_receipts
 from kx108_c2_crash_window_readonly_v1 import inspect_c2_crash_window
 from c2_write_intent_wal_v1 import inspect_intent as inspect_c2_write_intent_wal
+from c2_wal_outcome_observer_v1 import inspect_c2_wal_outcome_state
 from scripts.obsidia_kx108_decision_store import (
     persist_kx108_world_action_pre_execution_decision,
 )
@@ -78,7 +79,7 @@ class ObsidiaGovernanceRuntime:
             "global_write_closure": "G4B_C2_CANONICAL_RECEIPTS_RELOAD_AND_STRUCTURAL_LINK_RELEASE_HOLD",
             "kx108_c2_signed_post": "G4D_POST_K1_HMAC_WITH_C2_STRUCTURE_READONLY_RELEASE_HOLD",
             "kx108_c2_crash_window": "G4F_PREIMAGE_HMAC_LINKED_LIVE_OBSERVATION_READONLY_NO_RESTORE",
-            "c2_write_intent_wal": "G4G_APPEND_ONLY_INTENT_PROTOCOL_ISOLATED_NOT_WIRED_NO_RESTORE",
+            "c2_write_intent_wal": "G4H_OPTIN_PREWRITE_G4I_READONLY_OUTCOME_INSPECTION_NO_RESTORE",
             "update": "K1_PREPARE_AVAILABLE_EXECUTION_HOLD",
             "create": "PREFLIGHT_ONLY",
             "world_action": "EVIDENCE_ONLY",
@@ -490,6 +491,12 @@ class ObsidiaGovernanceRuntime:
     def inspect_c2_write_intent_wal(self, *, wal_dir: Path, intent_id: str) -> dict[str, Any]:
         """G4G : inspecte un intent isolé, sans jamais autoriser une reprise."""
         return inspect_c2_write_intent_wal(wal_dir=wal_dir, intent_id=intent_id)
+
+    def inspect_c2_wal_outcome_state(self, *, wal_dir: Path, intent_id: str,
+                                     repo_root: Path) -> dict[str, Any]:
+        """G4I : observe les octets C2 + le claim WAL, sans exécuter."""
+        return inspect_c2_wal_outcome_state(
+            wal_dir=wal_dir, intent_id=intent_id, repo_root=repo_root)
 
     def record_world_action_evidence(
         self,

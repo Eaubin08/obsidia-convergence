@@ -235,6 +235,33 @@ def _read(path: Path) -> dict | None:
     return value if isinstance(value, dict) else None
 
 
+def load_verified_intent(wal_dir: Path, intent_id: str) -> dict | None:
+    """Recharge un intent structurel sans donner foi à son producteur."""
+    try:
+        if not _store_path_safe(wal_dir):
+            return None
+        record = _read(_path(wal_dir, intent_id, "intent"))
+        valid, _ = verify_intent(record)
+        return record if valid and record["intent_id"] == intent_id else None
+    except (OSError, TypeError, ValueError):
+        return None
+
+
+def load_verified_outcome(wal_dir: Path, intent: dict) -> dict | None:
+    """Recharge un résultat déclaratif, toujours NON attesté."""
+    try:
+        if not _store_path_safe(wal_dir):
+            return None
+        valid, _ = verify_intent(intent)
+        if not valid:
+            return None
+        record = _read(_path(wal_dir, intent["intent_id"], "outcome"))
+        verified, _ = verify_outcome(record, intent)
+        return record if verified else None
+    except (OSError, TypeError, ValueError):
+        return None
+
+
 def inspect_intent(wal_dir: Path, intent_id: str) -> dict:
     """Inspection passive : aucun retour ne permet de reprendre ou libérer."""
     base = {
