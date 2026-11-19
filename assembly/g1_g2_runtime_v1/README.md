@@ -1337,3 +1337,23 @@ autorité à Obsidure et n'ouvre pas le rail APPLY.
 **Développement : 318 tests `unittest` PASS en environnement isolé Linux.**
 Windows G4J reste à valider. Voir `G4J_C2_WAL_PER_MACHINE_RSA_V1.md`.
 `KX108_ONLY`, `RELEASE=HOLD`.
+
+### G4K — Observation de sous-processus synthétique, liée au WAL RSA
+
+**G4J Windows PASS** transmis par `DESKTOP-Q5MD7J7` au commit
+`b478fbcf1235d6020f870742ba3f5260f778f1df` : 318 tests `unittest`
+OK (9 ignorés), 54 contrats G1/G2 PASS (2 ignorés) et signature RSA
+Windows ↔ Python d'un WAL synthétique vérifiée.
+
+G4K réutilise ce contrat RSA et ajoute une trace canonique d'un **vrai
+sous-processus de test**, dont le code et les arguments sont fixes et les
+fichiers exclusivement temporaires. La signature G4J lie les empreintes du
+script et de cette trace aux octets WAL. La façade unifiée ne fait que
+**relire et comparer** ; elle n'exécute rien. Même cette liaison signée ne
+prouve pas la provenance historique d'un producteur C278 ni un runner
+supervisé par une racine de confiance.
+
+**Développement : 339 tests `unittest` PASS en environnement isolé Linux.**
+Régression Windows et contrats G1/G2 Windows encore nécessaires. Voir
+`G4K_C2_SYNTHETIC_RUNNER_TRACE_V1.md`.
+`KX108_ONLY`, `RELEASE=HOLD`.
