@@ -399,6 +399,7 @@ def run_governed_content_apply(
     rollback_result_dir: Optional[Path] = None,
     repo_root: Optional[Path] = None,
     derived_authority_context=None,
+    c2_write_intent_dir: Optional[Path] = None,
 ) -> dict:
     """Chemin de PRODUCTION gouverné unique — cf. bannière ci-dessus.
 
@@ -546,6 +547,51 @@ def run_governed_content_apply(
     sre_id = sre_rec["sealed_rollback_evidence_id"]
     sre_hash = sre_rec["sealed_rollback_evidence_hash"]
 
+    # G4H — protocole WAL candidat, ACTIVÉ uniquement avec un magasin
+    # explicitement fourni dans un test isolé. Le chemin historique n'est
+    # pas modifié avant la preuve de l'issue/du crash-recovery complet.
+    # Le journal est un témoin NON authentifié, jamais une autorisation.
+    _g4h_intent = None
+    _g4h_wal = None
+    if c2_write_intent_dir is not None:
+        if not isinstance(c2_write_intent_dir, Path):
+            return _rej("G4H_WAL_DIR_NOT_EXPLICIT_PATH")
+        try:
+            import c2_write_intent_wal_v1 as _g4h_wal
+            _g4h_intent = _g4h_wal.build_intent(
+                batch_execution_id=batch_execution_id,
+                child_execution_id=child_execution_id,
+                execution_authority_hash=current_eah,
+                approval_id=approval_id,
+                pre_decision_record_id=kx108_pre_decision_record_id,
+                pre_decision_record_hash=pre_hash,
+                sealed_rollback_evidence_id=sre_id,
+                sealed_rollback_evidence_hash=sre_hash,
+                target_path=child.get("target_path"),
+                target_pre_sha256=child_target_pre,
+                target_post_sha256=child_source_sha,
+            )
+        except Exception as exc:
+            return _rej(f"G4H_WAL_INTENT_BUILD_EXCEPTION:{type(exc).__name__}")
+        if not isinstance(_g4h_intent, dict):
+            return _rej("G4H_WAL_INTENT_BUILD_FAILED")
+
+    def _g4h_publish_intent_before_write() -> tuple[bool, str | None]:
+        if _g4h_intent is None:
+            return True, None
+        try:
+            stored = _g4h_wal.store_intent(_g4h_intent, c2_write_intent_dir)
+            # Un INTENT identique existe déjà : possible opération orpheline.
+            # Refuser le replay, même si le payload est identique.
+            if not isinstance(stored, dict) or stored.get("status") != _g4h_wal.STORED:
+                return False, f"STORE_NOT_NEW:{stored.get('status') if isinstance(stored, dict) else 'INVALID'}"
+            inspected = _g4h_wal.inspect_intent(c2_write_intent_dir, _g4h_intent["intent_id"])
+            if not isinstance(inspected, dict) or inspected.get("reason") != "UNRESOLVED_INTENT":
+                return False, "INTENT_RELOAD_NOT_VERIFIED"
+        except Exception as exc:
+            return False, f"PUBLISH_EXCEPTION:{type(exc).__name__}"
+        return True, None
+
     # ── 6. MUTATION — double-check pré-état + reparse juste avant, remesure ──
     if derived_authority_context is not None:
         # STAGE 4F REPAIR — section critique LINÉARISÉE : la re-vérif canonique
@@ -574,6 +620,9 @@ def run_governed_content_apply(
                     return _rej(f"TARGET_REPARSE_UNSAFE_PRE_REPLACE:{r_rp2}")
                 if _sha256_file(target_literal) != child_target_pre:
                     return _rej("TARGET_DRIFT_BEFORE_REPLACE")
+                ok_wal, why_wal = _g4h_publish_intent_before_write()
+                if not ok_wal:
+                    return _rej(f"G4H_WAL_PREWRITE_HOLD:{why_wal}")
                 try:
                     wres = _C.atomic_replace_with_bytes(target_abs, src_bytes, child_target_pre)
                 except Exception as exc:  # noqa: BLE001 — toute défaillance -> remesure
@@ -588,6 +637,10 @@ def run_governed_content_apply(
             return _rej(f"TARGET_REPARSE_UNSAFE_PRE_REPLACE:{r_rp2}")
         if _sha256_file(target_literal) != child_target_pre:
             return _rej("TARGET_DRIFT_BEFORE_REPLACE")
+
+        ok_wal, why_wal = _g4h_publish_intent_before_write()
+        if not ok_wal:
+            return _rej(f"G4H_WAL_PREWRITE_HOLD:{why_wal}")
 
         write_exc = None
         try:

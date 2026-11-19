@@ -1,7 +1,8 @@
 """G4G — journal d'intention C2 append-only, NON souverain.
 
-Protocole autonome de développement. Il ne s'interpose PAS encore dans le
-writer C2 canonique : aucune activation d'APPLY ni reprise automatique.
+Protocole autonome de développement. G4H permet son raccordement facultatif
+au writer C2, seulement quand un magasin est fourni explicitement ; la
+façade du runtime n'active aucun APPLY et ne réalise aucune reprise automatique.
 La durabilité testée couvre un arrêt de PROCESSUS après fsync/publication,
 pas une perte d'alimentation ou de disque, surtout sous Windows.
 """

@@ -109,7 +109,7 @@ class G4EPostMutationExceptions(unittest.TestCase):
         return {"status": "ROLLBACK_SUCCEEDED", "quarantine_required": False,
                 "kx108_invocations_during_rollback": 0}
 
-    def _invoke(self, *, sealed_module=SEV):
+    def _invoke(self, *, sealed_module=SEV, **apply_kwargs):
         with ExitStack() as stack:
             stack.enter_context(patch.object(APPLY, "_c2_mod", return_value=(
                 sealed_module, self.tc, self.adp, self.disp, self.rb, self.wg,
@@ -136,6 +136,7 @@ class G4EPostMutationExceptions(unittest.TestCase):
                 rollback_result_dir=self.root / "rollback",
                 test_contract_results_dir=self.root / "tests",
                 post_decision_store_dir=self.root / "post",
+                **apply_kwargs,
             )
 
     def _assert_safe_rollback(self, result):

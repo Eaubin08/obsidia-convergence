@@ -1277,3 +1277,22 @@ Ce protocole n'est **pas encore branché avant le vrai C2 APPLY** et ne fait
 aucune reprise automatique ; Windows ne garantit pas par ce test la durabilité
 après coupure de courant. Voir `G4G_C2_WRITE_INTENT_WAL_CONTRACT_V1.md`.
 `KX108_ONLY`, `RELEASE=HOLD`.
+
+### G4H — Intention WAL avant mutation C2, opt-in de développement
+
+**G4G Windows PASS** communiqué par le portable `DESKTOP-Q5MD7J7` au commit
+`7a5ca40291e25d3c96397d206c70a4a39d8e9472` : 280 tests `unittest`
+OK (8 ignorés) et 54 contrats G1/G2 PASS (2 ignorés).
+
+G4H raccorde **facultativement** le magasin d'intention de G4G au writer C2 :
+si `c2_write_intent_dir` est passé explicitement, une intention doit être
+écrite de manière exclusive et rechargée après le PRE KX108 et le scellement
+SRE, puis avant la mutation. Replay, stockage indisponible et relecture
+invalide bloquent l'écriture. Sans opt-in, le comportement historique reste
+inchangé. Six tests utilisent exclusivement un faux writer et un rollback
+dans un répertoire temporaire.
+
+**Développement : 286 tests `unittest` PASS en environnement isolé Linux.**
+La vérification Windows G4H reste à effectuer. Pas d'outcome fermé, pas
+d'attestation de reprise après crash, pas d'activation de l'APPLY réel.
+Voir `G4H_C2_PREWRITE_WAL_OPTIN_V1.md`. `KX108_ONLY`, `RELEASE=HOLD`.
