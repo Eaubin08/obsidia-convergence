@@ -1146,3 +1146,21 @@ py -3 -B .\assembly\g1_g2_runtime_v1\obsidia_governance_cli_v1.py execute --oper
 La dernière commande renvoie volontairement `HOLD` et un code de retour 2.
 **Développement : 189 tests unittest PASS sous Linux**. Aucune activation
 réelle, aucun rollback ou test production, `FULL_FUNCTIONAL_G1_G2_HOLD`.
+
+### G4 — Liaison des records PRE/POST et frontière C2 (lecture seule)
+
+La sortie fournie par le portable `DESKTOP-Q5MD7J7` confirme également
+**G3 Windows : 189 tests exécutés, 6 ignorés, OK** au commit `efca7cb`.
+
+G4 ajoute `inspect_kx108_pre_post_write_closure()` à **la même façade runtime**.
+Ce contrôle relit les records canoniques, exige la vérification **HMAC K1 du
+PRE**, compare les liaisons PRE→POST et les champs scellés C2, puis retourne
+**toujours HOLD**. Le POST conserve sa protection par hash structurel mais
+**ne possède pas d'authentification HMAC** dans cette variante source. Les
+reçus C2 n'ont pas encore été relus ni attestés : aucune preuve de fermeture
+globale des écritures ne peut être annoncée.
+
+Voir `G4_KX108_PRE_POST_C2_BOUNDARY_V1.md` pour les invariants et limites.
+Les **17 tests G4** sont synthétiques et n'invoquent pas la production.
+**Développement : 206 tests unittest PASS sous Linux** ; validation Windows
+du lot G4 encore à faire. `GLOBAL_WRITE_CLOSURE=HOLD`, `RELEASE=HOLD`.

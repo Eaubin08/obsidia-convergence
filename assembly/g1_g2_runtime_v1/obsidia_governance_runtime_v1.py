@@ -34,6 +34,7 @@ from obsidure_c278_machine_rsa_receipt_v1 import inspect_c278_machine_rsa_receip
 from obsidure_machine_identity_registry_v1 import inspect_machine_identity_registry
 from obsidure_r9_prepare_provenance_v1 import inspect_obsidure_r9_prepare_provenance
 from obsidure_r12_r8_outcome_v1 import inspect_obsidure_r12_r8_outcome
+from kx108_pre_post_closure_readonly_v1 import inspect_pre_post_write_closure
 from scripts.obsidia_kx108_decision_store import (
     persist_kx108_world_action_pre_execution_decision,
 )
@@ -69,7 +70,8 @@ class ObsidiaGovernanceRuntime:
             "obsidure_r9_prepare": "CANONICAL_V2_DESCRIPTOR_AND_PATCH_REPLAY_UNATTESTED",
             "obsidure_r9_r12_link": "R9_TO_R8_HISTORICAL_READONLY_HOLD",
             "obsidure_r12_r8_outcome": "CANONICAL_HISTORICAL_REPLAY_READONLY_NO_RETRY",
-            "kx108_k1_pre_post": "SOURCE_ASSEMBLED_VALIDATION_PENDING",
+            "kx108_k1_pre_post": "G4_PRE_HMAC_POST_STRUCTURAL_BINDING_INSPECTOR_READONLY",
+            "global_write_closure": "C2_SEALED_LINKS_DECLARED_PROOF_AND_RELEASE_HOLD",
             "update": "K1_PREPARE_AVAILABLE_EXECUTION_HOLD",
             "create": "PREFLIGHT_ONLY",
             "world_action": "EVIDENCE_ONLY",
@@ -449,6 +451,22 @@ class ObsidiaGovernanceRuntime:
         if result.get("target_mutated") is not False:
             return self._hold("K1_PREPARE_MUTATION_UNVERIFIED")
         return {**result, "execution_authorized": False}
+
+    def inspect_kx108_pre_post_write_closure(
+        self, *, pre_record_id: str, post_record_id: str,
+        pre_store_dir: Path, post_store_dir: Path,
+        expected_anchors: dict[str, str],
+    ) -> dict[str, Any]:
+        """G4 : relit les records PRE/POST, sans produire ni exécuter de décision.
+
+        Un POST structurel ne prouve pas l'identité de son producteur ;
+        les liens C2 ne prouvent pas les octets des reçus. Toujours HOLD.
+        """
+        return inspect_pre_post_write_closure(
+            pre_record_id=pre_record_id, post_record_id=post_record_id,
+            pre_store_dir=pre_store_dir, post_store_dir=post_store_dir,
+            expected_anchors=expected_anchors,
+        )
 
     def record_world_action_evidence(
         self,
