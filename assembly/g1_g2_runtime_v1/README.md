@@ -1198,3 +1198,18 @@ temporaires, des mocks et une clé synthétique. Voir
 `G4C_K1_HMAC_CONSUMER_CLOSURE_V1.md`.
 
 **Release, Global Write Closure et APPLY réel : HOLD.**
+
+### G4D — Chaîne POST HMAC → reçus C2, toujours en lecture seule
+
+Windows G4C **PASS sur le portable** `DESKTOP-Q5MD7J7` : 232 tests
+`unittest` OK, 6 ignorés ; 54 tests G1/G2 OK, 2 ignorés. La fermeture
+HMAC K1 des consommateurs PRE/POST est ainsi validée localement sur Windows,
+sans activation de production.
+
+G4D ajoute une méthode au **même runtime**, sans créer un autre moteur :
+`inspect_kx108_c2_signed_post_receipts()`. Elle exige un POST K1 signé par
+le producteur canonique, relie ce POST aux vérifications G4B des reçus C2,
+et recontrôle le POST en fin d'inspection. Elle reste sur `HOLD`, même si
+le chaînage cryptographique et structurel est cohérent. Le détenteur de clé
+et le processus producteur des reçus C2 ne sont **pas** attestés par les
+hashes actuels. Voir `G4D_SIGNED_POST_C2_READONLY_V1.md`.
