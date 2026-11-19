@@ -1032,3 +1032,38 @@ continuité de machine, pas une preuve hardware, pas une approbation humaine.
 **Développement : 155 tests synthétiques OK (Linux)** ; validation réelle
 Windows/.NET → Python de ce jalon **en attente**. Le fixe
 `DESKTOP-SDOG0EL` reste non enrôlé. `RELEASE HOLD` et `KX108_ONLY` inchangés.
+
+### C278 : provenance du producteur réel, audit ciblé (étape suivant l'interopérabilité)
+
+**Résultat Windows communiqué le 19/11/2026 :**
+`OBSIDURE_WINDOWS_PYTHON_RSA_INTEROP_PASS=True`, refus du challenge altéré
+`PASS`, `PRIVATE_KEY_EXPORTED=False`, puis **155 tests OK (6 ignorés)** sur
+`DESKTOP-Q5MD7J7`, commit `a95beb8310bdd8b6d1110f199b9bee2a3e60570c`.
+
+Le producteur historique identifié dans `Eaubin08/obsidia-x108-proofs`,
+`periphery/agents/obsidure_repair_bridge.py`, commit
+`48f0c2fbcfe097c213b2783bc7b4d0fba78e6621`, expose
+`test_repair_proposal` et `_run_declared_tests` : le code source du dépôt
+GitHub écrit des candidats dans une sandbox, exécute pytest avec un
+`PYTHONPATH` préfixé et classe l'isolation `FULL` lorsqu'une arborescence
+de package existe. **Cette heuristique n'atteste ni les modules réellement
+importés ni la provenance du processus.** Le fichier GitHub peut différer
+du FIX courant sur le portable.
+
+`tools/inspect_c278_producer_portable_readonly_v1.py` apporte donc un
+diagnostic **borné au seul PC portable** : empreintes SHA256 réelles des
+trois fichiers producteurs et contrats, HEAD/branche Git de la source
+locale, présence des fonctions et indicateurs AST d'exécution, de sandbox
+et de signature directe. **Il n'importe ni n'exécute aucun fichier du FIX,
+ne lance aucun test et ne modifie aucun dépôt.** Le résultat
+`C278_STATIC_SOURCE_PROFILE_ONLY` ne vaut jamais `TEST_PROCESS_ATTESTED`.
+
+**But précis** : éviter de fabriquer une signature postérieure sur un
+ancien verdict `PASS` tout en prétendant qu'elle prouve les tests. Le
+prochain raccord producteur devra être examiné contre le SHA réel du FIX,
+avec attestation des modules importés, du transcript, du runner et du test
+au moment où ils sont observés. Aucun `APPLY` ni release n'est ouvert.
+
+**Développement : 161 tests synthétiques OK (Linux)** ; collecte ciblée
+Windows **en attente**. Le script n'exporte pas de source privée, seulement
+des empreintes et faits statiques. `RELEASE HOLD` / `KX108_ONLY` inchangés.

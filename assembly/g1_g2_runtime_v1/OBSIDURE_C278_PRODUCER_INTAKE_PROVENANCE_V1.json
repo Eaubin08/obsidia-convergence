@@ -1,0 +1,36 @@
+{
+  "schema": "OBSIDIA_C278_PRODUCER_SOURCE_INTAKE_V1",
+  "source_branch": "build/g1-g2-obsidure-windows-python-rsa-interop-v1",
+  "source_commit": "a95beb8310bdd8b6d1110f199b9bee2a3e60570c",
+  "portable_machine": "DESKTOP-Q5MD7J7",
+  "fixed_machine": "DESKTOP-SDOG0EL",
+  "portable_reported_interop": {
+    "windows_python_rsa": "PASS",
+    "tamper_denial": "PASS",
+    "regression_tests": 155,
+    "tests_skipped": 6,
+    "private_key_exported": false
+  },
+  "historical_github_source_inspected": {
+    "repo": "Eaubin08/obsidia-x108-proofs",
+    "commit": "48f0c2fbcfe097c213b2783bc7b4d0fba78e6621",
+    "path": "periphery/agents/obsidure_repair_bridge.py",
+    "functions": ["test_repair_proposal", "_run_declared_tests"],
+    "isolation_full_origin_proof": false,
+    "historical_signed_receipt": false,
+    "canonical_to_portable_source_equality_verified": false
+  },
+  "new_inspector": {
+    "path": "tools/inspect_c278_producer_portable_readonly_v1.py",
+    "mode": "AST_ONLY_NO_IMPORT_NO_EXECUTION_NO_COPY_NO_WRITE",
+    "emits_source_hashes": true,
+    "requires_portable_machine": true,
+    "mutates_fix": false,
+    "performs_tests": false,
+    "attests_runner_process": false,
+    "authorizes_execution": false
+  },
+  "local_dev_tests": "161_PASS",
+  "portable_static_intake": "PENDING",
+  "release": "HOLD"
+}
