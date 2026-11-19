@@ -72,7 +72,7 @@ try {
     $env:PYTHONPATH = "$runtime;$runtime\scripts"
     Write-Host '[1/4] Tests complets du runtime unifie (environnement de test local)'
     $stage = 'RUNTIME_TESTS'
-    & py -3 -B -c 'import cryptography; print("CRYPTOGRAPHY_AVAILABLE=True")' | Out-Null
+    & py -3 -B -c 'import cryptography' | Out-Null
     if ($LASTEXITCODE -ne 0) { throw 'CRYPTOGRAPHY_DEPENDENCY_REQUIRED' }
     # Windows PowerShell 5.1 traite parfois la sortie stderr de Python comme
     # une erreur PowerShell, même lorsque le processus termine avec code 0.
