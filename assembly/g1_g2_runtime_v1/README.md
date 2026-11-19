@@ -665,12 +665,22 @@ Gates et refus :
 | Incertitude post-dispatch | `DISPATCHED_OUTCOME_UNCERTAIN`, `ESCALATE` |
 | Preuves canoniques exhaustives et cohérentes | Avis historique seulement, **jamais autorisation** |
 
-Tests isolés Linux : 80 tests `unittest` OK (68 tests antérieurs + 12
+Tests isolés Linux : 81 tests `unittest` OK (68 tests antérieurs + 13
 nouveaux). Les nouveaux tests exercent les **vrais** modules canoniques
 avec des reçus de test jetables ; un reçu incomplet au hash valide est
 classé contradictoire, jamais accepté par confort. Les mocks sont
 employés seulement pour éprouver la politique de refus des preuves limitées,
 pas pour prétendre vérifier un replay R8 positif de production.
+
+Un test supplémentaire réutilise le générateur du test canonique
+`tests/test_r8_b3_evidence_only_replay.py` (source F7, copie fixture
+`tests/r8_b3_fixture_upstream.py`) dans un répertoire temporaire. Avec
+les références descriptives, approbation, décision KX108 et preuve post-état
+cohérentes, les trois **vrais** vérificateurs retournent respectivement :
+`VERIFIED_WITH_LIMITS`, `MATCH`, `MATCH`. La façade R12 conserve
+`EVIDENCE_INCOMPLETE` / `ESCALATE`, notamment parce que Binder n'est
+pas persisté séparément et que la version de politique n'est pas liée.
+Ces preuves sont **synthétiques pour test**, pas un reçu de production.
 
 **Non validé** : succès réel R8 sur preuve attestée de production,
 gates Windows R12, provenance sandbox C278, préparation R9 complète,

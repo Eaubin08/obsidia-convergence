@@ -35,6 +35,13 @@
       "path": "scripts/obsidia_kx108_policy_identity_v1.py",
       "source_git_blob_sha1": "a969ce300df386714c21863f792d546ac3958b1c",
       "target_sha256": "459448aa7060a48b2cea83b82bb1c9418206694c6633669627d0e83535dc0528"
+    },
+    {
+      "path": "tests/test_r8_b3_evidence_only_replay.py",
+      "target_path": "tests/r8_b3_fixture_upstream.py",
+      "source_git_blob_sha1": "cfb22e5b1a8f7858798c1de73ca50d7989dc1a16",
+      "target_sha256": "0efc1c99ffcdd8ec5548e4d875989731befe90f299ff2f1f4abcd952c445cad0",
+      "transfer_note": "Normalized one trailing CRLF to LF; fixture imported only by selected unittest regression"
     }
   ]
 }

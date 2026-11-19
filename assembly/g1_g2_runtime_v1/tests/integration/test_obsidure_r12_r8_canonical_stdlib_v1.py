@@ -9,13 +9,14 @@ from pathlib import Path
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
-for folder in (ROOT, ROOT / "scripts"):
+for folder in (ROOT, ROOT / "scripts", ROOT / "tests"):
     if str(folder) not in sys.path:
         sys.path.insert(0, str(folder))
 
 from obsidia_governance_runtime_v1 import ObsidiaGovernanceRuntime
 import obsidia_canonical_receipt_envelope_v1 as cre
 import obsidure_r12_r8_outcome_v1 as gateway
+import r8_b3_fixture_upstream as canonical_fixture
 
 REPAIR = {
     "repair_request_id": "r10-request-01",
@@ -175,6 +176,37 @@ class ObsidureR12R8ReadOnly(unittest.TestCase):
         self.assertEqual(r["derived_outcome_classification"], "EVIDENCE_INCOMPLETE")
         self.assertEqual(r["recommendation"], "ESCALATE")
         self.assert_non_authorizing(r)
+
+    def test_real_r8_complete_fixture_with_binder_limits_stays_on_hold(self):
+        """Cas complet issu de R8-B3 : MATCH/MATCH n'efface pas les limites.
+
+        Le générateur canonique crée seulement des preuves synthétiques en
+        répertoires temporaires. Il ne simule pas d'action physique réelle.
+        """
+        envelope, stores = canonical_fixture._store_envelope(self.root)
+        receipt = stores["receipts"] / (envelope["action_evidence_id"] + ".json")
+        data = json.loads(receipt.read_text(encoding="utf-8"))
+        data["request_ref"]["builder_lineage"] = dict(BUILDER)
+        data["prepare"]["builder_lineage"] = dict(BUILDER)
+        post = {"checked": True, "element_identity_hash": "element-meta"}
+        data["realized_state"].update({
+            "post_state_ref": post,
+            "post_state_hash": cre.compute_ref_hash(post),
+        })
+        data["envelope_hash"] = cre.compute_envelope_hash(data)
+        receipt.write_text(json.dumps(data), encoding="utf-8")
+        self.r9["prepared_action"]["v2_exec_id"] = envelope["session_ref"]["v2_exec_id"]
+
+        before = receipt.read_bytes()
+        outcome = self.invoke(envelope["action_evidence_id"])
+        self.assertEqual(receipt.read_bytes(), before)
+        self.assertEqual(outcome["r8_integrity_verdict"], "VERIFIED_WITH_LIMITS")
+        self.assertEqual(outcome["r8_decision_verdict"], "MATCH")
+        self.assertEqual(outcome["r8_reconciliation_status"], "MATCH")
+        self.assertIn("BINDER_INLINE_STATUS_ONLY_NOT_SEPARATELY_PERSISTED", outcome["evidence_limits"])
+        self.assertEqual(outcome["derived_outcome_classification"], "EVIDENCE_INCOMPLETE")
+        self.assertEqual(outcome["recommendation"], "ESCALATE")
+        self.assert_non_authorizing(outcome)
 
     def test_receipt_swapped_during_replay_is_not_accepted(self):
         envelope, path = self.receipt(outcome="SUCCESS", authorization={"kx108_verdict": "ALLOW"})
