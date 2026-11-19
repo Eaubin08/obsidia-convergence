@@ -1,0 +1,27 @@
+{
+  "schema": "OBSIDIA_OBSIDURE_MACHINE_IDENTITY_REGISTRY_V1",
+  "decision_authority": "KX108_ONLY",
+  "trust_model": "PER_MACHINE_INDEPENDENT_ASYMMETRIC",
+  "machine_identities": [
+    {
+      "machine_id": "DESKTOP-Q5MD7J7",
+      "enrollment_state": "PLANNED",
+      "public_certificate_der_base64": null,
+      "public_certificate_sha256": null,
+      "responsible_refs": [],
+      "proposed_roles": ["OBSIDURE_TEST_EVIDENCE_PRODUCER"],
+      "enrollment_review_ref": null,
+      "revocation_ref": null
+    },
+    {
+      "machine_id": "DESKTOP-SDOG0EL",
+      "enrollment_state": "PLANNED",
+      "public_certificate_der_base64": null,
+      "public_certificate_sha256": null,
+      "responsible_refs": [],
+      "proposed_roles": ["OBSIDURE_TEST_EVIDENCE_PRODUCER"],
+      "enrollment_review_ref": null,
+      "revocation_ref": null
+    }
+  ]
+}

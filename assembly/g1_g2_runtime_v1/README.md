@@ -881,3 +881,66 @@ Gates de suite avant tout statut `ATTESTED` :
 **`RELEASE HOLD` / `FULL_FUNCTIONAL_G1_G2_HOLD` maintenus**. Ce jalon
 construit le vérificateur et les tests négatifs, **pas** le signer ni une
 autorisation d'action. Voir `C278_SIGNED_RECEIPT_PROVENANCE_V1.json`.
+
+### Identité Obsidure **par machine**, préparée pour la gouvernance d'équipe
+
+**Décision d'architecture de l'utilisateur (19/11/2026)** : une identité
+cryptographique **distincte pour chaque PC**, et la possibilité de relier
+plus tard plusieurs responsables à une machine. Pas de secret HMAC partagé
+entre les postes comme source de confiance inter-PC. Un témoin central n'est
+pas retenu pour ce premier jalon.
+
+| Machine | Origine réelle | Enrôlement | Rôle proposé |
+|---|---|---|---|
+| `DESKTOP-Q5MD7J7` | **Portable**, `C:\Users\User` | `PLANNED` | Producteur de preuve Obsidure |
+| `DESKTOP-SDOG0EL` | **Fixe**, `C:\Users\Aubin` | `PLANNED` | Producteur de preuve Obsidure |
+| Futurs membres de l'équipe | Nouvelle machine, nouvel identifiant et clé distincte | Revue nécessaire | Rôle attribué séparément |
+
+**Deux objets différents, deux contrôles différents :**
+
+1. **Identité technique du poste** : certificat public épinglé, clé privée
+   locale non exportable et preuve signée. Le nom `DESKTOP-...` reste une
+   identité **déclarée**, pas une attestation matérielle.
+2. **Responsabilité humaine** : références de personnes et rôles revus
+   séparément ; la présence d'un responsable dans le registre n'est **pas**
+   une HumanApproval pour une opération.
+
+Le plan versionné `OBSIDURE_MACHINE_IDENTITY_PLAN_V1.json` énumère uniquement
+les deux PC connus. Il ne contient **ni clé privée, ni certificat déjà
+enrôlé, ni personne inventée**. Le validateur
+`inspect_obsidure_machine_identity_registry(...)` rejette les doublons de
+machines et de clés publiques, les rôles souverains, les statuts inconnus,
+les preuves de révocation manquantes et les changements de SHA. Il retourne
+toujours `MACHINE_REGISTRY_STRUCTURE_VALID_NOT_TRUSTED` même si la structure
+est conforme : un dépôt Git public **n'est pas** une racine de confiance.
+
+`tools/enroll_obsidure_machine_identity_windows_v1.ps1` expose deux modes :
+
+- **Par défaut (aucun argument)** : inventaire **lecture seule** du magasin
+  `Cert:\CurrentUser\My`, restreint au PC reconnu. Ne crée aucune clé.
+- **`-Enroll` (action explicite et persistante)** : crée, si aucune identité
+  Obsidure n'existe déjà pour ce poste, un certificat RSA 3072 avec clé
+  privée `NonExportable` dans le magasin utilisateur Windows ; n'exporte
+  **que la partie publique** vers `Downloads/OBSIDURE_PUBLIC_IDENTITY_<PC>.json`.
+  Le dossier et le fichier d'origine du FIX ne sont pas modifiés.
+
+Ce choix emploie les API Windows natives `New-SelfSignedCertificate` et les
+certificats utilisateur. Un certificat auto-signé ne prouve pas à lui seul
+l'origine matérielle du poste ; `NonExportable` est une politique du stockage
+logiciel Windows, **pas** une garantie TPM. Le fichier public produit est une
+**proposition à examiner**, pas une identité déjà approuvée.
+
+Références d'API officielles :
+https://learn.microsoft.com/en-us/powershell/module/pki/new-selfsignedcertificate
+et https://learn.microsoft.com/en-us/dotnet/api/system.security.cryptography.rsa.signdata
+
+**Suite ordonnée :** contrôle Windows lecture seule de l'enrôleur ; enrôlement
+explicite du portable après revue ; inscription du certificat public dans une
+politique de confiance **ancrée indépendamment de GitHub** ; validation d'une
+signature asymétrique sur un reçu émis **au moment réel des tests** ; révision
+des rôles/révocations ; ensuite seulement réexamen du parcours C278 → R9 → R12.
+
+Le rail HMAC détaché précédent reste un **prototype de vérification non
+autorisé** ; il n'est pas utilisé pour partager un secret entre les machines.
+`KX108_ONLY`, `RELEASE HOLD`, aucune signature réelle, aucune HumanApproval
+et aucun `APPLY` sont maintenus.

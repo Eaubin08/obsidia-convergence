@@ -1,0 +1,24 @@
+{
+  "schema": "OBSIDIA_MACHINE_IDENTITY_ARCHITECTURE_PROVENANCE_V1",
+  "source_machine_for_current_build": "DESKTOP-Q5MD7J7",
+  "other_machine": "DESKTOP-SDOG0EL",
+  "base_commit": "9b5b7cb54c1bf34d4c7b41e371682dfbd908514d",
+  "base_windows_tests_run": 117,
+  "base_windows_tests_skipped": 6,
+  "decision": "PER_MACHINE_INDEPENDENT_ASYMMETRIC_IDENTITY",
+  "machine_identity_assignments": "PLANNED_ONLY",
+  "key_enrollment_performed": false,
+  "trusted_certificates_registered": false,
+  "human_owners_assigned": false,
+  "x509_signatures_verified": false,
+  "source_repo_modified": false,
+  "canonical_obsidure_runner_invoked": false,
+  "kx108_authority_changed": false,
+  "release_authorized": false,
+  "notes": [
+    "The public repository contains an enrollment plan, not an approved trust store",
+    "Windows check mode is read-only; -Enroll is an explicit persistent OS write",
+    "Machine names are identifiers; a self-signed certificate is not hardware attestation",
+    "Operator role assignment is separate from human execution approval"
+  ]
+}

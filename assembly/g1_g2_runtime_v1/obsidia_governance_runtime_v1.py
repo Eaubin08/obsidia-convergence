@@ -30,6 +30,7 @@ from obsidure_c278_sandbox_observation_v1 import (
     reconstruct_r9_patch_without_execution,
 )
 from obsidure_c278_signed_receipt_v1 import inspect_c278_detached_hmac_receipt
+from obsidure_machine_identity_registry_v1 import inspect_machine_identity_registry
 from obsidure_r9_prepare_provenance_v1 import inspect_obsidure_r9_prepare_provenance
 from obsidure_r12_r8_outcome_v1 import inspect_obsidure_r12_r8_outcome
 from scripts.obsidia_kx108_decision_store import (
@@ -62,6 +63,7 @@ class ObsidiaGovernanceRuntime:
             "obsidure_r10_repair": "F7_REPAIR_CANDIDATES_READONLY_INSPECTION_NO_EXECUTION",
             "obsidure_c278_sandbox": "CANONICAL_C278_REPLAY_AND_SANDBOX_BYTES_UNATTESTED",
             "obsidure_c278_signed_receipt": "DETACHED_HMAC_VERIFICATION_ONLY_ORIGIN_UNATTESTED",
+            "obsidure_machine_identity": "PER_MACHINE_PUBLIC_KEY_ENROLLMENT_PLANNED_NO_AUTHORITY",
             "obsidure_r9_prepare": "CANONICAL_V2_DESCRIPTOR_AND_PATCH_REPLAY_UNATTESTED",
             "obsidure_r9_r12_link": "R9_TO_R8_HISTORICAL_READONLY_HOLD",
             "obsidure_r12_r8_outcome": "CANONICAL_HISTORICAL_REPLAY_READONLY_NO_RETRY",
@@ -265,6 +267,10 @@ class ObsidiaGovernanceRuntime:
             receipt=receipt, trusted_issuer_id=trusted_issuer_id,
             trusted_key_id=trusted_key_id, verifier_key=verifier_key,
         )
+
+    def inspect_obsidure_machine_identity_registry(self, registry: Any) -> dict[str, Any]:
+        """Valide l'inventaire des PC et rôles, sans approuver de clé ni ticket."""
+        return inspect_machine_identity_registry(registry)
 
     def inspect_obsidure_c278_r9_r12_outcome(
         self, *, action_evidence_id: str, stores_base_dir: Path,
