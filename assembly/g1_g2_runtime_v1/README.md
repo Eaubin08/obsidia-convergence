@@ -1164,3 +1164,20 @@ Voir `G4_KX108_PRE_POST_C2_BOUNDARY_V1.md` pour les invariants et limites.
 Les **17 tests G4** sont synthétiques et n'invoquent pas la production.
 **Développement : 206 tests unittest PASS sous Linux** ; validation Windows
 du lot G4 encore à faire. `GLOBAL_WRITE_CLOSURE=HOLD`, `RELEASE=HOLD`.
+
+### G4B — Relecture des reçus scellés via les validateurs canoniques
+
+**Windows G4 validé par `DESKTOP-Q5MD7J7` : 206 tests exécutés,
+6 ignorés, OK.** Le nouvel inspecteur G4B garde le même runtime logique :
+il exige le PRE K1 authentifié, le POST strictement lié, puis relit les octets
+des reçus `SealedApplyReceipt` et `SealedRollbackEvidence` et leurs liaisons.
+Une falsification ou un manque de preuve fait `HOLD`.
+
+Le contrôle reste strictement **read-only**. Les reçus sont scellés par
+hash **structurel**, sans authentification de leur producteur dans ce lot :
+un résultat cohérent ne prouve pas encore que l'écriture ou un rollback a
+eu lieu. Voir `G4B_C2_ACTUAL_RECEIPTS_READONLY_V1.md`.
+
+**17 tests G4B** sont ajoutés dans une sandbox jetable de tests. La release,
+la fermeture universelle des écritures, les opérations de production et la
+provenance de POST/Apply/Rollback restent **HOLD**.

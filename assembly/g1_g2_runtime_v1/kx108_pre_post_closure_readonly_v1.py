@@ -104,4 +104,6 @@ def inspect_pre_post_write_closure(
         "expected_anchors_source_attested": False,
         "observed_pre_gate": pre["x108_gate"],
         "observed_post_gate": post["x108_gate"],
+        "observed_pre_record_hash": pre["decision_record_hash"],
+        "observed_post_record_hash": post["decision_record_hash"],
     }

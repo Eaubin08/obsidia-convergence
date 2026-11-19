@@ -35,6 +35,7 @@ from obsidure_machine_identity_registry_v1 import inspect_machine_identity_regis
 from obsidure_r9_prepare_provenance_v1 import inspect_obsidure_r9_prepare_provenance
 from obsidure_r12_r8_outcome_v1 import inspect_obsidure_r12_r8_outcome
 from kx108_pre_post_closure_readonly_v1 import inspect_pre_post_write_closure
+from kx108_c2_receipts_readonly_v1 import inspect_c2_actual_receipts
 from scripts.obsidia_kx108_decision_store import (
     persist_kx108_world_action_pre_execution_decision,
 )
@@ -71,7 +72,7 @@ class ObsidiaGovernanceRuntime:
             "obsidure_r9_r12_link": "R9_TO_R8_HISTORICAL_READONLY_HOLD",
             "obsidure_r12_r8_outcome": "CANONICAL_HISTORICAL_REPLAY_READONLY_NO_RETRY",
             "kx108_k1_pre_post": "G4_PRE_HMAC_POST_STRUCTURAL_BINDING_INSPECTOR_READONLY",
-            "global_write_closure": "C2_SEALED_LINKS_DECLARED_PROOF_AND_RELEASE_HOLD",
+            "global_write_closure": "G4B_C2_CANONICAL_RECEIPTS_RELOAD_AND_STRUCTURAL_LINK_RELEASE_HOLD",
             "update": "K1_PREPARE_AVAILABLE_EXECUTION_HOLD",
             "create": "PREFLIGHT_ONLY",
             "world_action": "EVIDENCE_ONLY",
@@ -467,6 +468,10 @@ class ObsidiaGovernanceRuntime:
             pre_store_dir=pre_store_dir, post_store_dir=post_store_dir,
             expected_anchors=expected_anchors,
         )
+
+    def inspect_kx108_c2_actual_receipts(self, **canonical_inputs: Any) -> dict[str, Any]:
+        """G4B : vrai rechargement structurel des reçus scellés, toujours HOLD."""
+        return inspect_c2_actual_receipts(**canonical_inputs)
 
     def record_world_action_evidence(
         self,
