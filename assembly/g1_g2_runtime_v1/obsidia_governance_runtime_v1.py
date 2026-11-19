@@ -30,6 +30,7 @@ from obsidure_c278_sandbox_observation_v1 import (
     reconstruct_r9_patch_without_execution,
 )
 from obsidure_c278_signed_receipt_v1 import inspect_c278_detached_hmac_receipt
+from obsidure_c278_machine_rsa_receipt_v1 import inspect_c278_machine_rsa_receipt
 from obsidure_machine_identity_registry_v1 import inspect_machine_identity_registry
 from obsidure_r9_prepare_provenance_v1 import inspect_obsidure_r9_prepare_provenance
 from obsidure_r12_r8_outcome_v1 import inspect_obsidure_r12_r8_outcome
@@ -63,6 +64,7 @@ class ObsidiaGovernanceRuntime:
             "obsidure_r10_repair": "F7_REPAIR_CANDIDATES_READONLY_INSPECTION_NO_EXECUTION",
             "obsidure_c278_sandbox": "CANONICAL_C278_REPLAY_AND_SANDBOX_BYTES_UNATTESTED",
             "obsidure_c278_signed_receipt": "DETACHED_HMAC_VERIFICATION_ONLY_ORIGIN_UNATTESTED",
+            "obsidure_c278_machine_rsa_receipt": "PER_MACHINE_RSA_PUBLIC_VERIFICATION_ONLY_ORIGIN_UNATTESTED",
             "obsidure_machine_identity": "PER_MACHINE_PUBLIC_KEY_ENROLLMENT_PLANNED_NO_AUTHORITY",
             "obsidure_r9_prepare": "CANONICAL_V2_DESCRIPTOR_AND_PATCH_REPLAY_UNATTESTED",
             "obsidure_r9_r12_link": "R9_TO_R8_HISTORICAL_READONLY_HOLD",
@@ -271,6 +273,28 @@ class ObsidiaGovernanceRuntime:
     def inspect_obsidure_machine_identity_registry(self, registry: Any) -> dict[str, Any]:
         """Valide l'inventaire des PC et rôles, sans approuver de clé ni ticket."""
         return inspect_machine_identity_registry(registry)
+
+    def inspect_obsidure_c278_machine_rsa_receipt(
+        self, *, r10_inspection: dict[str, Any], repair_request: dict[str, Any],
+        repair_proposal: dict[str, Any], c278_evidence: dict[str, Any],
+        repair_verdict: dict[str, Any], repo_root: Path,
+        receipt: dict[str, Any], public_certificate_der_base64: str | None,
+        pinned_certificate_sha256: str, expected_machine_id: str,
+    ) -> dict[str, Any]:
+        """Vérifie une signature RSA par PC ; jamais une admission KX108.
+
+        Le pin de certificat fourni ne constitue pas en lui-même un
+        enrôlement approuvé et aucun certificat privé n'est manipulé.
+        """
+        return inspect_c278_machine_rsa_receipt(
+            r10_inspection=r10_inspection, repair_request=repair_request,
+            repair_proposal=repair_proposal, c278_evidence=c278_evidence,
+            repair_verdict=repair_verdict, repo_root=repo_root,
+            receipt=receipt,
+            public_certificate_der_base64=public_certificate_der_base64,
+            pinned_certificate_sha256=pinned_certificate_sha256,
+            expected_machine_id=expected_machine_id,
+        )
 
     def inspect_obsidure_c278_r9_r12_outcome(
         self, *, action_evidence_id: str, stores_base_dir: Path,

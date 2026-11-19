@@ -944,3 +944,56 @@ Le rail HMAC détaché précédent reste un **prototype de vérification non
 autorisé** ; il n'est pas utilisé pour partager un secret entre les machines.
 `KX108_ONLY`, `RELEASE HOLD`, aucune signature réelle, aucune HumanApproval
 et aucun `APPLY` sont maintenus.
+
+### Portable : preuve locale RSA, puis vérification publique C278 (nouveau rail)
+
+**Observations Windows fournies le 19/11/2026 par le propriétaire du portable** :
+
+| Poste | Vérification réelle | Limite |
+|---|---|---|
+| `DESKTOP-Q5MD7J7` — portable, `C:\Users\User` | Certificat RSA-3072 créé dans `Cert:\CurrentUser\My`, clé privée non exportée, certificat public comparé au magasin Windows | `ENROLLED_AWAITING_REVIEW`, aucune identité humaine ou matérielle attestée |
+| `DESKTOP-Q5MD7J7` | Challenge synthétique signé et vérifié localement ; modification du challenge refusée | Pas un reçu de test C278, pas une provenance du runner |
+| `DESKTOP-SDOG0EL` — fixe, `C:\Users\Aubin` | Pas d'enrôlement observé à ce jalon | Ne pas lui attribuer la clé du portable |
+
+Empreinte **publique déclarée et vérifiée sur le portable** :
+`5bb3f8688930de497254185292a49b46c2f88b0bb23cf259711e86981932c398`.
+Le certificat public complet reste dans
+`C:\Users\User\Downloads\OBSIDURE_PUBLIC_IDENTITY_DESKTOP-Q5MD7J7.json`,
+**pas dans le dépôt public**. Cette empreinte ne vaut pas validation
+d'enrôlement par un responsable indépendant.
+
+`ObsidiaGovernanceRuntime.inspect_obsidure_c278_machine_rsa_receipt(...)`
+ajoute un vérificateur **en lecture seule**, distinct du prototype HMAC.
+Son contrat exige :
+
+1. Le certificat DER public en base64, son SHA256 attendu et le nom exact de
+   machine, chacun fournis par une politique distincte du reçu ; sinon `HOLD`.
+2. Un reçu `{payload, signature_base64}` au schéma
+   `OBSIDURE_C278_MACHINE_RSA_RECEIPT_V1` et à la liste exacte des champs,
+   sans champ d'autorité ni de décision.
+3. La concordance des identifiants C278 et des SHA256 avec un **nouveau**
+   contrôle de la sandbox observée, jamais une réexécution des tests.
+4. La vérification RSA-PKCS1v15/SHA256 sur les octets UTF-8 JSON canoniques
+   précédés de `OBSIDIA_OBSIDURE_C278_MACHINE_RSA_V1` puis de l'octet NUL.
+   Le nom du certificat, RSA-3072 minimum, usage signature et validité
+   temporelle à l'instant du contrôle sont également vérifiés.
+
+La dépendance facultative Python `cryptography` est **nécessaire à ce rail**.
+Si absente, la méthode retourne
+`HOLD / C278_MACHINE_RSA_VERIFIER_DEPENDENCY_MISSING`.
+Les tests cryptographiques synthétiques sont alors ignorés : un `OK`
+sur les autres tests ne prouve **pas** cette vérification RSA.
+
+Une concordance retourne seulement
+`C278_MACHINE_RSA_SIGNATURE_MATCH_ORIGIN_UNATTESTED` avec
+`machine_signature_verified=True`. Restent **False** : enrôlement approuvé,
+origine historique des tests, identité responsable, ancrage Git/transcript,
+anti-rejeu, HumanApproval, ticket KX108, APPLY et release.
+Le code ne signe rien et ne consomme aucune clé privée : les 17 nouveaux
+tests utilisent uniquement une clé éphémère synthétique en mémoire.
+
+**Tests Linux de développement : 146 tests OK** ; **Windows de ce nouveau
+jalon non encore vérifié**. La série précédente Windows avait 129 tests OK
+(6 ignorés) et le challenge Windows réel signé/refusé correctement.
+`RELEASE HOLD` reste maintenu jusqu'à preuve de runner contemporain,
+enrôlement contrôlé, politique de révocation et registre anti-rejeu.

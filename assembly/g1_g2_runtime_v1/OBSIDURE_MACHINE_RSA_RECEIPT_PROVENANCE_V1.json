@@ -1,0 +1,39 @@
+{
+  "schema": "OBSIDIA_OBSIDURE_C278_MACHINE_RSA_PROVENANCE_V1",
+  "source_branch": "build/g1-g2-obsidure-per-machine-identity-v1",
+  "source_commit": "47cba576086ba533c04e85a80eace67a7f9b9adf",
+  "runtime": "OBSIDIA_GOUVERNANCE_UNIFIED",
+  "decision_authority": "KX108_ONLY",
+  "machine_identity_policy": "PER_MACHINE_INDEPENDENT_ASYMMETRIC",
+  "portable_machine_id": "DESKTOP-Q5MD7J7",
+  "portable_public_certificate_sha256_reported": "5bb3f8688930de497254185292a49b46c2f88b0bb23cf259711e86981932c398",
+  "fixed_machine_id": "DESKTOP-SDOG0EL",
+  "fixed_machine_enrollment_observed": false,
+  "portable_observed_windows_evidence": {
+    "enrollment_performed": true,
+    "public_certificate_hash_verified_against_local_certificate": true,
+    "synthetic_challenge_signature_verified": true,
+    "tampered_challenge_signature_rejected": true,
+    "private_key_exported": false
+  },
+  "implementation": {
+    "entrypoint": "ObsidiaGovernanceRuntime.inspect_obsidure_c278_machine_rsa_receipt",
+    "receipt_schema": "OBSIDURE_C278_MACHINE_RSA_RECEIPT_V1",
+    "signature": "RSA_PKCS1V15_SHA256_WITH_DOMAIN_SEPARATION",
+    "certificate_source": "CALLER_SUPPLIED_PUBLIC_DER_WITH_EXPLICIT_PIN",
+    "optional_python_dependency": "cryptography",
+    "signer_implemented": false,
+    "private_key_used_by_runtime": false,
+    "registry_enrollment_approved": false,
+    "historical_c278_runner_attested": false,
+    "test_transcript_independently_witnessed": false,
+    "persistent_replay_ledger": false,
+    "key_revocation_policy_enforced": false,
+    "runtime_execution_authorized": false,
+    "release_authorized": false
+  },
+  "test_scope": "SYNTHETIC_IN_MEMORY_RSA3072_ONLY",
+  "windows_new_jalon_verified": false,
+  "source_worktrees_modified": false,
+  "release": "HOLD"
+}
