@@ -1067,3 +1067,52 @@ au moment où ils sont observés. Aucun `APPLY` ni release n'est ouvert.
 **Développement : 161 tests synthétiques OK (Linux)** ; collecte ciblée
 Windows **en attente**. Le script n'exporte pas de source privée, seulement
 des empreintes et faits statiques. `RELEASE HOLD` / `KX108_ONLY` inchangés.
+
+### Clôture groupée des preuves du portable — une seule passe
+
+**Contrôle Windows rapporté le 19/11/2026** : sur **le portable**
+`DESKTOP-Q5MD7J7`, l'analyse réelle des sources C278 du FIX à la branche
+`feat/gencoin-world-bus-dryrun-v1`, HEAD
+`c9612ae922f5302a8bd012800d368973d0241d4d`, a réussi.
+Les trois SHA vérifiés sont figés dans
+`obsidure_c278_source_snapshot_v1.py` ; un changement est un `HOLD`, jamais
+une sélection silencieuse d'une autre variante. Seuls les trois fichiers
+producteurs sont lus. **Aucun code du FIX n'est importé ou exécuté.**
+
+Pour éviter des boucles de vérification successives sur ce portable, le script
+`tools/close_portable_governance_one_pass_windows_v1.ps1` exécute, dans
+**un seul passage** :
+
+1. Précontrôle d'identité du portable et du worktree Git isolé propre ;
+   instantané de HEAD/statut du FIX, même si déjà volontairement dirty.
+2. Intégralité des tests stdlib du runtime G1/G2, puis tests `candidate/g1_g2`
+   sous pytest, sans appel à une API ou serveur de production.
+3. Signature RSA Windows/Python d'un challenge indépendant avec le certificat
+   **déjà** enrôlé sur le portable, exactement épinglé à SHA256
+   `5bb3f8688930de497254185292a49b46c2f88b0bb23cf259711e86981932c398`.
+4. Signature avec cette clé privée Windows d'un **snapshot des octets source
+   C278** identifiés, puis relecture de leurs SHA et revérification RSA Python.
+   Une preuve **publique** (certificat + empreintes + signature, aucune clé privée)
+   et un rapport sont enregistrés **uniquement dans Downloads**, hors du FIX.
+
+Un rapport `OBSIDIA_PORTABLE_GOVERNANCE_ONE_PASS_*.json` et un journal de tests
+du même nom sont produits à la fin. Un échec laisse `HOLD`, sans activation,
+et n'exige pas de refaire les étapes déjà prouvées.
+
+**Portée précise du PASS attendu :** preuve locale du code observé et de la
+possession de la clé RSA, ainsi que régressions de l'assemblage. Cela ne prouve
+toujours **pas** que les tests C278 historiques ont été exécutés par ce poste,
+que la sandbox a importé les modules attendus, ni qu'un vrai producteur a
+émis un reçu au moment du test. Le reçu conservé n'est donc **pas** une preuve
+de runner, de HumanApproval, d'anti-rejeu ou d'autorisation KX108.
+
+**Limites de clôture** : tests symlink Windows éventuellement ignorés faute
+de privilèges, chaîne C2 historique complète non certifiée, absence de
+signature contemporaine du runner C278 et d'ancrage indépendant des identités
+des personnes. Ce sont des étapes d'intégration futures, **pas** une raison de
+redemander une série de commandes de collecte sur le portable pour ce jalon.
+`KX108_ONLY`, `FULL_FUNCTIONAL_G1_G2_HOLD` et `RELEASE HOLD` maintenus.
+
+**Tests de développement du lot : 173 tests unittest passés sous Linux**, dont
+12 négatifs/positifs nouveaux de snapshot RSA. Les tests pytest `candidate`
+doivent être revalidés sur Windows lors de l'exécution groupée.

@@ -1,0 +1,56 @@
+{
+  "schema": "OBSIDIA_C278_PORTABLE_ONE_PASS_PROVENANCE_V1",
+  "recorded_date": "2026-11-19",
+  "source_of_observations": "terminal_output_supplied_by_user_not_reexecuted_here",
+  "machines": {
+    "portable": {
+      "machine_id": "DESKTOP-Q5MD7J7",
+      "windows_user": "User",
+      "role": "portable_source_and_verification",
+      "public_certificate_sha256": "5bb3f8688930de497254185292a49b46c2f88b0bb23cf259711e86981932c398",
+      "private_key_exported": false,
+      "enrollment_approved": false
+    },
+    "fixed": {
+      "machine_id": "DESKTOP-SDOG0EL",
+      "windows_user": "Aubin",
+      "role": "separate_fixed_machine_no_actions_in_this_milestone"
+    }
+  },
+  "portable_fix_observed": {
+    "branch": "feat/gencoin-world-bus-dryrun-v1",
+    "head": "c9612ae922f5302a8bd012800d368973d0241d4d",
+    "observed_sha256": {
+      "periphery/agents/agent_obsidure.py": "fbf8f84de0f21e74f2b5faa55a6e6cef38b2a3fc812e26a6636935da06030d25",
+      "periphery/agents/obsidure_repair_bridge.py": "fdfbc9b7c10a3039d31d72a871d0473b87b46cbf922918f669f07e2d10fb72a8",
+      "periphery/agents/obsidure_repair_contract.py": "1dbb49eea44d8b02e5c7a5ee988a232fcd43fd461f65c0a0a711b24b9e129ba3"
+    },
+    "profile_status": "C278_STATIC_SOURCE_PROFILE_ONLY",
+    "source_worktree_modified_by_profile": false
+  },
+  "previous_portable_verifications": {
+    "windows_python_rsa_interop": "PASS_REPORTED",
+    "regression_unittest_count": 155,
+    "regression_unittest_skipped": 6,
+    "c278_runner_attested": false
+  },
+  "this_commit": {
+    "mode": "ONE_PASS_LOCAL_VERIFICATION_AND_SOURCE_SNAPSHOT_ONLY",
+    "local_rsa_signing": "PREPARED_REQUIRES_ONE_RUN_ON_PORTABLE",
+    "live_c278_tests_executed": false,
+    "current_c278_test_process_attested": false,
+    "git_writes_to_fix": false,
+    "human_approval": false,
+    "release_authorized": false,
+    "decision_authority": "KX108_ONLY",
+    "release": "HOLD"
+  },
+  "limits": [
+    "A source-hash signature is not a signed C278 test transcript",
+    "Self-signed public certificate pin is not independent trust approval",
+    "The actual old C278 runner import origin remains unattested",
+    "No persistent replay registry or revocation governance is added",
+    "Candidate Windows symlink cases may be skipped without privileges",
+    "Historical C2 full functional closure is still HOLD"
+  ]
+}
