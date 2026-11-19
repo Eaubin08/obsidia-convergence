@@ -24,6 +24,7 @@ if str(_SCRIPTS) not in sys.path:
 from scripts.obsidia_create_pre_contract_v0 import prepare_create_target_pre_evidence
 from obsidure_governed_boundary_v1 import admit_obsidure_bridge_pre
 from obsidure_r10_repair_intake_v1 import inspect_obsidure_r10_repair
+from obsidure_r9_prepare_provenance_v1 import inspect_obsidure_r9_prepare_provenance
 from obsidure_r12_r8_outcome_v1 import inspect_obsidure_r12_r8_outcome
 from scripts.obsidia_kx108_decision_store import (
     persist_kx108_world_action_pre_execution_decision,
@@ -53,6 +54,8 @@ class ObsidiaGovernanceRuntime:
             "sigma_tooling_advisory": "BOUNDED_FOUR_VOTE_INTAKE_NO_TICKET",
             "obsidure_proposal": "C2_BRIDGE_READONLY_PRE_ADMISSION_NO_EXECUTION",
             "obsidure_r10_repair": "F7_REPAIR_CANDIDATES_READONLY_INSPECTION_NO_EXECUTION",
+            "obsidure_r9_prepare": "CANONICAL_V2_DESCRIPTOR_AND_PATCH_REPLAY_UNATTESTED",
+            "obsidure_r9_r12_link": "R9_TO_R8_HISTORICAL_READONLY_HOLD",
             "obsidure_r12_r8_outcome": "CANONICAL_HISTORICAL_REPLAY_READONLY_NO_RETRY",
             "kx108_k1_pre_post": "SOURCE_ASSEMBLED_VALIDATION_PENDING",
             "update": "K1_PREPARE_AVAILABLE_EXECUTION_HOLD",
@@ -210,6 +213,73 @@ class ObsidiaGovernanceRuntime:
             r10_inspection=r10_inspection,
             prepared_repair=prepared_repair,
         )
+
+    def inspect_obsidure_r9_preparation(
+        self, *, r10_inspection: dict[str, Any], r9_result: dict[str, Any],
+        stores_base_dir: Path, expected_repo_identity_ref: str,
+    ) -> dict[str, Any]:
+        """Controle les preuves R9/V2 persistées ; ne lance pas PREPARE."""
+        return inspect_obsidure_r9_prepare_provenance(
+            r10_inspection=r10_inspection,
+            r9_result=r9_result,
+            stores_base_dir=stores_base_dir,
+            expected_repo_identity_ref=expected_repo_identity_ref,
+        )
+
+    def inspect_obsidure_r9_r12_outcome(
+        self, *, action_evidence_id: str, stores_base_dir: Path,
+        r10_inspection: dict[str, Any], r9_result: dict[str, Any],
+        expected_repo_identity_ref: str,
+    ) -> dict[str, Any]:
+        """R9 canonique -> R12 historique, sans elever une provenance declaree."""
+        r9 = self.inspect_obsidure_r9_preparation(
+            r10_inspection=r10_inspection,
+            r9_result=r9_result,
+            stores_base_dir=stores_base_dir,
+            expected_repo_identity_ref=expected_repo_identity_ref,
+        )
+        if r9["status"] != "R9_PREPARE_BINDING_MATCH_UNATTESTED":
+            return {
+                "schema_version": "OBSIDURE_R9_R12_READONLY_JOIN_V1",
+                "status": "HOLD", "reason": r9["reason"],
+                "derived_outcome_classification": "EVIDENCE_INCOMPLETE",
+                "recommendation": "ESCALATE", "r9_prepare": r9,
+                "readonly": True, "authority": "NON_SOVEREIGN",
+                "decision_authority": "KX108_ONLY", "execution_authorized": False,
+                "human_approval_verified": False, "action_ticket_issued": False,
+                "executor_invoked": False, "target_mutated": False, "automatic_retry": False,
+            }
+        r12 = self.inspect_obsidure_r12_r8_outcome(
+            action_evidence_id=action_evidence_id,
+            stores_base_dir=stores_base_dir,
+            r10_inspection=r10_inspection,
+            prepared_repair={
+                "repair_lineage": r9["repair_lineage"],
+                "prepared_action": {
+                    "builder_lineage": r9["builder_lineage"],
+                    "v2_exec_id": r9["v2_exec_id"],
+                },
+            },
+        )
+        # La concordance des hashes R9 ne prouve pas une sandbox authentique.
+        # Meme un SUCCESS historique R8 ne donne donc aucun droit d'execution.
+        if r12.get("derived_outcome_classification") == "HISTORICAL_EXECUTION_EVIDENCE_MATCHED":
+            r12 = {**r12, "derived_outcome_classification": "EVIDENCE_INCOMPLETE",
+                   "recommendation": "ESCALATE", "reason": "R9_SANDBOX_ORIGIN_NOT_AUTHENTICATED"}
+        return {
+            **r12,
+            "join_schema_version": "OBSIDURE_R9_R12_READONLY_JOIN_V1",
+            "r9_prepare": r9,
+            "r9_artifact_binding_verified": True,
+            "r9_provenance_verified": False,
+            "release_authorized": False,
+            "execution_authorized": False,
+            "human_approval_verified": False,
+            "action_ticket_issued": False,
+            "executor_invoked": False,
+            "target_mutated": False,
+            "automatic_retry": False,
+        }
 
     def prepare_existing_update(self, **canonical_inputs: Any) -> dict[str, Any]:
         """Préparation K1 d'une cible EXISTANTE, sans APPLY ni HumanApproval.

@@ -728,3 +728,56 @@ R12 ne peut donc pas promouvoir une preuve test en succès de production.
 **Interdits maintenus** : provenance synthétique prise pour HumanApproval,
 appel `execute`, mutation d'une cible réelle, retry automatique, deuxième
 runtime. `RELEASE HOLD` / `FULL_FUNCTIONAL_G1_G2_HOLD`.
+
+### R9 PREPARE canonique → R12 : contrôle de provenance **non attestée**
+
+Dans **le même** `ObsidiaGovernanceRuntime`, le nouveau rail
+`inspect_obsidure_r9_preparation(...)` reçoit un résultat R9 déjà préparé
+et les objets **typés** Proposal, Manifest, Validation et Handoff.
+Il lit, sans créer ni modifier de fichier, les artefacts existants
+`v2exec/<v2_exec_id>.json` et `.patch`. Il ne lance **pas**
+`adapt_validated_repair_to_r9_prepare`, `pc_v2_apply_patch_prepare`,
+`git apply`, KX108, Obsidure APPLY ou de serveur.
+
+Les contrats sources ont été inspectés dans
+`Eaubin08/obsidia-x108-proofs` / `codex/obsidure-f7-r10-isolated` :
+`obsidure_repair_r9_adapter_v1.py`,
+`obsidure_governed_patch_prepare_adapter_v1.py` et
+`obsidia_pc_capabilities_v2.py`. Quatre modules canoniques de **données et
+validation** ont été recopiés à l'identique, sans leurs adaptateurs à effet :
+
+| Module canonique R9 | Git blob SHA-1 de la source | Fonction retenue |
+|---|---|---|
+| `obsidure_builder_proposal_v1.py` | `4b47aa603ae38bd32d912e2674f747ed5e583a06` | Proposition et liaison du patch |
+| `obsidure_proposal_manifest_v1.py` | `714cde287e88f46e5705f43af2efdbb3a6eab805` | Artefacts et preuves déclarées |
+| `obsidure_proposal_validation_v1.py` | `5bdff4246e69f391c366497beabc6c29b0c2ff37` | Replay de validation et obligation de test |
+| `obsidure_governance_handoff_v1.py` | `02faadee8f234b3d127c333d02b2c32ab232f2e7` | Handoff et identité de dépôt |
+
+Voir `R9_R12_PREPARE_PROVENANCE_V1.json` pour SHA256 complets et portée
+de la copie. Les originaux privés ne sont ni exécutés ni modifiés.
+
+| Liaison contrôlée | Fail-closed |
+|---|---|
+| R10 Repair IDs → Handoff/R9 | Identité différente : `HOLD` |
+| Proposition → Manifest → Validation → Handoff | Identifiant, validation ou obligation de test falsifiés : `HOLD` |
+| R9 → patch V2 déjà persisté | SHA, ordre des cibles, scope, préimages ou chemin dangereux : `HOLD` |
+| R9 → descripteur V2 déjà persisté | JSON dupliqué, symlink, dérive, EAH, ID enfant ou lignée Builder incohérents : `HOLD` |
+| R9 → R12/R8 historique | Préparation manquante : pas de replay ; reçus R8 absents/contradictoires : `HOLD` |
+
+`inspect_obsidure_r9_r12_outcome(...)` dérive les références R9 depuis
+les artefacts canoniques inspectés et les transmet à **l'ancien rail R12**.
+Il refuse toute élévation d'une concordance historique en permission
+d'exécution. Un résultat `R9_PREPARE_BINDING_MATCH_UNATTESTED` signifie
+uniquement que **les octets, identifiants et contrats se correspondent** :
+ni sandbox C278 réelle, ni `git HEAD` courant, ni HumanApproval, ni
+KX108 PRE/POST ne sont attestés.
+
+Tests isolés : `test_obsidure_r9_prepare_provenance_stdlib_v1.py`
+exerce les types **réels** et des artefacts V2 **synthétiques** en répertoire
+temporaire ; 9 cas, dont ordre multi-fichier non trié, usurpation
+d'autorité, substitution de scope, double clé JSON et changement de patch.
+Suite intégration locale Linux : **94 tests, OK**. Test Windows portable
+à réaliser sur branche isolée ; aucun test de mutation réelle ou de
+provenance sandbox n'a été effectué.
+
+**Etat : `R9 PREPARE BINDING VERIFIED / SANDBOX ORIGIN UNATTESTED / RELEASE HOLD`.**

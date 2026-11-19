@@ -1,0 +1,40 @@
+{
+  "schema": "OBSIDIA_R9_R12_CANONICAL_PREPARE_SOURCE_PROVENANCE_V1",
+  "source_repository": "Eaubin08/obsidia-x108-proofs",
+  "source_ref": "codex/obsidure-f7-r10-isolated",
+  "target_repository": "Eaubin08/obsidia-convergence",
+  "target_branch_role": "ISOLATED_R9_R12_READONLY_CANDIDATE",
+  "scope": "R9_TYPED_ARTIFACTS_AND_PERSISTED_V2_PREPARE_READONLY_REPLAY",
+  "source_worktrees_modified": false,
+  "r9_prepare_executed": false,
+  "r8_apply_executed": false,
+  "execution_released": false,
+  "provenance_origin_attested": false,
+  "canonical_r9_adapters_inspected_not_copied": [
+    "scripts/obsidure_repair_r9_adapter_v1.py",
+    "scripts/obsidure_governed_patch_prepare_adapter_v1.py",
+    "scripts/obsidia_pc_capabilities_v2.py"
+  ],
+  "canonical_modules_copied_exactly": [
+    {
+      "source_path": "scripts/obsidure_builder_proposal_v1.py",
+      "source_git_blob_sha1": "4b47aa603ae38bd32d912e2674f747ed5e583a06",
+      "target_sha256": "f7f8ffc4a389d08284d90bea838113846c3d74290dde539d1b27c9ed87c63024"
+    },
+    {
+      "source_path": "scripts/obsidure_governance_handoff_v1.py",
+      "source_git_blob_sha1": "02faadee8f234b3d127c333d02b2c32ab232f2e7",
+      "target_sha256": "0a3e10d70b0370bb504164b8ed81d9cfd7208376dc01b4ff241501879d656000"
+    },
+    {
+      "source_path": "scripts/obsidure_proposal_manifest_v1.py",
+      "source_git_blob_sha1": "714cde287e88f46e5705f43af2efdbb3a6eab805",
+      "target_sha256": "38c3c491c528516a78762af44f061990ec92507915e9e8becdd30ba302832e6a"
+    },
+    {
+      "source_path": "scripts/obsidure_proposal_validation_v1.py",
+      "source_git_blob_sha1": "5bdff4246e69f391c366497beabc6c29b0c2ff37",
+      "target_sha256": "efb96452f7cc62e404820178d471e08873c65e5b0b7503994be780323a4a736a"
+    }
+  ]
+}
