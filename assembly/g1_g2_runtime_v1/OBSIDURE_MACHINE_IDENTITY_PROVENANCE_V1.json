@@ -1,7 +1,8 @@
 {
   "schema": "OBSIDIA_MACHINE_IDENTITY_ARCHITECTURE_PROVENANCE_V1",
-  "source_machine_for_current_build": "DESKTOP-Q5MD7J7",
-  "other_machine": "DESKTOP-SDOG0EL",
+  "portable_validation_machine": "DESKTOP-Q5MD7J7",
+  "fixed_pc_pending_enrollment": "DESKTOP-SDOG0EL",
+  "development_workspace": "ISOLATED_INTEGRATION_NO_USER_PC_MUTATION",
   "base_commit": "9b5b7cb54c1bf34d4c7b41e371682dfbd908514d",
   "base_windows_tests_run": 117,
   "base_windows_tests_skipped": 6,
