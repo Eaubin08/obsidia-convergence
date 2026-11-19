@@ -623,4 +623,56 @@ de provenance, sans substitution de source K1.
 Tests : `test_obsidure_r10_repair_intake_stdlib_v1.py` couvre l'acceptation
 lecture seule, CREATE absent, refus des liens, de l'identité incohérente,
 des SHA modifiés, des cibles protégées et d'un résultat synthétique.
-**La validation Windows et la fermeture canonique restent à effectuer.**
+Résultat Windows transmis depuis le portable `DESKTOP-Q5MD7J7` :
+`Ran 68 tests`, `OK (skipped=3)` sur
+`build/g1-g2-obsidure-r10-intake-v1`. Trois cas liés aux privilèges de
+symlink Windows ne sont pas validés sur cette machine. Ce passage ne lève
+pas le `RELEASE HOLD`.
+
+### Obsidure F7/R12 ↔ preuves canoniques R8 (build isolé, lecture seule)
+
+Le même `ObsidiaGovernanceRuntime` expose désormais
+`inspect_obsidure_r12_r8_outcome(...)` ; **aucun deuxième moteur ni CLI**.
+Il reçoit l'inspection R10, la préparation R9 sérialisée et l'identifiant
+historique `action_evidence_id` d'un reçu R8 déjà persisté. Il appelle
+directement les fonctions canoniques :
+
+| Vraie API R8 source | Rôle dans ce rail |
+|---|---|
+| `load_canonical_receipt_envelope` | Lire le reçu et valider sa structure/hash |
+| `replay_action_evidence` | Vérifier l'intégrité historique |
+| `replay_governance_decision` | Rejouer seulement la décision historique figée |
+| `reconcile_action_evidence` | Confronter historique autorisé et observation persistée |
+
+Provenance : `Eaubin08/obsidia-x108-proofs`, branche
+`codex/obsidure-f7-r10-isolated`, chemins `scripts/` des quatre modules
+canoniques ainsi que leur dépendance
+`obsidia_kx108_policy_identity_v1.py`. Voir
+`R12_R8_SOURCE_PROVENANCE_V1.json` pour les identifiants Git et empreintes.
+Le code source de `obsidia_canonical_receipt_envelope_v1.py` inclut un
+writer canonique, mais **la façade R12 n'appelle que son loader et sa
+validation**. Les modules de replay/reconciliation ne sont utilisés que
+pour lire des preuves existantes.
+
+Gates et refus :
+
+| Situation | Traitement |
+|---|---|
+| Identifiant malformé, stores/symlink non sûrs, R10/R9 absents | `HOLD` |
+| Lien repair/build/v2 incohérent | `GOVERNANCE_MISMATCH`, `STOP_BLOCKED` |
+| Reçu au hash modifié, replay contradictoire | `EVIDENCE_TAMPERED`, `STOP_BLOCKED` |
+| Preuve manquante ou `VERIFIED_WITH_LIMITS` | `EVIDENCE_INCOMPLETE`, `ESCALATE` |
+| Incertitude post-dispatch | `DISPATCHED_OUTCOME_UNCERTAIN`, `ESCALATE` |
+| Preuves canoniques exhaustives et cohérentes | Avis historique seulement, **jamais autorisation** |
+
+Tests isolés Linux : 80 tests `unittest` OK (68 tests antérieurs + 12
+nouveaux). Les nouveaux tests exercent les **vrais** modules canoniques
+avec des reçus de test jetables ; un reçu incomplet au hash valide est
+classé contradictoire, jamais accepté par confort. Les mocks sont
+employés seulement pour éprouver la politique de refus des preuves limitées,
+pas pour prétendre vérifier un replay R8 positif de production.
+
+**Non validé** : succès réel R8 sur preuve attestée de production,
+gates Windows R12, provenance sandbox C278, préparation R9 complète,
+HumanApproval, PRE/POST KX108, TOCTOU au point d'écriture.
+`FULL_FUNCTIONAL_G1_G2_HOLD` / `RELEASE HOLD` inchangés.

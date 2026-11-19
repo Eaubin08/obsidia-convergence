@@ -1,0 +1,40 @@
+{
+  "schema": "OBSIDIA_R12_R8_CANONICAL_SOURCE_PROVENANCE_V1",
+  "source_machine_role": "PRIVATE_CANONICAL_SOURCE_REPOSITORY",
+  "source_repository": "Eaubin08/obsidia-x108-proofs",
+  "source_ref": "codex/obsidure-f7-r10-isolated",
+  "target_repository": "Eaubin08/obsidia-convergence",
+  "target_branch_role": "ISOLATED_R12_R8_CANDIDATE",
+  "scope": "R8_HISTORICAL_READONLY_ONLY",
+  "source_worktrees_modified": false,
+  "source_code_executed_as_a_service": false,
+  "execution_released": false,
+  "git_blobs_and_target_sha256": [
+    {
+      "path": "scripts/obsidia_canonical_receipt_envelope_v1.py",
+      "source_git_blob_sha1": "df7874fa7843ed9394b3bbfac4a795320cf8e825",
+      "target_sha256": "55486054d17cebbe32379c35a269a0cae45f3dd9a8cf719b7221594026c3ff1e"
+    },
+    {
+      "path": "scripts/obsidia_canonical_receipt_replay_v1.py",
+      "source_git_blob_sha1": "8503ffb5f70a7a9541d37f220d0e0db451359005",
+      "target_sha256": "ae2cf7f724489d82df8ddafb0e6c3d4cd11ac72d92c6e5eba8eed79a277afa0b"
+    },
+    {
+      "path": "scripts/obsidia_governance_decision_replay_v1.py",
+      "source_git_blob_sha1": "d78ff791f4e350a43f60fb8d2187470d730b2e40",
+      "target_sha256": "c00a193cfca0b1b6d2cbe0bdfefa1ad7372d8a0dfed218385e6f05a6a6bd9c8c",
+      "transfer_note": "Normalized one trailing CRLF to LF; Python text is unchanged"
+    },
+    {
+      "path": "scripts/obsidia_realized_state_reconciliation_v1.py",
+      "source_git_blob_sha1": "ddcc765be2ea72eb46abf50ab6d0c9d319be4b46",
+      "target_sha256": "dae1311a9fe3ee845e12fee6c6ef0adb01b936945498a441dce0b948aa7235d6"
+    },
+    {
+      "path": "scripts/obsidia_kx108_policy_identity_v1.py",
+      "source_git_blob_sha1": "a969ce300df386714c21863f792d546ac3958b1c",
+      "target_sha256": "459448aa7060a48b2cea83b82bb1c9418206694c6633669627d0e83535dc0528"
+    }
+  ]
+}

@@ -24,6 +24,7 @@ if str(_SCRIPTS) not in sys.path:
 from scripts.obsidia_create_pre_contract_v0 import prepare_create_target_pre_evidence
 from obsidure_governed_boundary_v1 import admit_obsidure_bridge_pre
 from obsidure_r10_repair_intake_v1 import inspect_obsidure_r10_repair
+from obsidure_r12_r8_outcome_v1 import inspect_obsidure_r12_r8_outcome
 from scripts.obsidia_kx108_decision_store import (
     persist_kx108_world_action_pre_execution_decision,
 )
@@ -52,6 +53,7 @@ class ObsidiaGovernanceRuntime:
             "sigma_tooling_advisory": "BOUNDED_FOUR_VOTE_INTAKE_NO_TICKET",
             "obsidure_proposal": "C2_BRIDGE_READONLY_PRE_ADMISSION_NO_EXECUTION",
             "obsidure_r10_repair": "F7_REPAIR_CANDIDATES_READONLY_INSPECTION_NO_EXECUTION",
+            "obsidure_r12_r8_outcome": "CANONICAL_HISTORICAL_REPLAY_READONLY_NO_RETRY",
             "kx108_k1_pre_post": "SOURCE_ASSEMBLED_VALIDATION_PENDING",
             "update": "K1_PREPARE_AVAILABLE_EXECUTION_HOLD",
             "create": "PREFLIGHT_ONLY",
@@ -191,6 +193,22 @@ class ObsidiaGovernanceRuntime:
             repair_verdict=repair_verdict,
             worktree_root=worktree_root,
             declared_targets=declared_targets,
+        )
+
+    def inspect_obsidure_r12_r8_outcome(
+        self, *, action_evidence_id: str, stores_base_dir: Path,
+        r10_inspection: dict[str, Any], prepared_repair: dict[str, Any],
+    ) -> dict[str, Any]:
+        """R12 : confronte R10/R9 aux vraies preuves R8 persistées, sans APPLY.
+
+        Pas de reprise automatique ni de HumanApproval simulée. Une preuve
+        historique positive n'ouvre jamais d'autorité d'exécution future.
+        """
+        return inspect_obsidure_r12_r8_outcome(
+            action_evidence_id=action_evidence_id,
+            stores_base_dir=stores_base_dir,
+            r10_inspection=r10_inspection,
+            prepared_repair=prepared_repair,
         )
 
     def prepare_existing_update(self, **canonical_inputs: Any) -> dict[str, Any]:
