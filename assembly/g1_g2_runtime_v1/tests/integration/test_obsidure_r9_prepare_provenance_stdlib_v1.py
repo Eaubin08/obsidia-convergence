@@ -24,6 +24,8 @@ from obsidure_proposal_validation_v1 import (
     ValidationObligation, ValidationPolicy, validate_obsidure_proposal,
 )
 from obsidure_governance_handoff_v1 import build_governance_handoff
+from obsidure_r10_repair_intake_v1 import _BOUNDARY
+from scripts.proposal_meaning_validator import validate_proposal_meaning
 
 
 def sha(value: bytes | str) -> str:
@@ -62,7 +64,10 @@ class ObsidureR9PrepareProvenance(unittest.TestCase):
             candidate_patch_ref=BuilderPatchRef("repair_candidate.patch", self.patch_sha),
             tests_proposed=("repair-sandbox-verdict",),
             source_context_refs=(self.ids["repair_request_id"],),
-            declared_evidence={"c278_evidence": "CONTINUOUS", **self.ids},
+            declared_evidence={
+                "c278_evidence": "CONTINUOUS", **self.ids,
+                "tested_artifact_hashes": {target: sha(b"new\n") for target in targets},
+            },
         )
         patch_artifact = ArtifactRef(
             artifact_kind="CANDIDATE_PATCH", logical_ref="repair_candidate.patch",
@@ -235,6 +240,66 @@ class ObsidureR9PrepareProvenance(unittest.TestCase):
         self.assertEqual(self.runtime.capabilities()["engine"], "OBSIDIA_GOUVERNANCE_UNIFIED")
         self.assertEqual(self.runtime.capabilities()["apply"], "HOLD")
         self.assertEqual(self.runtime.execute(operation_type="R9_PREPARE_APPLY")["status"], "HOLD")
+
+    def test_complete_c278_sandbox_r9_r12_readonly_join_on_synthetic_artifacts(self):
+        root = self.root / "source_repo"
+        target = root / "scripts/tool.py"
+        target.parent.mkdir(parents=True)
+        target.write_bytes(b"old\n")
+        sb = root / "_EPHEMERAL_REPAIR_SANDBOX_SYNTHETIC"
+        (sb / "scripts").mkdir(parents=True)
+        (sb / "scripts/tool.py").write_bytes(b"new\n")
+        request = {
+            "request_id": self.ids["repair_request_id"],
+            "repo_targets": [self.target],
+            "objective": "Repair tool output", "summary": "tool output broken",
+            "error_contexts": [{"target_path": self.target, "error_type": "TOOL_OUTPUT",
+                                "raw_details": "tool output broken"}],
+            "target_excerpts": {self.target: "old\n"},
+            "tests_hint": ["tests/test_tool.py"], "boundary": dict(_BOUNDARY),
+        }
+        proposal = {
+            "proposal_id": self.ids["repair_proposal_id"],
+            "request_id": self.ids["repair_request_id"],
+            "rationale": "Repair tool output",
+            "candidate_files": [{"path": self.target, "change_kind": "MODIFY",
+                                 "full_content": "new\n", "base_sha256": sha(b"old\n"),
+                                 "rationale": "Repair broken tool output"}],
+            "tests_to_run": ["tests/test_tool.py"], "confidence": "HIGH",
+            "boundary": dict(_BOUNDARY),
+        }
+        c278 = validate_proposal_meaning(request=request, proposal=proposal)
+        self.assertEqual(c278["evidence"], "CONTINUOUS")
+        verdict = {
+            "verdict_id": self.ids["repair_verdict_id"],
+            "request_id": self.ids["repair_request_id"],
+            "proposal_id": self.ids["repair_proposal_id"],
+            "status": "PASS", "compiled_files": [self.target],
+            "sandbox_dir": str(sb), "errors": [], "boundary": dict(_BOUNDARY),
+            "tested_artifacts": [{"path": self.target, "sha256": sha(b"new\n")}],
+            "tests_executed": [{"test": "tests/test_tool.py", "status": "PASS",
+                                "returncode": 0, "isolation": "FULL"}],
+        }
+        r10 = self.runtime.inspect_obsidure_r10_repair(
+            repair_request=request, repair_proposal=proposal,
+            c278_evidence=c278, repair_verdict=verdict,
+            worktree_root=root, declared_targets=[self.target],
+        )
+        self.assertEqual(r10["status"], "OBSIDURE_R10_CANDIDATES_INSPECTED_READONLY")
+        outcome = self.runtime.inspect_obsidure_c278_r9_r12_outcome(
+            action_evidence_id="aev-" + "c" * 32,
+            stores_base_dir=self.root, r10_inspection=r10,
+            r9_result=self.r9, expected_repo_identity_ref=self.repo_ref,
+            repair_request=request, repair_proposal=proposal,
+            c278_evidence=c278, repair_verdict=verdict,
+            repo_root=root, execution_worktree_root=root,
+        )
+        self.assertEqual(outcome["c278_observation"]["status"], "C278_SANDBOX_BYTES_MATCH_UNATTESTED", outcome)
+        self.assertEqual(outcome["r9_prepare"]["status"], "R9_PREPARE_BINDING_MATCH_UNATTESTED", outcome)
+        self.assertEqual(outcome["reason"], "R8_CANONICAL_RECEIPT_MISSING_OR_INVALID")
+        self.assertFalse(outcome["sandbox_origin_attested"])
+        self.assertFalse(outcome["execution_authorized"])
+        self.assertEqual(target.read_bytes(), b"old\n")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,49 @@
+{
+  "schema": "OBSIDIA_C278_SANDBOX_OBSERVATION_SOURCE_PROVENANCE_V1",
+  "source_repository": "Eaubin08/obsidia-x108-proofs",
+  "source_ref": "codex/obsidure-f7-r10-isolated",
+  "target_repository": "Eaubin08/obsidia-convergence",
+  "target_branch_role": "C278_R9_R12_OBSERVATION_ISOLATED",
+  "source_worktrees_modified": false,
+  "canonical_runtime_invoked": false,
+  "external_tests_rerun": false,
+  "sandbox_origin_attested": false,
+  "release_authorized": false,
+  "source_modules": [
+    {
+      "path": "periphery/language/proposal_meaning_validator.py",
+      "source_git_blob_sha1": "279b8253fae270c544deb26b5aeff49bd500a8eb",
+      "target_path": "scripts/proposal_meaning_validator.py",
+      "target_sha256": "f46f4887caeddf6b5c956a817a5c5b9abda78d969dcf5ba60d9a70f10a747fc5",
+      "transfer_note": "Newlines normalized from source to LF; Python logic not edited"
+    },
+    {
+      "path": "periphery/agents/obsidure_repair_contract.py",
+      "source_git_blob_sha1": "624e9c9af9eb43c43ec84532df870d3b7fe16b87",
+      "target_path": "periphery/agents/obsidure_repair_contract.py",
+      "target_sha256": "de5a2e1e1c363f3ea867c48f0249b417df33ad96d766405237f54ad6cbe5caab",
+      "transfer_note": "Newlines normalized from source to LF; Python logic not edited"
+    }
+  ],
+  "source_modules_inspected_but_not_executed": [
+    {
+      "path": "periphery/agents/obsidure_repair_bridge.py",
+      "source_git_blob_sha1": "7b39edac8e1a1edc92a7b96e89d3c6f869cfcc04",
+      "method": "test_repair_proposal"
+    },
+    {
+      "path": "periphery/agents/agent_obsidure.py",
+      "method": "AgentObsidure.evaluate_repair_proposal"
+    },
+    {
+      "path": "scripts/obsidure_repair_r9_adapter_v1.py",
+      "method": "_build_patch_from_repair"
+    }
+  ],
+  "limits": [
+    "Full C278 dict can be replayed, but producer identity is unverified",
+    "Sandbox files are rehashed as current bytes; no cryptographic chain to historical test process",
+    "PASS and FULL in RepairVerdict are untrusted claims",
+    "No authentic Git HEAD, KX108 PRE/POST, HumanApproval or runtime activation"
+  ]
+}

@@ -781,3 +781,58 @@ Suite intégration locale Linux : **94 tests, OK**. Test Windows portable
 provenance sandbox n'a été effectué.
 
 **Etat : `R9 PREPARE BINDING VERIFIED / SANDBOX ORIGIN UNATTESTED / RELEASE HOLD`.**
+
+### C278 → sandbox Obsidure → R9 → R12 : observation indépendante
+
+Suite à la validation de 94 tests (89 OK, 5 ignorés sous Windows sur le
+portable **`DESKTOP-Q5MD7J7`**, commit `2fb8c35`), la frontière suivante
+ajoute deux fonctions au **même** `ObsidiaGovernanceRuntime` :
+
+- `inspect_obsidure_c278_sandbox(...)` : rejoue le vrai validateur
+  `validate_proposal_meaning` sur les données RepairRequest/RepairProposal,
+  compare le **record C278 complet** à la sortie canonique et relit les octets
+  actuels des fichiers `RepairVerdict.tested_artifacts[]` dans la sandbox.
+- `inspect_obsidure_c278_r9_r12_outcome(...)` : exige d'abord le contrôle
+  C278/sandbox, puis le contrôle R9/PREPARE existant ; **reconstruit en mémoire**
+  le diff de chaque candidat `MODIFY` depuis son contenu et sa préimage
+  dans le worktree d'exécution, afin de comparer exactement le patch R9.
+  Seul ensuite le replay historique R12/R8 est consulté.
+
+| Contrôle ajouté | Refus ou borne |
+|---|---|
+| Record C278 complet vs validateur canonique | `CONTINUOUS` forgé, champs ou checks changés → `HOLD` |
+| Répertoire sandbox historique | Racine différente, chemin ou lien/junction → `HOLD` |
+| Fichiers candidats observés | SHA, fichiers, scope ou préimage drift → `HOLD` |
+| Tests rapportés dans `RepairVerdict` | Test absent, `FAIL`, returncode non entier ou ordre divergent → `HOLD` |
+| Patch R9 reconstruit depuis les fichiers réels | Diff différent ou `CREATE` introduit en UPDATE → `HOLD` |
+| Correspondance positive | `C278_SANDBOX_BYTES_MATCH_UNATTESTED` ; jamais autorisation |
+
+La source C278 et son contrat de réparation sont repris depuis
+`Eaubin08/obsidia-x108-proofs` / `codex/obsidure-f7-r10-isolated` :
+`periphery/language/proposal_meaning_validator.py` et
+`periphery/agents/obsidure_repair_contract.py` (seules fins de ligne
+normalisées). Le producteur historique
+`periphery/agents/obsidure_repair_bridge.py::test_repair_proposal` a été
+inspecté **sans exécution** : il écrit les candidats dans
+`_EPHEMERAL_REPAIR_SANDBOX_*`, puis renseigne des statuts de test déclarés,
+mais **ne signe pas ses verdicts**. Les détails exacts de provenance Git et
+SHA sont dans `C278_SANDBOX_OBSERVATION_PROVENANCE_V1.json`.
+
+Les observations ne peuvent donc **pas** attester l'identité du processus
+testeur, son isolation effective, la date historique du test, ni le commit
+Git réel. Un `PASS` ou `FULL` historique n'est jamais promu en preuve de
+production. Les sous-chemins et empreintes restent sujets au TOCTOU entre
+observation et éventuelle écriture. L'exécution est toujours bloquée.
+
+Tests locaux Linux : **107 tests, OK** (94 précédents + 13 nouveaux),
+dont un raccord synthétique C278 → R10 → R9 → R12 qui reste en HOLD
+lorsqu'un reçu R8 manque, ainsi que les refus de modification de sandbox,
+de patch incohérent, de faux statut et de tentative de symlink. Les fixtures
+sont synthétiques et créées exclusivement dans des répertoires temporaires.
+
+**Bloqueur de la prochaine frontière :** pour prétendre à une provenance
+réelle, il faut un producteur de preuve authentifié au moment des tests,
+avec enregistrement de l'identité runner, du commit, du digest de sandbox,
+du transcript et de la liaison C278/R9, puis une vérification indépendante.
+Ce contrat n'existe pas encore dans les sources inspectées. **`RELEASE HOLD`**
+et `KX108_ONLY` restent inchangés.
