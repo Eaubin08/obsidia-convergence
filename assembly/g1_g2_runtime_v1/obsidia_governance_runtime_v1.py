@@ -40,6 +40,7 @@ from kx108_c2_signed_post_readonly_v1 import inspect_c2_signed_post_receipts
 from kx108_c2_crash_window_readonly_v1 import inspect_c2_crash_window
 from c2_write_intent_wal_v1 import inspect_intent as inspect_c2_write_intent_wal
 from c2_wal_outcome_observer_v1 import inspect_c2_wal_outcome_state
+from c2_wal_machine_rsa_receipt_v1 import inspect_wal_machine_rsa_receipt
 from scripts.obsidia_kx108_decision_store import (
     persist_kx108_world_action_pre_execution_decision,
 )
@@ -80,6 +81,7 @@ class ObsidiaGovernanceRuntime:
             "kx108_c2_signed_post": "G4D_POST_K1_HMAC_WITH_C2_STRUCTURE_READONLY_RELEASE_HOLD",
             "kx108_c2_crash_window": "G4F_PREIMAGE_HMAC_LINKED_LIVE_OBSERVATION_READONLY_NO_RESTORE",
             "c2_write_intent_wal": "G4H_OPTIN_PREWRITE_G4I_READONLY_OUTCOME_INSPECTION_NO_RESTORE",
+            "c2_wal_machine_receipt": "G4J_PER_MACHINE_RSA_PINNED_VERIFICATION_ONLY_NO_TRUST_ROOT",
             "update": "K1_PREPARE_AVAILABLE_EXECUTION_HOLD",
             "create": "PREFLIGHT_ONLY",
             "world_action": "EVIDENCE_ONLY",
@@ -497,6 +499,10 @@ class ObsidiaGovernanceRuntime:
         """G4I : observe les octets C2 + le claim WAL, sans exécuter."""
         return inspect_c2_wal_outcome_state(
             wal_dir=wal_dir, intent_id=intent_id, repo_root=repo_root)
+
+    def inspect_c2_wal_machine_rsa_receipt(self, **canonical_inputs: Any) -> dict[str, Any]:
+        """G4J : vérifie la possession de clé sur un WAL, sans ticket souverain."""
+        return inspect_wal_machine_rsa_receipt(**canonical_inputs)
 
     def record_world_action_evidence(
         self,

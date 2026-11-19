@@ -1315,3 +1315,25 @@ Les tests ne touchent que des fichiers synthétiques temporaires et incluent
 un passage WAL G4H → rollback simulé → résultat G4I. Voir
 `G4I_C2_WAL_OUTCOME_OBSERVATION_V1.md`.
 **Windows G4I à valider ; APPLY réel et RELEASE en HOLD.**
+
+### G4J — Signature par PC liée au résultat WAL, jamais à l'autorité
+
+**G4I Windows PASS** transmis par le portable `DESKTOP-Q5MD7J7` au commit
+`264cd344091f9e2cda593a91c0afc8777527b7a9` : 301 tests `unittest`
+OK (9 ignorés), 54 contrats G1/G2 PASS (2 ignorés).
+
+G4J permet à la même façade de **vérifier** une signature RSA du détenteur
+d'une clé de machine sur un reçu déclaratif lié à l'intention, à l'outcome
+append-only et au contenu cible effectivement relu. Le validateur réutilise
+la primitive RSA de vérification publique C278, avec un domaine de signature
+G4J distinct. Aucune clé privée n'entre dans le runtime.
+
+Un outil PowerShell de test exploite la clé existante **sur le portable**, sans
+export ni nouvelle identité, pour signer un exemple WAL strictement
+synthétique. Même une signature cryptographiquement correcte **ne prouve pas
+le runner**, ne vaut pas approbation d'enrôlement, n'attribue pas de nouvelle
+autorité à Obsidure et n'ouvre pas le rail APPLY.
+
+**Développement : 318 tests `unittest` PASS en environnement isolé Linux.**
+Windows G4J reste à valider. Voir `G4J_C2_WAL_PER_MACHINE_RSA_V1.md`.
+`KX108_ONLY`, `RELEASE=HOLD`.
