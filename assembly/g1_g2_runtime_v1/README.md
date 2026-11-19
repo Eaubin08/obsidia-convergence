@@ -1357,3 +1357,22 @@ supervisé par une racine de confiance.
 Régression Windows et contrats G1/G2 Windows encore nécessaires. Voir
 `G4K_C2_SYNTHETIC_RUNNER_TRACE_V1.md`.
 `KX108_ONLY`, `RELEASE=HOLD`.
+
+### G4L — Nonce C2 réservé dans un registre local test-only
+
+**G4K Windows PASS** reçu du portable `DESKTOP-Q5MD7J7` au commit
+`8ce6804063fac37c7d93ff90b4ab3defead880b8` : 339 tests
+`unittest` OK (9 ignorés), 54 contrats G1/G2 PASS (2 ignorés) et
+signature RSA Windows d'une trace de sous-processus **synthétique** liée
+au WAL vérifiée.
+
+G4L ajoute **hors façade d'exécution** une réservation append-only locale
+d'un nonce signé G4J/G4K, publication exclusive `O_EXCL` et relecture.
+Les mêmes octets refusent le replay entre deux processus séparés, y compris
+en concurrence. Un fichier tronqué ou corrompu reste un motif de quarantaine.
+
+Ce registre n'est **pas de confiance** : le propriétaire peut l'effacer et
+autoriser ainsi une nouvelle réservation. Aucune prétention de protection
+distribuée, de survie à une coupure d'alimentation, d'identité du vrai
+producteur C278 ou de reprise gouvernée. Voir
+`G4L_C2_LOCAL_NONCE_LEDGER_V1.md`. `KX108_ONLY`, `RELEASE=HOLD`.
