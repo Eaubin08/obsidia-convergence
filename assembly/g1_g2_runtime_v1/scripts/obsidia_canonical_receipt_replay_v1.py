@@ -212,6 +212,7 @@ def _verify_kx108(envelope: dict, stores: dict, result: dict) -> Optional[dict]:
         result["KX108_ref_valid"] = NOT_REACHED
         return None
     record = _DS.load_kx108_decision_record(record_id, store_dir=stores["kxpre"])
+    # Comparaison historique read-only, sans admission d'exécution K1.
     ok, reason = _DS.verify_kx108_decision_record(record)
     if not ok:
         if reason == "DECISION_RECORD_MISSING":

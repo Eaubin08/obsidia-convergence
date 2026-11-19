@@ -117,7 +117,9 @@ def classify_post_execution_disposition(
             commit_review_eligible=False, rollback_required=True,
             post_decision_record_id=rec_id,
         )
-    ok, reason = _DS.verify_kx108_decision_record(rec)
+    # Sans authentification du producteur, un POST ALLOW forgé (hash
+    # recalculé) pourrait être présenté comme éligible à la revue humaine.
+    ok, reason = _DS.verify_kx108_decision_record_authenticity(rec)
     if not ok:
         return _classified(
             MUST_ROLLBACK, f"KX108_POST_RECORD_INVALID:{reason}",

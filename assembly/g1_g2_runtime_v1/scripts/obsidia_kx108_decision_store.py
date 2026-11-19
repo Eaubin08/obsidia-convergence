@@ -539,7 +539,7 @@ def run_and_persist_kx108_decision(
 
     store_result = store_kx108_decision_record(record, store_dir)
     reloaded = load_kx108_decision_record(record["decision_record_id"], store_dir)
-    verify_ok, verify_reason = verify_kx108_decision_record(reloaded)
+    verify_ok, verify_reason = verify_kx108_decision_record_authenticity(reloaded)
 
     return {
         "decision_record_id": record["decision_record_id"],
@@ -690,7 +690,7 @@ def run_and_persist_kx108_pre_execution_decision(
 
     store_result = store_kx108_decision_record(record, store_dir)
     reloaded = load_kx108_decision_record(record["decision_record_id"], store_dir)
-    verify_ok, verify_reason = verify_kx108_decision_record(reloaded)
+    verify_ok, verify_reason = verify_kx108_decision_record_authenticity(reloaded)
 
     return {
         "decision_record_id": record["decision_record_id"],
@@ -956,7 +956,7 @@ def run_and_persist_kx108_post_execution_decision(
 
     AVANT toute invocation du kernel KX108_POST, prouve :
       1. binding_context POST complet (_validate_binding_context)
-      2. record PRE chargé canoniquement par id + verify_kx108_decision_record OK
+      2. record PRE chargé canoniquement par id + HMAC K1 vérifié
       3. decision_phase_of(pre) == PRE_EXECUTION
       4. pre.x108_gate == ALLOW
       5. pre.approval_id == binding_context.approval_id
@@ -996,7 +996,7 @@ def run_and_persist_kx108_post_execution_decision(
     if pre is None:
         return {"status": "REJECTED", "reason": "KX108_PRE_DECISION_NOT_FOUND",
                 "kx108_kernel_call_count": 0}
-    ok_pre, reason_pre = verify_kx108_decision_record(pre)
+    ok_pre, reason_pre = verify_kx108_decision_record_authenticity(pre)
     if not ok_pre:
         return {"status": "REJECTED", "reason": f"KX108_PRE_DECISION_INVALID:{reason_pre}",
                 "kx108_kernel_call_count": 0}
@@ -1073,10 +1073,13 @@ def run_and_persist_kx108_post_execution_decision(
         identity_seed.update(sealed_link)
     record["decision_record_id"] = _compute_post_pre_linked_decision_record_identity(identity_seed)
     record["decision_record_hash"] = compute_kx108_decision_record_hash(record)
+    # POST est lui aussi signé par le producteur réel après invocation KX108.
+    # Il reste INÉLIGIBLE à l'émission d'un ticket PRE souverain.
+    _authenticate_decision_record(record, "run_and_persist_kx108_post_execution_decision")
 
     store_result = store_kx108_decision_record(record, post_decision_store_dir)
     reloaded = load_kx108_decision_record(record["decision_record_id"], post_decision_store_dir)
-    verify_ok, verify_reason = verify_kx108_decision_record(reloaded)
+    verify_ok, verify_reason = verify_kx108_decision_record_authenticity(reloaded)
 
     return {
         "status": "STORED" if verify_ok else "VERIFY_FAILED",

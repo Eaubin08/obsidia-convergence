@@ -1181,3 +1181,20 @@ eu lieu. Voir `G4B_C2_ACTUAL_RECEIPTS_READONLY_V1.md`.
 **17 tests G4B** sont ajoutés dans une sandbox jetable de tests. La release,
 la fermeture universelle des écritures, les opérations de production et la
 provenance de POST/Apply/Rollback restent **HOLD**.
+
+### G4C — Authentification HMAC K1 aux frontières PRE/POST
+
+Windows G4B : **223 tests exécutés, 6 ignorés, OK**, rapport transmis par
+`DESKTOP-Q5MD7J7` (portable). La revue du code a révélé que les chemins
+canoniques Apply, POST et Rollback vérifiaient encore seulement le hash
+structurel à certains endroits. G4C exige HMAC K1 lors du préflight,
+avant toute écriture, avant l'appel KX108_POST, et avant disposition ou
+restauration ; le producteur POST authentifie désormais son propre record.
+
+Un POST signé n'est **jamais** éligible à l'émission d'un ticket PRE.
+Les anciens replays R8/R12 restent des comparaisons structurelles en lecture
+seule, sans admission d'autorité. Les tests G4C emploient des dossiers
+temporaires, des mocks et une clé synthétique. Voir
+`G4C_K1_HMAC_CONSUMER_CLOSURE_V1.md`.
+
+**Release, Global Write Closure et APPLY réel : HOLD.**
