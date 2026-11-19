@@ -634,23 +634,27 @@ def run_governed_content_apply(
     bytes_written = wres.get("bytes_written")
 
     # ── 7. SealedApplyReceipt — persisté + rechargé + vérifié ──
-    sar_rec, r_sar = SEV.build_sealed_apply_receipt(
-        batch_execution_id=batch_execution_id, child=child,
-        execution_authority_hash=current_eah, approval_id=approval_id,
-        kx108_pre_decision_record_id=kx108_pre_decision_record_id,
-        kx108_pre_decision_record_hash=pre_hash,
-        sealed_rollback_evidence_id=sre_id, sealed_rollback_evidence_hash=sre_hash,
-        target_pre_sha256=child_target_pre, target_post_sha256=target_b,
-        bytes_written=bytes_written,
-    )
-    sar_ok = sar_rec is not None
-    if sar_ok:
-        sar_store = SEV.store_sealed_apply_receipt(sar_rec, sealed_receipt_dir)
-        sar_ok = sar_store.get("status") in (SEV.STATUS_STORED, SEV.STATUS_IDEMPOTENT)
+    try:
+        sar_rec, r_sar = SEV.build_sealed_apply_receipt(
+            batch_execution_id=batch_execution_id, child=child,
+            execution_authority_hash=current_eah, approval_id=approval_id,
+            kx108_pre_decision_record_id=kx108_pre_decision_record_id,
+            kx108_pre_decision_record_hash=pre_hash,
+            sealed_rollback_evidence_id=sre_id, sealed_rollback_evidence_hash=sre_hash,
+            target_pre_sha256=child_target_pre, target_post_sha256=target_b,
+            bytes_written=bytes_written,
+        )
+        sar_ok = sar_rec is not None
         if sar_ok:
-            sar_re = SEV.load_sealed_apply_receipt(sar_rec["sealed_apply_receipt_id"], sealed_receipt_dir)
-            ok_sar_v, _ = SEV.verify_sealed_apply_receipt(sar_re)
-            sar_ok = ok_sar_v
+            sar_store = SEV.store_sealed_apply_receipt(sar_rec, sealed_receipt_dir)
+            sar_ok = sar_store.get("status") in (SEV.STATUS_STORED, SEV.STATUS_IDEMPOTENT)
+            if sar_ok:
+                sar_re = SEV.load_sealed_apply_receipt(sar_rec["sealed_apply_receipt_id"], sealed_receipt_dir)
+                ok_sar_v, _ = SEV.verify_sealed_apply_receipt(sar_re)
+                sar_ok = ok_sar_v
+    except Exception as exc:  # aucune exception du scellage après mutation ne saute D2
+        sar_ok = False
+        r_sar = f"EXCEPTION:{type(exc).__name__}"
     if not sar_ok:
         # §22 — B existe mais le reçu scellé n'a pu être persisté/vérifié.
         return _rollback_after_mutation(
@@ -700,16 +704,24 @@ def run_governed_content_apply(
             ctx_common=ctx_common)
 
     # ── 9. Évidence POST liée cryptographiquement au scellé (§17) ──
-    tr = ADP.translate_evidence_to_tooling_build_state(
-        batch_execution_id, child_execution_id, approval_id, tcr_id,
-        execution_dir=execution_dir, selector_dir=selector_dir, ledger_dir=ledger_dir,
-        results_dir=test_contract_results_dir, evidence_dir=None, repo_root=root,
-        pre_execution_context_dir=pre_execution_context_dir,
-        sealed_apply_receipt_id=sar_id, sealed_rollback_evidence_id=sre_id,
-        sealed_receipt_dir=sealed_receipt_dir,
-        sealed_rollback_evidence_dir=sealed_rollback_evidence_dir,
-    )
-    if tr.get("status") != ADP.READY_FOR_KX108_SUBMISSION:
+    try:
+        tr = ADP.translate_evidence_to_tooling_build_state(
+            batch_execution_id, child_execution_id, approval_id, tcr_id,
+            execution_dir=execution_dir, selector_dir=selector_dir, ledger_dir=ledger_dir,
+            results_dir=test_contract_results_dir, evidence_dir=None, repo_root=root,
+            pre_execution_context_dir=pre_execution_context_dir,
+            sealed_apply_receipt_id=sar_id, sealed_rollback_evidence_id=sre_id,
+            sealed_receipt_dir=sealed_receipt_dir,
+            sealed_rollback_evidence_dir=sealed_rollback_evidence_dir,
+        )
+    except Exception as exc:
+        tr = {"status": "EXCEPTION", "reason": f"{type(exc).__name__}"}
+    if not isinstance(tr, dict):
+        tr = {"status": "INVALID_RESULT", "reason": "NOT_A_DICT"}
+    if (tr.get("status") != ADP.READY_FOR_KX108_SUBMISSION
+            or not isinstance(tr.get("translation_report"), dict)
+            or not tr["translation_report"].get("kx108_input_translation_hash")
+            or not isinstance(tr.get("tooling_build_state_kwargs"), dict)):
         return _rollback_after_mutation(
             RB, DISP, reason=f"POST_EVIDENCE_TRANSLATION_FAILED:{tr.get('reason')}",
             trigger_code="POST_EVIDENCE_UNAVAILABLE",
@@ -735,16 +747,24 @@ def run_governed_content_apply(
         "test_result_record_hash": tcr_hash,
         "kx108_input_translation_hash": translation_hash,
     }
-    post_out = _DS.run_and_persist_kx108_post_execution_decision(
-        tr["tooling_build_state_kwargs"], binding_context, kx108_pre_decision_record_id,
-        execution_dir=execution_dir, pre_decision_store_dir=kx108_decision_dir,
-        post_decision_store_dir=post_decision_store_dir,
-        sealed_evidence_link={
-            "sealed_apply_receipt_id": sar_id, "sealed_apply_receipt_hash": sar_hash,
-            "sealed_rollback_evidence_id": sre_id, "sealed_rollback_evidence_hash": sre_hash,
-        },
-    )
-    if post_out.get("status") != "STORED" or not post_out.get("verify_ok"):
+    try:
+        post_out = _DS.run_and_persist_kx108_post_execution_decision(
+            tr["tooling_build_state_kwargs"], binding_context, kx108_pre_decision_record_id,
+            execution_dir=execution_dir, pre_decision_store_dir=kx108_decision_dir,
+            post_decision_store_dir=post_decision_store_dir,
+            sealed_evidence_link={
+                "sealed_apply_receipt_id": sar_id, "sealed_apply_receipt_hash": sar_hash,
+                "sealed_rollback_evidence_id": sre_id, "sealed_rollback_evidence_hash": sre_hash,
+            },
+        )
+    except Exception as exc:
+        post_out = {"status": "EXCEPTION", "reason": f"{type(exc).__name__}",
+                    "kx108_kernel_call_count": "UNKNOWN"}
+    if not isinstance(post_out, dict):
+        post_out = {"status": "INVALID_RESULT", "reason": "NOT_A_DICT"}
+    if (post_out.get("status") != "STORED" or not post_out.get("verify_ok")
+            or not isinstance(post_out.get("decision_record_id"), str)
+            or not post_out["decision_record_id"]):
         return _rollback_after_mutation(
             RB, DISP, reason=f"KX108_POST_STORE_OR_VERIFY_FAILED:{post_out.get('reason') or post_out.get('verify_reason')}",
             trigger_code="KX108_POST_STORE_FAILURE",
@@ -760,9 +780,14 @@ def run_governed_content_apply(
     post_id = post_out["decision_record_id"]
 
     # ── 11. Disposition D1 (recalculée, jamais fournie) ──
-    disp = DISP.classify_post_execution_disposition(
-        post_decision_record_id=post_id, post_decision_store_dir=post_decision_store_dir,
-    )
+    try:
+        disp = DISP.classify_post_execution_disposition(
+            post_decision_record_id=post_id, post_decision_store_dir=post_decision_store_dir,
+        )
+    except Exception as exc:
+        disp = {"status": "EXCEPTION", "reason": f"{type(exc).__name__}"}
+    if not isinstance(disp, dict):
+        disp = {"status": "INVALID_RESULT", "reason": "NOT_A_DICT"}
     common_out = {
         "execution_authority_hash": current_eah,
         "sealed_apply_receipt_id": sar_id, "sealed_apply_receipt_hash": sar_hash,
@@ -774,16 +799,28 @@ def run_governed_content_apply(
         "target_final_sha256": target_b,
         "authority": AUTHORITY, "decision_authority": DECISION_AUTHORITY,
     }
-    if disp.get("disposition") == DISP.KEEP_ELIGIBLE_FOR_HUMAN_COMMIT_REVIEW \
+    if disp.get("status") == DISP.DISPOSITION_CLASSIFIED \
+            and disp.get("disposition") == DISP.KEEP_ELIGIBLE_FOR_HUMAN_COMMIT_REVIEW \
             and post_out.get("x108_gate") == "ALLOW":
         return {"status": GOVERNED_REMEDIATION_KEPT_ELIGIBLE_FOR_HUMAN_COMMIT_REVIEW,
                 "reason": "KX108_POST_GATE_ALLOW", "target_mutated": True,
                 "commit_review_eligible": True, "rollback_required": False, **common_out}
 
-    # MUST_ROLLBACK (POST HOLD/BLOCK ou signal) -> D2
+    # Si la classification échoue ou contredit le gate, le POST ne peut pas
+    # servir de déclencheur D2 (D2 refuse à juste titre un POST ALLOW).
+    # Utiliser le signal canonique d'indisponibilité, jamais une autorisation.
+    classified_rollback = (
+        disp.get("status") == DISP.DISPOSITION_CLASSIFIED
+        and disp.get("disposition") == "MUST_ROLLBACK"
+        and post_out.get("x108_gate") in ("HOLD", "BLOCK")
+    )
+    trigger_kwargs = (
+        {"post_decision_record_id": post_id} if classified_rollback
+        else {"trigger_code": "POST_EVIDENCE_UNAVAILABLE"}
+    )
     return _rollback_after_mutation(
         RB, DISP, reason=f"KX108_POST_DISPOSITION_{disp.get('disposition')}_GATE_{post_out.get('x108_gate')}",
-        post_decision_record_id=post_id,
+        **trigger_kwargs,
         child_execution_id=child_execution_id,
         kx108_pre_decision_record_id=kx108_pre_decision_record_id,
         execution_dir=execution_dir, pre_decision_store_dir=kx108_decision_dir,
@@ -820,7 +857,27 @@ def _rollback_after_mutation(RB, DISP, *, reason, child_execution_id,
         kw["kx108_post_decision_record_id"] = post_decision_record_id
     else:
         kw["rollback_trigger_code"] = trigger_code
-    rb = RB.run_governed_rollback(**kw)
+    try:
+        rb = RB.run_governed_rollback(**kw)
+        if not isinstance(rb, dict):
+            raise TypeError("ROLLBACK_INVALID_RESULT")
+    except Exception as exc:
+        # Une restauration interrompue ne peut jamais être présentée comme
+        # un succès. L'état disque est inconnu ; intervention manuelle.
+        return {
+            "status": GOVERNED_REMEDIATION_ROLLBACK_FAILED_QUARANTINE,
+            "reason": f"{reason}:ROLLBACK_EXCEPTION:{type(exc).__name__}",
+            "target_mutated": True,
+            "target_state_live_verified": False,
+            "rollback_status": "ROLLBACK_UNAVAILABLE",
+            "rollback_result_id": None,
+            "quarantine_required": True,
+            "kx108_invocations_during_rollback": 0,
+            "commit_review_eligible": False,
+            "rollback_required": True,
+            "authority": AUTHORITY, "decision_authority": DECISION_AUTHORITY,
+            **{k: v for k, v in ctx_common.items() if k not in ("status", "reason")},
+        }
     st = rb.get("status")
     ok = st in (RB.ROLLBACK_SUCCEEDED, RB.ALREADY_ROLLED_BACK,
                 RB.ROLLBACK_SUCCEEDED_RESULT_UNPERSISTED)
@@ -830,11 +887,16 @@ def _rollback_after_mutation(RB, DISP, *, reason, child_execution_id,
         "status": public,
         "reason": reason,
         "target_mutated": True,
+        "authority": AUTHORITY,
+        "decision_authority": DECISION_AUTHORITY,
+        "target_state_live_verified": bool(ok),
         "rollback_status": st,
         "rollback_result_id": rb.get("rollback_result_id"),
         "rollback_expected_b_authority": rb.get("rollback_expected_b_authority"),
         "expected_post_sha256": rb.get("expected_post_sha256"),
-        "quarantine_required": rb.get("quarantine_required"),
+        # Un statut de restauration non reconnu reste en quarantaine, même si
+        # un composant défaillant renvoie quarantine_required=False.
+        "quarantine_required": (not ok) or bool(rb.get("quarantine_required")),
         "kx108_invocations_during_rollback": rb.get("kx108_invocations_during_rollback", 0),
         "commit_review_eligible": False,
         "rollback_required": not ok,

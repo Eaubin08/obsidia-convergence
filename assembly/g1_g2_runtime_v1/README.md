@@ -1213,3 +1213,27 @@ et recontrôle le POST en fin d'inspection. Elle reste sur `HOLD`, même si
 le chaînage cryptographique et structurel est cohérent. Le détenteur de clé
 et le processus producteur des reçus C2 ne sont **pas** attestés par les
 hashes actuels. Voir `G4D_SIGNED_POST_C2_READONLY_V1.md`.
+
+### G4E — Exceptions après mutation C2 et quarantaine explicite
+
+**G4D Windows PASS** confirmé par le portable `DESKTOP-Q5MD7J7` au commit
+`05a55fb50e4795df4aabdd760c31f08267ab34e9` : 244 tests `unittest` OK
+(6 ignorés), 54 tests de contrat G1/G2 PASS (2 ignorés).
+
+G4E durcit **le même pipeline C2** `scripts/obsidia_governed_apply_v0.py` :
+après un remplacement de cible effectivement mesuré, les exceptions de
+scellage du reçu, traduction de preuves, POST KX108 et disposition sont
+redirigées vers le rollback D2. Une disposition absente ou contradictoire
+avec le gate POST déclenche le signal canonique `POST_EVIDENCE_UNAVAILABLE`
+au lieu d'utiliser abusivement un POST `ALLOW` comme déclencheur D2.
+Une exception du rollback ou un statut inconnu impose une **quarantaine**,
+jamais un faux succès.
+
+Les tests G4E mutent uniquement un fichier temporaire avec des doubles de
+test, puis simulent les échecs et restaurations. Ils n'attestent **ni** un
+processus producteur réel, **ni** un crash machine, **ni** une fermeture
+universelle des écritures. Voir
+`G4E_POST_MUTATION_EXCEPTION_CLOSURE_V1.md`.
+
+**Développement : 254 tests `unittest` PASS en environnement isolé Linux.**
+La vérification Windows G4E reste à effectuer. `KX108_ONLY` et `RELEASE=HOLD`.
