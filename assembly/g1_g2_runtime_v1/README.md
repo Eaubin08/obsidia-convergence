@@ -686,3 +686,45 @@ Ces preuves sont **synthétiques pour test**, pas un reçu de production.
 gates Windows R12, provenance sandbox C278, préparation R9 complète,
 HumanApproval, PRE/POST KX108, TOCTOU au point d'écriture.
 `FULL_FUNCTIONAL_G1_G2_HOLD` / `RELEASE HOLD` inchangés.
+
+### R8 D3 / V2_APPLY_PATCH : reconstruction du Binder, toujours sans APPLY
+
+La branche isolée `build/g1-g2-r12-r8-apply-patch-binder-v1` valide la
+reconstruction du Binder **sur son contrat canonique** `V2_APPLY_PATCH`,
+sans confondre ce contrôle avec une décision d'exécuter ou une attestation
+d'origine. Le contrôle mobilise le véritable
+`run_tooling_build_pipeline(ToolingBuildState(...))`, et les trois replays R8.
+
+Deux dépendances Sigma minimales sont reprises de
+`Eaubin08/obsidia-x108-proofs` / `codex/obsidure-f7-r10-isolated` :
+
+| Fichier canonique | SHA256 de la copie de convergence | Usage |
+|---|---|---|
+| `sigma/base.py` | `6f344dcd0e3e253d0c7d1d50fb42aaa0869c47cafbc39e00e3d3d1e093e9b4b8` | Classe de base des agents Sigma |
+| `sigma/utils/indicators.py` | `e0ffe9f20acbc82c1e8cbc6326776f4f852430917a86a9e00340d7c8a6603990` | Import des agents trading existants |
+
+Le module `sigma/protocols.py` conserve inchangé le corps de
+`run_tooling_build_pipeline`. Seul le chargement du registre Sigma et du
+domaine e-commerce est différé jusqu'à leur utilisation : le replay
+`tooling_build` ne doit pas importer `periphery.ecom_attestation` et sa
+chaîne de dépendances hors périmètre. Aucune simulation de ce service n'est
+ajoutée ; le domaine e-commerce reste à raccorder en intégration globale.
+
+| Preuve isolée (fixture **synthétique**) | R8 intégrité | R8 décision | R8 état | R12 |
+|---|---|---|---|---|
+| `V2_APPLY_PATCH`, décision Sigma correspondante, Binder reconstruit | `VERIFIED` + `RECONSTRUCTED_MATCH` | `MATCH`, Binder `YES`, politique à couverture bornée | `MATCH` | `EVIDENCE_INCOMPLETE`, `ESCALATE` |
+| Dérive de politique simulée | `CONFLICTING` | Non exploitable | Non exploitable | `EVIDENCE_TAMPERED`, `STOP_BLOCKED` |
+| Enregistrement KX108 retouché malgré un hash recalculé | Ref KX108 refusée | Non exploitable | Non exploitable | `EVIDENCE_TAMPERED`, `STOP_BLOCKED` |
+| Identité R9/Builder différente | Sans replay utile | Sans replay utile | Sans replay utile | `GOVERNANCE_MISMATCH`, `STOP_BLOCKED` |
+
+Test : `tests/integration/test_r12_r8_apply_patch_binder_stdlib_v1.py`
+(4 cas). Résultat local Linux : **85 tests, OK**, sans serveur, sans
+application de patch et avec seules écritures dans des dossiers de tests
+temporaires. Gate Windows portable encore à vérifier. Le `ALLOW` KX108 de
+la fixture est une **donnée synthétique**, jamais une décision de production.
+L'identité de politique reste `BOUNDED_SOURCE_FINGERPRINT` ; le verdict
+R12 ne peut donc pas promouvoir une preuve test en succès de production.
+
+**Interdits maintenus** : provenance synthétique prise pour HumanApproval,
+appel `execute`, mutation d'une cible réelle, retry automatique, deuxième
+runtime. `RELEASE HOLD` / `FULL_FUNCTIONAL_G1_G2_HOLD`.
