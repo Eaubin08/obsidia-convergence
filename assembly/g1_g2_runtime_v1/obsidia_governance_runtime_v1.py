@@ -65,7 +65,7 @@ class ObsidiaGovernanceRuntime:
             "obsidure_c278_sandbox": "CANONICAL_C278_REPLAY_AND_SANDBOX_BYTES_UNATTESTED",
             "obsidure_c278_signed_receipt": "DETACHED_HMAC_VERIFICATION_ONLY_ORIGIN_UNATTESTED",
             "obsidure_c278_machine_rsa_receipt": "PER_MACHINE_RSA_PUBLIC_VERIFICATION_ONLY_ORIGIN_UNATTESTED",
-            "obsidure_machine_identity": "PER_MACHINE_PUBLIC_KEY_ENROLLMENT_PLANNED_NO_AUTHORITY",
+            "obsidure_machine_identity": "PER_MACHINE_PUBLIC_KEY_ENROLLED_ON_PORTABLE_AWAITING_REVIEW_NO_AUTHORITY",
             "obsidure_r9_prepare": "CANONICAL_V2_DESCRIPTOR_AND_PATCH_REPLAY_UNATTESTED",
             "obsidure_r9_r12_link": "R9_TO_R8_HISTORICAL_READONLY_HOLD",
             "obsidure_r12_r8_outcome": "CANONICAL_HISTORICAL_REPLAY_READONLY_NO_RETRY",

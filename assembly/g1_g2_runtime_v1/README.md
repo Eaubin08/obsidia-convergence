@@ -1116,3 +1116,33 @@ redemander une série de commandes de collecte sur le portable pour ce jalon.
 **Tests de développement du lot : 173 tests unittest passés sous Linux**, dont
 12 négatifs/positifs nouveaux de snapshot RSA. Les tests pytest `candidate`
 doivent être revalidés sur Windows lors de l'exécution groupée.
+
+### G3 — Entrée opérateur unique, lecture seule (sans CLI concurrente)
+
+La validation du lot portable est maintenant rapportée **PASS** par
+`DESKTOP-Q5MD7J7` : 173 tests du runtime, 54 PASS / 2 skips de contrats,
+interop RSA Windows/Python et snapshot C278 local signé. Les preuves signées
+restent dans `Downloads` du portable et n'ont pas été publiées dans GitHub.
+Les anciens tests C278 ne sont toujours pas attestés (`HOLD`).
+
+`obsidia_governance_cli_v1.py` expose un **adaptateur de démonstration** sur
+`get_runtime()`, pas une autre autorité ou une deuxième distribution du produit.
+Il permet d'observer les capacités, l'inventaire statique des domaines Sigma,
+un avis Sigma tooling, un calcul Merkle sans écriture et un refus `execute`.
+Chaque résultat contient explicitement `release_authorized=False`.
+
+L'import dynamique du registre Sigma révèle une dépendance absente
+`periphery.ecom_attestation` ; l'inventaire G3 analyse donc la déclaration
+canonique **sans charger ou exécuter les agents**. Cela ne clôt pas leur
+intégration réelle. Le détail des garanties, tests et limites se trouve dans
+`G3_OPERATOR_READONLY_GATE_V1.md`.
+
+```powershell
+py -3 -B .\assembly\g1_g2_runtime_v1\obsidia_governance_cli_v1.py status
+py -3 -B .\assembly\g1_g2_runtime_v1\obsidia_governance_cli_v1.py sigma-domains
+py -3 -B .\assembly\g1_g2_runtime_v1\obsidia_governance_cli_v1.py execute --operation WORLD_ACTION
+```
+
+La dernière commande renvoie volontairement `HOLD` et un code de retour 2.
+**Développement : 189 tests unittest PASS sous Linux**. Aucune activation
+réelle, aucun rollback ou test production, `FULL_FUNCTIONAL_G1_G2_HOLD`.
