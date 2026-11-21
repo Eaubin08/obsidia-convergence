@@ -16,6 +16,33 @@ La prise en charge d’un domaine inconnu ne signifie pas que le système en ma�
 4. **Obsidure — Ingénierie et action gouvernée** — Prépare, construit, répare et propose des opérations. Une proposition ne vaut jamais autorisation d’exécution.
 5. **Preuves, reçus et replay** — Lie les décisions à leurs entrées, contrats, politiques et preuves pour permettre leur audit et leur vérification indépendante. Le replay doit préserver la distinction entre vérifier une décision passée et accorder une autorité nouvelle.
 
+## Principe de traduction vers KX108
+
+**Les domaines parlent la langue canonique du kernel ; le kernel ne change pas de langue pour chaque domaine.**
+
+KX108 reste **agnostique aux domaines métier** : il reçoit des contrats et des preuves conformes à ses interfaces de gouvernance, applique ses lois et invariants, puis exerce seul l’autorité de décision. Un domaine nouveau ne doit pas imposer la modification du noyau ni obtenir une autorité particulière.
+
+Une **frontière de traduction** est nécessaire chaque fois que deux couches ou composants ne partagent pas le même contrat sémantique. Il n'est pas exigé un traducteur entre chaque module : l'adaptation se place aux frontières où elle est réellement nécessaire.
+
+La traduction doit :
+
+- préserver le sens des objets, opérations, relations, contraintes et unités ;
+- distinguer les faits attestés, les hypothèses, les contradictions et les inconnues ;
+- maintenir la provenance et les références de preuve ;
+- produire des contrats canoniques évaluables par Sigma et recevables par KX108, selon leurs interfaces vérifiées ;
+- refuser toute traduction ambiguë ou incomplète sur un élément critique (**HOLD**, sans approximation présentée comme preuve) ;
+- rester **non souveraine** : traduction, proposition et évaluation ne valent jamais autorisation.
+
+### Articulation des couches
+
+1. **Entrées et domaines** : expriment des intentions, actions et états dans leurs représentations propres, y compris pour un domaine non préprogrammé.
+2. **Adaptateurs / traducteurs** : transposent ces représentations vers des contrats canoniques, avec preuves et inconnues explicites.
+3. **Sigma** : fournit une évaluation consultative, sans autorité souveraine.
+4. **KX108** : décide exclusivement à partir des contrats, politiques et preuves admissibles.
+5. **Sorties et exécuteurs, dont Obsidure** : reçoivent seulement des instructions compatibles avec les décisions et autorisations vérifiées ; les résultats retournent vers l'audit, les reçus et le replay.
+
+**Critère de validation P1 :** démontrer que la traduction conserve les invariants et échoue de façon sûre pour un domaine inconnu ou mal spécifié. L'existence d'une fonction nommée `translate_domain` ne suffit pas à prouver cette capacité.
+
 ## Proposition commerciale
 
 Permettre à une entreprise, une organisation ou un développeur d’intégrer une **gouvernance vérifiable** à ses systèmes, agents IA et automatisations, sans abandonner le contrôle des décisions.
