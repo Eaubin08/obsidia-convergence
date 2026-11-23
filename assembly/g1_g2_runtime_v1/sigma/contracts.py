@@ -529,7 +529,7 @@ class AgentVote(UniversalBase):
         age = kwargs.pop("measure_age_s", None)
         self.measure_age_s = float(age) if age is not None else None
         valid = kwargs.pop("measure_valid", None)
-        self.measure_valid = bool(valid) if valid is not None else None
+        self.measure_valid = valid if type(valid) is bool else None
         self.observed_value = kwargs.pop("observed_value", None)
         self.predicate_violated = kwargs.pop("predicate_violated", None)
 

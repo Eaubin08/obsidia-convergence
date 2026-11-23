@@ -510,6 +510,20 @@ class GuardX108:
             reason = f"CONSERVATIVE_HOLD_{market_v}"
             severity = Severity.S2
 
+        # P1-C128 : les votes sans r?gle restent consultatifs.
+        # Leur pr?sence ne peut satisfaire une autorisation.
+        if (
+            gate == X108Gate.ALLOW
+            and any(
+                not (getattr(v, "rule_id", "") or "")
+                for v in getattr(aggregate, "agent_votes", [])
+            )
+        ):
+            gate = X108Gate.HOLD
+            reason = "RULELESS_VOTE_CANNOT_AUTHORIZE"
+            severity = Severity.S2
+            canonical_market_verdict = "HOLD"
+
         # Invariant P0 : aucun vote ne peut justifier une porte ALLOW.
         # Conserver les decisions HOLD/BLOCK deja produites.
         no_votes_promoted_to_allow = (
@@ -529,6 +543,15 @@ class GuardX108:
         domain_str = aggregate.domain.value if hasattr(aggregate.domain, "value") else str(aggregate.domain)
         decision_id = f"{domain_str}-{uuid.uuid4().hex[:12]}"
         trace_id = str(uuid.uuid4())
+        # P1-C132: independent measure attestation required.
+        # No independent verifier is connected to this Sigma boundary.
+        # Caller-supplied measure_valid/provenance cannot authorize ALLOW.
+        if gate == X108Gate.ALLOW:
+            gate = X108Gate.HOLD
+            reason = "INDEPENDENT_MEASURE_ATTESTATION_REQUIRED"
+            severity = Severity.S2
+            canonical_market_verdict = "HOLD"
+
         ticket_required = gate == X108Gate.ALLOW
         ticket_id = uuid.uuid4().hex[:16] if ticket_required else None
         attestation_ref = hashlib.sha256("|".join(aggregate.evidence_refs).encode("utf-8")).hexdigest()[:24] if aggregate.evidence_refs else None
