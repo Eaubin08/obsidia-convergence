@@ -1,0 +1,19 @@
+{
+  "schema": "OBSIDIA_G1G2_PORTABLE_C2_OBSIDURE_CLOSURE_V3",
+  "source_machine": "DESKTOP-Q5MD7J7",
+  "source_branch": "fix/kx108-zero-vote-guard-v1",
+  "source_head": "ecaf6729f1bcdb05bb8896b7c698d1ae90e56de7",
+  "destination_base_sha": "9274dbf5828b8b36bef89ee6e037a57dc26286b7",
+  "captured_utc": "2026-11-18T19:42:58.261019+00:00",
+  "scope": "CANONICAL_C2_OBSIDURE_VALIDATOR_STATIC_DEPS_ONLY",
+  "source_worktree_modified": false,
+  "tests_executed": false,
+  "runtime_activated": false,
+  "files": [
+    {
+      "path": "scripts/obsidure_bounded_apply.py",
+      "sha256": "4908e421a031752057a7b92c35ab942dafffb2b726f235be3fadb2bd86fca5cf",
+      "bytes": 24868
+    }
+  ]
+}
