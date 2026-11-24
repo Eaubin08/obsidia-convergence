@@ -166,6 +166,41 @@ class ObsidiaGovernanceRuntime:
             is_protected=_is_protected,
         )
 
+    def inspect_obsidure_governance_handoff(
+        self, *, proposal: Any, manifest: Any,
+        validation: Any, handoff: Any,
+    ) -> dict[str, Any]:
+        """Verifie le handoff Obsidure sans autoriser aucune execution."""
+        def deny(reason: str) -> dict[str, Any]:
+            result = self._hold(reason)
+            result["action_ticket_issued"] = False
+            return result
+
+        try:
+            from obsidure_governance_handoff_v1 import (
+                verify_governance_handoff,
+            )
+            ok, reason = verify_governance_handoff(
+                handoff, proposal, manifest, validation,
+            )
+        except Exception as exc:
+            return deny(
+                f"OBSIDURE_HANDOFF_VERIFIER_UNAVAILABLE:{type(exc).__name__}"
+            )
+        if not ok:
+            return deny(
+                f"OBSIDURE_HANDOFF_INVALID:{reason}"
+            )
+        return {
+            "status": "OBSIDURE_HANDOFF_VERIFIED_READONLY",
+            "decision_authority": self.authority,
+            "handoff_authority": "NONE",
+            "execution_authorized": False,
+            "action_ticket_issued": False,
+            "target_mutated": False,
+            "next_gate": "CANONICAL_APPROVAL_AND_KX108_PRE_NOT_INVOKED",
+        }
+
     def admit_obsidure_bridge(
         self, *, bridge_result: Any, worktree_root: Path, approved_scope: list[str],
     ) -> dict[str, Any]:

@@ -98,6 +98,7 @@ class ObsidureR9PrepareProvenance(unittest.TestCase):
         self.assertEqual(validation.validation_verdict, "VALID")
         handoff = build_governance_handoff(proposal, manifest, validation,
                                            source_metadata={**self.ids, "c278_evidence": "CONTINUOUS"})
+        self.handoff_fixture = (proposal, manifest, validation, handoff)
         self.lineage = {
             "lineage_schema_version": "OBSIDURE_GOVERNED_PATCH_PREPARE_ADAPTER_V1",
             "builder_proposal_id": proposal.proposal_id,
@@ -166,6 +167,50 @@ class ObsidureR9PrepareProvenance(unittest.TestCase):
         self.assertIs(result["executor_invoked"], False)
         self.assertIs(result["target_mutated"], False)
         self.assertEqual(result["decision_authority"], "KX108_ONLY")
+
+    def test_runtime_handoff_adversarial_readonly(self):
+        proposal, manifest, validation, handoff = self.handoff_fixture
+        baseline = handoff.to_dict()
+
+        cases = [
+            ("VALID", baseline, True, None),
+            ("MISSING", None, False, "OBSIDURE_HANDOFF_INVALID:"),
+            ("PROPOSAL_ID", {**baseline, "proposal_id": "forged"},
+             False, "PROPOSAL_ID_MISMATCH"),
+            ("MANIFEST_DIGEST", {**baseline, "manifest_digest": "0" * 64},
+             False, "MANIFEST_DIGEST_MISMATCH"),
+            ("VALIDATION_DIGEST", {**baseline, "validation_digest": "0" * 64},
+             False, "VALIDATION_DIGEST_MISMATCH"),
+            ("AUTHORITY", {**baseline, "authority": "KX108_ONLY"},
+             False, "AUTHORITY_MISMATCH"),
+            ("EXECUTION", {**baseline, "execution_allowed": True},
+             False, "EXECUTION_ALLOWED_MISMATCH"),
+            ("HANDOFF_DIGEST", {**baseline, "handoff_digest": "f" * 64},
+             False, "HANDOFF_DIGEST_MISMATCH"),
+            ("HANDOFF_ID", {**baseline, "handoff_id": "obh-" + "f" * 64},
+             False, "HANDOFF_ID_MISMATCH"),
+        ]
+
+        for name, candidate, expected_accept, expected_reason in cases:
+            with self.subTest(case=name):
+                result = self.runtime.inspect_obsidure_governance_handoff(
+                    proposal=proposal,
+                    manifest=manifest,
+                    validation=validation,
+                    handoff=candidate,
+                )
+                accepted = (
+                    result.get("status")
+                    == "OBSIDURE_HANDOFF_VERIFIED_READONLY"
+                )
+                self.assertEqual(accepted, expected_accept)
+                self.assertEqual(result.get("decision_authority"), "KX108_ONLY")
+                self.assertIs(result.get("execution_authorized"), False)
+                self.assertIs(result.get("action_ticket_issued"), False)
+                self.assertIs(result.get("target_mutated"), False)
+                self.assertNotIn("ticket_id", result)
+                if expected_reason is not None:
+                    self.assertIn(expected_reason, result.get("reason") or "")
 
     def test_canonical_r9_objects_and_v2_artifacts_match_without_origin_attestation(self):
         before = {p.name: p.read_bytes() for p in self.store.iterdir()}
