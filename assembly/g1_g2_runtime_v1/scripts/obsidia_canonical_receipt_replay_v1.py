@@ -336,12 +336,12 @@ def _binder_status(envelope: dict, stores: dict, result: dict, kxpre_record: Opt
                     desc_record, err = _safe_load_json(_descriptor_path(stores, descriptor_ref))
                     if not err and desc_record and desc_record.get("descriptor"):
                         base_sha = desc_record["descriptor"].get("base_sha", "")
-                
+
                 prep = envelope.get("prepare") or {}
                 paths = prep.get("target_paths") or []
                 if not paths and prep.get("target_path"):
                     paths = [prep.get("target_path")]
-                
+
                 mhash = prep.get("manifest_hash", "")
                 anchor = prep.get("physical_state_anchor", "")
                 anchor_kind = prep.get("state_anchor_kind", "GIT_HEAD")
@@ -363,13 +363,13 @@ def _binder_status(envelope: dict, stores: dict, result: dict, kxpre_record: Opt
                     "unknowns": [], "contradictions": [], "risk_flags": [],
                     "decision_authority": "KX108_ONLY",
                 }
-                
+
                 from sigma.contracts import ToolingBuildState
                 from sigma.protocols import run_tooling_build_pipeline
-                
+
                 state = ToolingBuildState(**kwargs)
                 decision = run_tooling_build_pipeline(state)
-                
+
                 recon_env = {
                     "x108_gate": decision.x108_gate,
                     "reason_code": decision.reason_code,
