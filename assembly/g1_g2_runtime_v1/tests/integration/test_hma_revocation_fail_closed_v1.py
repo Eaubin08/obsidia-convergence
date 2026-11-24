@@ -8,32 +8,30 @@ from pathlib import Path
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
-EXTERNAL = Path(
-    r"C:\Users\User\Desktop\OBSIDIA_WORK\obsidia-x108-proofs"
-)
 
-DEPENDENCY = EXTERNAL / "scripts/obsidia_isolated_work_unit_v0.py"
-
-EXPECTED_SHA256 = (
-    "e65460ac6b8225717e77a11051821c13c37a9"
-    "c2c98a6395d9d75e5b0b087a0a9"
-)
-
-if not DEPENDENCY.is_file():
-    raise RuntimeError("HMA_TEST_DEPENDENCY_MISSING")
-
-if hashlib.sha256(DEPENDENCY.read_bytes()).hexdigest() != EXPECTED_SHA256:
-    raise RuntimeError("HMA_TEST_DEPENDENCY_HASH_MISMATCH")
-
-for directory in (
-    EXTERNAL,
-    EXTERNAL / "scripts",
-    ROOT,
-    ROOT / "scripts",
-):
+# Portable : aucune dépendance vers un chemin personnel. Les dépendances HMA
+# (module isolé, snapshot local) sont des copies octet-identiques épinglées
+# dans le manifeste de portabilité ; leur état est vérifié avant tout import.
+for directory in (ROOT, ROOT / "scripts"):
     value = str(directory)
-    if value not in sys.path:
-        sys.path.insert(0, value)
+    if value in sys.path:
+        sys.path.remove(value)
+    sys.path.insert(0, value)
+
+import obsidia_portability_contract_v1 as _PORT
+
+_HMA_MODULES = {
+    "obsidia_isolated_work_unit_v0",
+    "obsidia_mission_local_snapshot_v0",
+    "obsidia_mission_authority_v0",
+}
+_REPORT = _PORT.inspect_portability(_PORT.load_manifest(), runtime_root=ROOT)
+_BAD = [
+    (e["module"], e["status"]) for e in _REPORT["entries"]
+    if e["module"] in _HMA_MODULES and e["status"] != _PORT.AVAILABLE_PINNED
+]
+if _BAD:
+    raise RuntimeError("HMA_TEST_PORTABLE_DEPENDENCY_NOT_CLOSED:" + repr(_BAD))
 
 import obsidia_mission_authority_v0 as hma
 import obsidia_mission_authority_integration_v0 as integration

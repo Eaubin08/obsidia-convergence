@@ -1,0 +1,59 @@
+{
+  "schema": "OBSIDIA_P1_PORTABILITY_MANIFEST_V1",
+  "decision_authority": "KX108_ONLY",
+  "note": "Declarative pin list. A pin proves byte identity with a reviewed source, never authority, authenticity or release.",
+  "entries": [
+    {
+      "module": "obsidia_isolated_work_unit_v0",
+      "relative_path": "scripts/obsidia_isolated_work_unit_v0.py",
+      "expected_sha256": "e65460ac6b8225717e77a11051821c13c37a9c2c98a6395d9d75e5b0b087a0a9",
+      "superseded_sha256": [],
+      "required": true,
+      "provenance": {
+        "source_repo": "obsidia-x108-proofs",
+        "source_last_commit": "45e78c22dcec00bd379c6020f4513a62f8f7e5b6",
+        "source_git_blob": "0ce7c633e5a45e0f59484634dda974b8555124f4",
+        "adoption": "BYTE_IDENTICAL_COPY_AFTER_IMPORT_CLOSURE_VALIDATION_C271"
+      }
+    },
+    {
+      "module": "obsidia_mission_local_snapshot_v0",
+      "relative_path": "scripts/obsidia_mission_local_snapshot_v0.py",
+      "expected_sha256": "133dd6d014becba69fc880a6c3c3469a51b6ffaa0f4147167cdcf1a01091679e",
+      "superseded_sha256": [],
+      "required": true,
+      "provenance": {
+        "source_repo": "obsidia-x108-proofs",
+        "source_last_commit": "830c6a124271d320a221525fb6d3438a8a07980d",
+        "source_git_blob": "558e6693dca98a97f3f67499941a303b8cba920a",
+        "adoption": "BYTE_IDENTICAL_COPY_AFTER_IMPORT_CLOSURE_VALIDATION_C271"
+      }
+    },
+    {
+      "module": "obsidia_mission_authority_v0",
+      "relative_path": "scripts/obsidia_mission_authority_v0.py",
+      "expected_sha256": "1582f07441be0beca020350464439fe4af4927975785fced6ae89acff8328408",
+      "superseded_sha256": [
+        "885a3bd08b385d71ead82bd858eb45cba75da6e310db773f91d4e6b266cf400b"
+      ],
+      "required": true,
+      "provenance": {
+        "source_repo": "obsidia-convergence",
+        "adoption": "P1_HMA_REVOCATION_FAIL_CLOSED_HARDENED_VERSION",
+        "superseded_note": "obsidia-x108-proofs version silently skips corrupted revocation records; it must never replace the P1 version."
+      }
+    },
+    {
+      "module": "periphery.ecom_attestation",
+      "relative_path": "periphery/ecom_attestation.py",
+      "expected_sha256": null,
+      "superseded_sha256": [],
+      "required": true,
+      "provenance": {
+        "adoption": "NO_CANONICAL_SOURCE_FOUND",
+        "expected_interface": "get_or_verify_state_attestation(state) -> (att_status: str, unused, age_s: float | None); only att_status == 'VERIFIED' qualifies a measure",
+        "consumer": "sigma/domains/ecom_agents.py (imported at module load by sigma/protocols.py)"
+      }
+    }
+  ]
+}
