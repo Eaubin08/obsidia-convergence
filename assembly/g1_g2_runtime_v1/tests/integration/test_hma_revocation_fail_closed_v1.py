@@ -26,10 +26,10 @@ if hashlib.sha256(DEPENDENCY.read_bytes()).hexdigest() != EXPECTED_SHA256:
     raise RuntimeError("HMA_TEST_DEPENDENCY_HASH_MISMATCH")
 
 for directory in (
-    EXTERNAL / "scripts",
     EXTERNAL,
-    ROOT / "scripts",
+    EXTERNAL / "scripts",
     ROOT,
+    ROOT / "scripts",
 ):
     value = str(directory)
     if value not in sys.path:
