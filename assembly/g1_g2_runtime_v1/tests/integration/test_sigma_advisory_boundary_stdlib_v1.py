@@ -4,7 +4,13 @@ Les votes sont fabriques en memoire, aucun serveur ou worktree de production.
 """
 from __future__ import annotations
 
+import sys
 import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from obsidia_governance_runtime_v1 import get_runtime
 from sigma.contracts import AgentVote, AuthorityLevel
@@ -41,7 +47,8 @@ class SigmaAdvisoryBoundary(unittest.TestCase):
         result = self.runtime.evaluate_tooling_build_advisory(_votes())
         self.assertEqual(result["status"], "SIGMA_ADVISORY_ONLY")
         self.assertEqual(result["advisory"]["market_verdict"], "READY_FOR_COMMIT_REVIEW")
-        self.assertEqual(result["advisory"]["guard_gate_observed"], "ALLOW")
+        self.assertEqual(result["advisory"]["guard_gate_observed"], "HOLD")
+        self.assertEqual(result["advisory"]["reason_code"], "RULELESS_VOTE_CANNOT_AUTHORIZE")
         self.assertEqual(result["decision_authority"], "KX108_ONLY")
         self.assertFalse(result["execution_authorized"])
         self.assertFalse(result["action_ticket_issued"])
