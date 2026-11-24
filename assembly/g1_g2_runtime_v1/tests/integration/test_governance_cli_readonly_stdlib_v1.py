@@ -63,7 +63,7 @@ class GovernanceCLIContract(unittest.TestCase):
     def test_four_positive_votes_are_advice_not_kx108_ticket(self):
         result = cli.dispatch_command("sigma-tooling", payload=payload())
         self.assertEqual(result["status"], "SIGMA_ADVISORY_ONLY")
-        self.assertEqual(result["advisory"]["guard_gate_observed"], "ALLOW")
+        self.assertEqual(result["advisory"]["guard_gate_observed"], "HOLD")
         self.assertFalse(result["source_attested"])
         self.assertEqual(result["input_provenance"], "CALLER_SUPPLIED_UNATTESTED")
         self.assertFalse(result["action_ticket_issued"])
