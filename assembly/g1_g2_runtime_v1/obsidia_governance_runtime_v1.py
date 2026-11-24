@@ -30,7 +30,15 @@ from obsidure_c278_sandbox_observation_v1 import (
     inspect_obsidure_c278_sandbox_observation,
     reconstruct_r9_patch_without_execution,
 )
-from obsidure_r12_r8_outcome_v1 import inspect_obsidure_r12_r8_outcome
+from obsidure_r12_r8_outcome_v1 import (
+    _ACTION_ID as _R8_ACTION_ID,
+    _CRE as _R8_CRE,
+    _R8_DECISION,
+    _R8_INTEGRITY,
+    _R8_REALIZED,
+    _safe_stores as _r8_safe_stores,
+    inspect_obsidure_r12_r8_outcome,
+)
 from scripts.obsidia_kx108_decision_store import (
     persist_kx108_world_action_pre_execution_decision,
 )
@@ -462,6 +470,67 @@ class ObsidiaGovernanceRuntime:
             "decision_authority": self.authority,
             "execution_authorized": False,
             "target_mutated": False,
+        }
+
+    def inspect_r8_receipt(
+        self, *, action_evidence_id: str, stores_base_dir: Path | str,
+    ) -> dict[str, Any]:
+        """Rejeu et réconciliation R8 en lecture seule, sans autorisation."""
+        def hold(reason: str, **extra: Any) -> dict[str, Any]:
+            return {
+                **self._hold(reason),
+                "readonly": True,
+                "action_ticket_issued": False,
+                "release_authorized": False,
+                **extra,
+            }
+
+        if type(action_evidence_id) is not str or _R8_ACTION_ID.fullmatch(action_evidence_id) is None:
+            return hold("R8_ACTION_EVIDENCE_ID_INVALID")
+        stores = _r8_safe_stores(stores_base_dir)
+        if stores is None:
+            return hold("R8_STORES_UNVERIFIED")
+        receipt = _R8_CRE.load_canonical_receipt_envelope(action_evidence_id, stores / "receipts")
+        if type(receipt) is not dict:
+            return hold("R8_CANONICAL_RECEIPT_MISSING_OR_INVALID")
+        ok, invalid_reason = _R8_CRE.verify_canonical_receipt_envelope(receipt)
+        if not ok:
+            return hold(f"R8_RECEIPT_INTEGRITY_INVALID:{invalid_reason}")
+        try:
+            integrity = _R8_INTEGRITY.replay_action_evidence(action_evidence_id, stores_base_dir=stores)
+            decision = _R8_DECISION.replay_governance_decision(action_evidence_id, stores_base_dir=stores)
+            reconciliation = _R8_REALIZED.reconcile_action_evidence(action_evidence_id, stores_base_dir=stores)
+        except (OSError, ValueError, TypeError, KeyError, AttributeError, UnicodeError) as exc:
+            return hold(f"R8_REPLAY_UNAVAILABLE:{type(exc).__name__}")
+        replay_verdict = integrity.get("replay_verdict")
+        decision_verdict = decision.get("replay_verdict")
+        reconciliation_status = reconciliation.get("reconciliation_status")
+        if (replay_verdict in {"TAMPERED", "CONFLICTING"}
+                or reconciliation_status == "TAMPERED"
+                or decision_verdict in {"TAMPERED", "MISMATCH"}):
+            return hold(
+                f"R8_RECEIPT_TAMPERED_OR_CONFLICTING:{replay_verdict}:{decision_verdict}:{reconciliation_status}",
+                integrity=integrity,
+                decision=decision,
+                reconciliation=reconciliation,
+            )
+        return {
+            "schema_version": "OBSIDIA_R8_RECEIPT_INSPECTION_V1",
+            "status": "R8_RECEIPT_INSPECTED_READONLY",
+            "action_evidence_id": action_evidence_id,
+            "replay_verdict": replay_verdict,
+            "decision_verdict": decision_verdict,
+            "reconciliation_status": reconciliation_status,
+            "outcome": (receipt.get("realized_state") or {}).get("outcome", "UNKNOWN"),
+            "integrity": integrity,
+            "decision": decision,
+            "reconciliation": reconciliation,
+            "readonly": True,
+            "decision_authority": self.authority,
+            "execution_authorized": False,
+            "action_ticket_issued": False,
+            "target_mutated": False,
+            "release_authorized": False,
         }
 
     def execute(self, *, operation_type: str, **_ignored: Any) -> dict[str, Any]:

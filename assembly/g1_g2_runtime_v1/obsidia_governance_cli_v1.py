@@ -118,7 +118,9 @@ def _read_stdin_json() -> tuple[Any | None, str | None]:
 
 def dispatch_command(command: str, *, payload: Any = None,
                      sha256_digests: list[str] | None = None,
-                     operation: str | None = None) -> dict[str, Any]:
+                     operation: str | None = None,
+                     action_evidence_id: str | None = None,
+                     stores_dir: str | None = None) -> dict[str, Any]:
     """Tous les chemins utilisent la même façade gouvernée."""
     runtime = get_runtime()
     if command == "status":
@@ -250,6 +252,16 @@ def dispatch_command(command: str, *, payload: Any = None,
         return {"schema_version": "OBSIDIA_GOVERNANCE_CLI_V1", **result,
                 "readonly": True, "release_authorized": False,
                 "action_ticket_issued": False}
+    if command == "r8-inspect":
+        if not action_evidence_id or not stores_dir:
+            return _hold("R8_INSPECT_ARGS_REQUIRED")
+        result = runtime.inspect_r8_receipt(
+            action_evidence_id=action_evidence_id,
+            stores_base_dir=stores_dir,
+        )
+        return {"schema_version": "OBSIDIA_GOVERNANCE_CLI_V1", **result,
+                "readonly": True, "release_authorized": False,
+                "action_ticket_issued": False}
     return _hold("CLI_COMMAND_UNKNOWN")
 
 
@@ -277,6 +289,9 @@ def main(argv: list[str] | None = None) -> int:
     merkle.add_argument("--sha256", action="append", required=True)
     execute = subs.add_parser("execute", help="Vérifie que l'exécution reste HOLD")
     execute.add_argument("--operation", choices=_EXECUTION_OPERATIONS, required=True)
+    r8 = subs.add_parser("r8-inspect", help="Rejeu et réconciliation R8 en lecture seule")
+    r8.add_argument("--action-evidence-id", required=True)
+    r8.add_argument("--stores-dir", required=True)
     args = parser.parse_args(argv)
     payload = None
     if args.command in ("sigma-tooling", "os4-evaluate", "os4-registry-evaluate"):
@@ -291,6 +306,8 @@ def main(argv: list[str] | None = None) -> int:
         args.command, payload=payload,
         sha256_digests=getattr(args, "sha256", None),
         operation=getattr(args, "operation", None),
+        action_evidence_id=getattr(args, "action_evidence_id", None),
+        stores_dir=getattr(args, "stores_dir", None),
     )
     print(json.dumps(result, ensure_ascii=True, sort_keys=True, separators=(",", ":"),
                      allow_nan=False))

@@ -173,6 +173,75 @@ class GovernanceCLIContract(unittest.TestCase):
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assert_non_authorizing(json.loads(proc.stdout))
 
+    def test_r8_inspect_cli_and_runtime_readonly(self):
+        import hashlib
+        import obsidia_canonical_receipt_envelope_v1 as cre
+
+        self.assertEqual(
+            cli.dispatch_command("r8-inspect")["reason"],
+            "R8_INSPECT_ARGS_REQUIRED",
+        )
+        with tempfile.TemporaryDirectory(prefix="obsidia-cli-r8-") as d:
+            base = Path(d)
+            for sub in ("v2exec", "approval", "kxpre", "receipts"):
+                (base / sub).mkdir()
+            self.assertEqual(
+                cli.dispatch_command("r8-inspect", action_evidence_id="bad", stores_dir=d)["reason"],
+                "R8_ACTION_EVIDENCE_ID_INVALID",
+            )
+            missing_id = "aev-" + "0" * 32
+            self.assertEqual(
+                cli.dispatch_command("r8-inspect", action_evidence_id=missing_id, stores_dir=d)["reason"],
+                "R8_CANONICAL_RECEIPT_MISSING_OR_INVALID",
+            )
+            desc = {"patch_sha256": "a" * 64, "target_paths": ["scripts/tool.py"], "before_digests": {"scripts/tool.py": "b" * 64}}
+            eah = hashlib.sha256(
+                json.dumps({"v2_schema": "PC_CAPABILITIES_V2_EAH_V0", "operation_type": "V2_APPLY_PATCH", "action_descriptor": desc}, sort_keys=True).encode("utf-8")
+            ).hexdigest()
+            v2id = "v2x-" + "1" * 32
+            rec = {"v2_exec_id": v2id, "operation_type": "V2_APPLY_PATCH", "eah": eah, "descriptor": desc, "decision_authority": "KX108_ONLY"}
+            raw_rec = json.dumps(rec, sort_keys=True, ensure_ascii=False)
+            (base / "v2exec" / f"{v2id}.json").write_text(raw_rec, encoding="utf-8")
+            desc_hash = hashlib.sha256(raw_rec.encode("utf-8")).hexdigest()
+            exec_in = {"v2_exec_id": v2id}
+            env = cre.build_canonical_receipt_envelope(
+                capability="G1_G2_PATCH", operation_type="V2_APPLY_PATCH",
+                request_ref={"public_action": "APPLY_PATCH"}, session_ref={"v2_exec_id": v2id},
+                prepare={"descriptor_ref": v2id, "descriptor_hash": desc_hash},
+                authorization={"execution_authority_hash": eah, "approval_id": "NOT_REACHED", "kx108_pre_decision_record_id": "NOT_REACHED", "kx108_verdict": "HOLD", "binder_verdict_status": "NOT_REACHED"},
+                execution={"executor_kind": "GOVERNED_PATCH", "executor_operation": "V2_APPLY_PATCH", "executor_status": "NOT_REACHED", "executor_input_ref": exec_in, "executor_input_hash": cre.compute_ref_hash(exec_in), "physical_effect_dispatched": False, "mutation_performed": False},
+                realized_state={"outcome": cre.OUTCOME_KX108_HOLD, "physical_effect_dispatched": False, "mutation_performed": False, "realized_state_verified": False, "proof_strength": "NONE", "post_state_ref": {"status": "NOT_REACHED"}, "post_state_hash": cre.compute_ref_hash({"status": "NOT_REACHED"})},
+                receipt={"source": "SYNTHETIC_CLI_R8"},
+            )
+            self.assertEqual(cre.store_canonical_receipt_envelope(env, base / "receipts")["status"], cre.STATUS_STORED)
+            aev = env["action_evidence_id"]
+
+            res = cli.dispatch_command("r8-inspect", action_evidence_id=aev, stores_dir=d)
+            self.assertEqual(res["status"], "R8_RECEIPT_INSPECTED_READONLY")
+            self.assertEqual(res["replay_verdict"], "VERIFIED")
+            self.assertEqual(res["reconciliation_status"], "NOT_REALIZED")
+            self.assertFalse(res["action_ticket_issued"])
+            self.assert_non_authorizing(res)
+
+            # Subprocess CLI
+            target = ROOT / "obsidia_governance_cli_v1.py"
+            proc = subprocess.run(
+                [sys.executable, "-B", str(target), "r8-inspect", "--action-evidence-id", aev, "--stores-dir", d],
+                capture_output=True, text=True, timeout=10,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            self.assert_non_authorizing(json.loads(proc.stdout))
+
+            # Tampered receipt -> HOLD
+            rpath = base / "receipts" / f"{aev}.json"
+            tampered = json.loads(rpath.read_text(encoding="utf-8"))
+            tampered["envelope_hash"] = "0" * 64
+            rpath.write_text(json.dumps(tampered), encoding="utf-8")
+            bad = cli.dispatch_command("r8-inspect", action_evidence_id=aev, stores_dir=d)
+            self.assertEqual(bad["status"], "HOLD")
+            self.assertIn("ENVELOPE_HASH_MISMATCH", bad["reason"])
+            self.assert_non_authorizing(bad)
+
     def test_registry_ast_source_mutation_is_hold(self):
         with tempfile.TemporaryDirectory(prefix="obsidia-sigma-registry-") as d:
             f = Path(d) / "registry.py"
