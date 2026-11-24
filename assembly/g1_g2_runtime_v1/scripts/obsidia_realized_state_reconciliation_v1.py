@@ -290,14 +290,16 @@ def _apply_patch_adapter(envelope: dict, descriptor: dict, result: dict) -> dict
             or []
         ),
     })
+    is_noop = result["outcome"] == _CRE.OUTCOME_NOOP and result["mutation_performed"] is False
     if got["target_paths"] != authorized["target_paths"]:
         return _finish(result, STATUS_MISMATCH)
     for rel in authorized["target_paths"]:
         if rel not in got["after_digests"]:
             return _finish(result, STATUS_MISMATCH)
-        if got["after_digests"][rel] == authorized["before_digests"].get(rel):
+        unchanged = got["after_digests"][rel] == authorized["before_digests"].get(rel)
+        if (is_noop and not unchanged) or (not is_noop and unchanged):
             return _finish(result, STATUS_MISMATCH)
-    if result["outcome"] == _CRE.OUTCOME_NOOP and result["mutation_performed"] is False:
+    if is_noop:
         return _finish(result, STATUS_NOOP_CONFIRMED)
     return _finish(result, STATUS_MATCH)
 
