@@ -11,8 +11,23 @@ from pathlib import Path
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+_ROOT_STR = str(ROOT)
+_SCRIPTS_STR = str(ROOT / "scripts")
+for _p in (_SCRIPTS_STR, _ROOT_STR):
+    if _p in sys.path:
+        sys.path.remove(_p)
+    sys.path.insert(0, _p)
+
+# Évite qu'un module `scripts` chargé depuis un autre dépôt (ex: obsidia-x108-proofs)
+# dans le même processus unittest ne masque les scripts canoniques du runtime P1.
+for _mod_name in list(sys.modules):
+    if _mod_name == "scripts" or _mod_name.startswith("scripts."):
+        _mod = sys.modules.get(_mod_name)
+        _mod_file = getattr(_mod, "__file__", None) or ""
+        if _mod_file and not str(Path(_mod_file).resolve()).startswith(str(ROOT.resolve())):
+            del sys.modules[_mod_name]
+        elif not _mod_file and _mod_name == "scripts":
+            del sys.modules[_mod_name]
 
 import obsidia_governance_cli_v1 as cli
 import sigma_registry_descriptor_v1 as descriptors
