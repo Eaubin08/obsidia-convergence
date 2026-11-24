@@ -17,6 +17,7 @@ for folder in (ROOT, ROOT / "scripts"):
 
 from obsidia_governance_runtime_v1 import ObsidiaGovernanceRuntime
 from obsidure_c278_machine_rsa_receipt_v1 import inspect_c278_machine_rsa_receipt
+from obsidure_c278_sandbox_observation_v1 import reconstruct_r9_patch_without_execution
 from obsidure_machine_identity_registry_v1 import inspect_machine_identity_registry
 from obsidure_r10_repair_intake_v1 import _BOUNDARY
 from scripts.proposal_meaning_validator import validate_proposal_meaning
@@ -289,6 +290,36 @@ class C278F7ProvenanceSeparationTest(unittest.TestCase):
         )
         self.assertEqual(bad_pin["status"], "HOLD")
         self.assertEqual(bad_pin["reason"], "C278_MACHINE_PUBLIC_CERTIFICATE_PIN_MISMATCH")
+
+    def test_reconstruct_r9_patch_preimage_drift_and_runtime_readonly_guards(self) -> None:
+        patch_text, err = reconstruct_r9_patch_without_execution(
+            repair_proposal=self.proposal, repo_root=self.repo_root
+        )
+        self.assertIsNone(err)
+        self.assertIn("+++ b/scripts/tool.py", patch_text or "")
+
+        # Drift sur le fichier cible -> R9_PATCH_SOURCE_PREIMAGE_DRIFT
+        (self.repo_root / self.target).write_bytes(b"drifted\n")
+        drifted_patch, drift_err = reconstruct_r9_patch_without_execution(
+            repair_proposal=self.proposal, repo_root=self.repo_root
+        )
+        self.assertIsNone(drifted_patch)
+        self.assertEqual(drift_err, "R9_PATCH_SOURCE_PREIMAGE_DRIFT")
+
+        # Contrôles lecture seule du runtime : Merkle 4A1 + execute verrouillé
+        merkle = self.runtime.compute_proof_root([_sha(b"a"), _sha(b"b")])
+        self.assertEqual(merkle["status"], "MERKLE_ROOT_COMPUTED_READ_ONLY")
+        self.assertIs(merkle["execution_authorized"], False)
+        self.assertIs(merkle["target_mutated"], False)
+        self.assertEqual(
+            self.runtime.compute_proof_root(["not-a-sha"])["reason"],
+            "MERKLE_DIGEST_INVALID",
+        )
+        exec_res = self.runtime.execute(operation_type="V2_APPLY_PATCH")
+        self.assertEqual(exec_res["status"], "HOLD")
+        self.assertEqual(exec_res["reason"], "G1_G2_EXECUTION_NOT_RELEASED:V2_APPLY_PATCH")
+        self.assertIs(exec_res["execution_authorized"], False)
+        self.assertIs(exec_res["target_mutated"], False)
 
 
 if __name__ == "__main__":
