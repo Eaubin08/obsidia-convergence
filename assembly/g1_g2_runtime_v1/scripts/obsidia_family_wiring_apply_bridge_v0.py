@@ -34,7 +34,7 @@ if str(_SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPTS_DIR))
 _REPO_ROOT = _SCRIPTS_DIR.parent
 
-import obsidure_bounded_apply as _OBA  # load_and_validate_proposal — jamais modifié ici
+import obsidure_proposal_reader_v1 as _OBA
 
 AUTHORITY = "NON_SOVEREIGN"
 OPERATION_TYPE = "UPDATE_TARGET_FROM_SOURCE"

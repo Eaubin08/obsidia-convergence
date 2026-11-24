@@ -13,6 +13,7 @@ import dataclasses
 import math
 import re
 import sys
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
@@ -24,6 +25,12 @@ if str(_SCRIPTS) not in sys.path:
 from scripts.obsidia_create_pre_contract_v0 import prepare_create_target_pre_evidence
 from obsidure_governed_boundary_v1 import admit_obsidure_bridge_pre
 from obsidure_r10_repair_intake_v1 import inspect_obsidure_r10_repair
+from obsidure_r9_prepare_provenance_v1 import inspect_obsidure_r9_prepare_provenance
+from obsidure_c278_sandbox_observation_v1 import (
+    inspect_obsidure_c278_sandbox_observation,
+    reconstruct_r9_patch_without_execution,
+)
+from obsidure_r12_r8_outcome_v1 import inspect_obsidure_r12_r8_outcome
 from scripts.obsidia_kx108_decision_store import (
     persist_kx108_world_action_pre_execution_decision,
 )
@@ -192,6 +199,180 @@ class ObsidiaGovernanceRuntime:
             worktree_root=worktree_root,
             declared_targets=declared_targets,
         )
+
+    def inspect_obsidure_r9_preparation(
+        self, *, r10_inspection: dict[str, Any], r9_result: dict[str, Any],
+        stores_base_dir: Path, expected_repo_identity_ref: str,
+    ) -> dict[str, Any]:
+        """Controle les preuves R9/V2 persistées ; ne lance pas PREPARE."""
+        return inspect_obsidure_r9_prepare_provenance(
+            r10_inspection=r10_inspection,
+            r9_result=r9_result,
+            stores_base_dir=stores_base_dir,
+            expected_repo_identity_ref=expected_repo_identity_ref,
+        )
+
+    def inspect_obsidure_r12_r8_outcome(
+        self, *, action_evidence_id: str, stores_base_dir: Path,
+        r10_inspection: dict[str, Any], prepared_repair: dict[str, Any],
+    ) -> dict[str, Any]:
+        """R12 : confronte R10/R9 aux vraies preuves R8 persistées, sans APPLY.
+
+        Pas de reprise automatique ni de HumanApproval simulée. Une preuve
+        historique positive n'ouvre jamais d'autorité d'exécution future.
+        """
+        return inspect_obsidure_r12_r8_outcome(
+            action_evidence_id=action_evidence_id,
+            stores_base_dir=stores_base_dir,
+            r10_inspection=r10_inspection,
+            prepared_repair=prepared_repair,
+        )
+
+    def inspect_obsidure_c278_sandbox(
+        self, *, r10_inspection: dict[str, Any], repair_request: dict[str, Any],
+        repair_proposal: dict[str, Any], c278_evidence: dict[str, Any],
+        repair_verdict: dict[str, Any], repo_root: Path,
+    ) -> dict[str, Any]:
+        """Relit C278 et la sandbox existante, sans réexécuter les tests."""
+        return inspect_obsidure_c278_sandbox_observation(
+            r10_inspection=r10_inspection, repair_request=repair_request,
+            repair_proposal=repair_proposal, c278_evidence=c278_evidence,
+            repair_verdict=repair_verdict, repo_root=repo_root,
+        )
+
+    def inspect_obsidure_r9_r12_outcome(
+        self, *, action_evidence_id: str, stores_base_dir: Path,
+        r10_inspection: dict[str, Any], r9_result: dict[str, Any],
+        expected_repo_identity_ref: str,
+    ) -> dict[str, Any]:
+        """R9 canonique -> R12 historique, sans elever une provenance declaree."""
+        r9 = self.inspect_obsidure_r9_preparation(
+            r10_inspection=r10_inspection,
+            r9_result=r9_result,
+            stores_base_dir=stores_base_dir,
+            expected_repo_identity_ref=expected_repo_identity_ref,
+        )
+        if r9["status"] != "R9_PREPARE_BINDING_MATCH_UNATTESTED":
+            return {
+                "schema_version": "OBSIDURE_R9_R12_READONLY_JOIN_V1",
+                "status": "HOLD", "reason": r9["reason"],
+                "derived_outcome_classification": "EVIDENCE_INCOMPLETE",
+                "recommendation": "ESCALATE", "r9_prepare": r9,
+                "readonly": True, "authority": "NON_SOVEREIGN",
+                "decision_authority": "KX108_ONLY", "execution_authorized": False,
+                "human_approval_verified": False, "action_ticket_issued": False,
+                "executor_invoked": False, "target_mutated": False, "automatic_retry": False,
+            }
+        r12 = self.inspect_obsidure_r12_r8_outcome(
+            action_evidence_id=action_evidence_id,
+            stores_base_dir=stores_base_dir,
+            r10_inspection=r10_inspection,
+            prepared_repair={
+                "repair_lineage": r9["repair_lineage"],
+                "prepared_action": {
+                    "builder_lineage": r9["builder_lineage"],
+                    "v2_exec_id": r9["v2_exec_id"],
+                },
+            },
+        )
+        # La concordance des hashes R9 ne prouve pas une sandbox authentique.
+        # Meme un SUCCESS historique R8 ne donne donc aucun droit d'execution.
+        if r12.get("derived_outcome_classification") == "HISTORICAL_EXECUTION_EVIDENCE_MATCHED":
+            r12 = {**r12, "derived_outcome_classification": "EVIDENCE_INCOMPLETE",
+                   "recommendation": "ESCALATE", "reason": "R9_SANDBOX_ORIGIN_NOT_AUTHENTICATED"}
+        return {
+            **r12,
+            "join_schema_version": "OBSIDURE_R9_R12_READONLY_JOIN_V1",
+            "r9_prepare": r9,
+            "r9_artifact_binding_verified": True,
+            "r9_provenance_verified": False,
+            "release_authorized": False,
+            "execution_authorized": False,
+            "human_approval_verified": False,
+            "action_ticket_issued": False,
+            "executor_invoked": False,
+            "target_mutated": False,
+            "automatic_retry": False,
+        }
+
+    def inspect_obsidure_c278_r9_r12_outcome(
+        self, *, action_evidence_id: str, stores_base_dir: Path,
+        r10_inspection: dict[str, Any], r9_result: dict[str, Any],
+        expected_repo_identity_ref: str, repair_request: dict[str, Any],
+        repair_proposal: dict[str, Any], c278_evidence: dict[str, Any],
+        repair_verdict: dict[str, Any], repo_root: Path,
+        execution_worktree_root: Path,
+    ) -> dict[str, Any]:
+        """C278 et sandbox observés → R9 → R12, sans créer de provenance.
+
+        Le verdict et la sandbox ne sont pas signés par un producteur fiable.
+        Même une concordance complète ne libère donc jamais l'exécution.
+        """
+        observation = self.inspect_obsidure_c278_sandbox(
+            r10_inspection=r10_inspection, repair_request=repair_request,
+            repair_proposal=repair_proposal, c278_evidence=c278_evidence,
+            repair_verdict=repair_verdict, repo_root=repo_root,
+        )
+        if observation["status"] != "C278_SANDBOX_BYTES_MATCH_UNATTESTED":
+            return {
+                **self._hold(observation["reason"]),
+                "schema_version": "OBSIDURE_C278_R9_R12_OBSERVATION_JOIN_V1",
+                "c278_observation": observation, "readonly": True,
+                "sandbox_origin_attested": False, "release_authorized": False,
+            }
+        r9 = self.inspect_obsidure_r9_preparation(
+            r10_inspection=r10_inspection, r9_result=r9_result,
+            stores_base_dir=stores_base_dir,
+            expected_repo_identity_ref=expected_repo_identity_ref,
+        )
+        if r9["status"] != "R9_PREPARE_BINDING_MATCH_UNATTESTED":
+            return {
+                **self._hold(r9["reason"]),
+                "schema_version": "OBSIDURE_C278_R9_R12_OBSERVATION_JOIN_V1",
+                "c278_observation": observation, "r9_prepare": r9,
+                "readonly": True, "sandbox_origin_attested": False,
+                "release_authorized": False,
+            }
+        proposal = r9_result.get("r9_proposal")
+        declared = getattr(proposal, "declared_evidence", None)
+        if (not isinstance(declared, Mapping)
+                or declared.get("tested_artifact_hashes") != observation["candidate_artifact_sha256"]
+                or declared.get("c278_evidence") != "CONTINUOUS"):
+            return {
+                **self._hold("C278_R9_TESTED_ARTIFACTS_LINEAGE_MISMATCH"),
+                "schema_version": "OBSIDURE_C278_R9_R12_OBSERVATION_JOIN_V1",
+                "c278_observation": observation, "r9_prepare": r9,
+                "readonly": True, "sandbox_origin_attested": False,
+                "release_authorized": False,
+            }
+        expected_patch, patch_error = reconstruct_r9_patch_without_execution(
+            repair_proposal=repair_proposal,
+            repo_root=execution_worktree_root,
+        )
+        if patch_error is not None or expected_patch != r9_result.get("patch_content"):
+            return {
+                **self._hold(patch_error or "C278_R9_PATCH_CONTENT_DIVERGES"),
+                "schema_version": "OBSIDURE_C278_R9_R12_OBSERVATION_JOIN_V1",
+                "c278_observation": observation, "r9_prepare": r9,
+                "readonly": True, "sandbox_origin_attested": False,
+                "release_authorized": False,
+            }
+        outcome = self.inspect_obsidure_r9_r12_outcome(
+            action_evidence_id=action_evidence_id,
+            stores_base_dir=stores_base_dir, r10_inspection=r10_inspection,
+            r9_result=r9_result,
+            expected_repo_identity_ref=expected_repo_identity_ref,
+        )
+        return {
+            **outcome,
+            "join_schema_version": "OBSIDURE_C278_R9_R12_OBSERVATION_JOIN_V1",
+            "c278_observation": observation,
+            "sandbox_bytes_observed": True,
+            "sandbox_origin_attested": False,
+            "test_process_attested": False,
+            "release_authorized": False, "execution_authorized": False,
+            "target_mutated": False,
+        }
 
     def prepare_existing_update(self, **canonical_inputs: Any) -> dict[str, Any]:
         """Préparation K1 d'une cible EXISTANTE, sans APPLY ni HumanApproval.
