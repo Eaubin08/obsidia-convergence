@@ -13,7 +13,7 @@ from sigma.tooling.governed_bounded_apply import PatchProposal, PatchOperation
 
 
 def _fixture(tmp_path):
-    c2 = runpy.run_path('tests/cli/test_governed_content_apply_c2_v0.py')
+    c2 = runpy.run_path(str(Path(__file__).with_name('test_governed_content_apply_c2_v0.py')))
     w = c2['_world'](tmp_path)
     wt = w['repo'] / 'wt'
     rel = w['child']['target_path']
@@ -66,7 +66,7 @@ def test_exact_pre_approved_action_can_issue_and_consume_once(tmp_path):
     assert verify_and_consume_sovereign_ticket(ticket, **consume).ticket_id == ticket.ticket_id
     with pytest.raises(AssertionError):
         verify_and_consume_sovereign_ticket(ticket, **consume)
-    assert target.read_bytes() == runpy.run_path('tests/cli/test_governed_content_apply_c2_v0.py')['_OLD']
+    assert target.read_bytes() == runpy.run_path(str(Path(__file__).with_name('test_governed_content_apply_c2_v0.py')))['_OLD']
 
 
 @pytest.mark.parametrize('mutation', [
