@@ -105,9 +105,14 @@ def bind_mission_authority_from_human_reference(
     genesis = _M.load_mission_genesis(mission_id, mission_store_dir)
     plan = _M.load_mission_plan(mission_id, plan_id, mission_store_dir)
     hma = _MA.load_human_mission_authorization(mission_id, br["human_mission_authorization_id"], mission_store_dir)
+    try:
+        revocations = _MA.list_mission_authority_revocations(
+            mission_id, mission_store_dir)
+    except (RuntimeError, OSError, ValueError) as exc:
+        return {"status": MISSION_AUTHORITY_BIND_REJECTED,
+                "reason": f"HMA_REVOCATION_REGISTRY_HOLD:{type(exc).__name__}"}
     ok, why = _MA.verify_human_mission_authorization(
-        hma, genesis=genesis, plan=plan,
-        revocations=_MA.list_mission_authority_revocations(mission_id, mission_store_dir))
+        hma, genesis=genesis, plan=plan, revocations=revocations)
     if not ok:
         return {"status": MISSION_AUTHORITY_BIND_REJECTED, "reason": f"HMA_VERIFY_REJECTED:{why}"}
 
@@ -170,7 +175,15 @@ def derive_and_record_action_authority_witness(
     if hma is None or plan is None or genesis is None:
         return _rej("HMA_OR_PLAN_OR_GENESIS_NOT_LOADABLE")
 
-    revocations = _MA.list_mission_authority_revocations(mission_id, mission_store_dir)
+    try:
+        revocations = _MA.list_mission_authority_revocations(
+            mission_id, mission_store_dir)
+    except (RuntimeError, OSError, ValueError) as exc:
+        return _hold(
+            f"HMA_REVOCATION_REGISTRY_HOLD:{type(exc).__name__}",
+            hma_invalid=True,
+            revocation_enforcement_belongs_to="STAGE_4F",
+        )
     ok_h, why_h = _MA.verify_human_mission_authorization(
         hma, genesis=genesis, plan=plan, revocations=revocations)
     if not ok_h:

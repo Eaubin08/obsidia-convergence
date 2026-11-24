@@ -143,7 +143,11 @@ def _verify_chain(*, mission_id, store_dir, execution_dir, batch_execution_id):
             and hma["human_authorization_reference"].strip()):
         return None, "HMA_HUMAN_AUTHORIZATION_REFERENCE_ABSENT"
 
-    revocations = _MA.list_mission_authority_revocations(mission_id, store_dir)
+    try:
+        revocations = _MA.list_mission_authority_revocations(
+            mission_id, store_dir)
+    except (RuntimeError, OSError, ValueError) as exc:
+        return None, f"HMA_REVOCATION_REGISTRY_HOLD:{type(exc).__name__}"
     ok_h, why_h = _MA.verify_human_mission_authorization(
         hma, genesis=genesis, plan=plan, revocations=revocations)
     if not ok_h:

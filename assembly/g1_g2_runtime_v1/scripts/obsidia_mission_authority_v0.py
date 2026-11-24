@@ -476,16 +476,58 @@ def verify_mission_authority_revocation(record: Optional[dict], *,
 
 def list_mission_authority_revocations(mission_id: str,
                                        mission_store_dir: "str | Path") -> "list[dict]":
+    """Charge les r?vocations sans masquer une corruption du registre.
+
+    Un registre absent reste compatible avec le contrat historique.
+    Une entr?e pr?sente mais illisible ou structurellement invalide
+    provoque un refus ferm? par exception.
+    """
     import json
+
     d = _revocations_dir(mission_id, mission_store_dir)
+
     if not d.exists():
         return []
+
+    if not d.is_dir():
+        raise RuntimeError("HMA_REVOCATION_REGISTRY_NOT_DIRECTORY")
+
     out = []
-    for f in sorted(d.glob("rev-*.json")):
+
+    try:
+        files = sorted(d.iterdir())
+    except OSError as exc:
+        raise RuntimeError("HMA_REVOCATION_REGISTRY_UNREADABLE") from exc
+
+    for f in files:
+        if not f.is_file() or not (
+            f.name.startswith("rev-") and f.name.endswith(".json")
+        ):
+            raise RuntimeError("HMA_REVOCATION_REGISTRY_UNEXPECTED_ENTRY")
+
         try:
-            out.append(json.loads(f.read_text(encoding="utf-8")))
-        except (json.JSONDecodeError, OSError):
-            continue
+            record = json.loads(f.read_text(encoding="utf-8"))
+        except (UnicodeError, json.JSONDecodeError, OSError) as exc:
+            raise RuntimeError("HMA_REVOCATION_RECORD_UNREADABLE") from exc
+
+        if not isinstance(record, dict):
+            raise RuntimeError("HMA_REVOCATION_RECORD_NOT_OBJECT")
+
+        ok, reason = verify_mission_authority_revocation(record)
+
+        if not ok:
+            raise RuntimeError(
+                "HMA_REVOCATION_RECORD_INVALID:" + str(reason)
+            )
+
+        if record.get("mission_id") != mission_id:
+            raise RuntimeError("HMA_REVOCATION_MISSION_MISMATCH")
+
+        if f.stem != record.get("mission_authority_revocation_id"):
+            raise RuntimeError("HMA_REVOCATION_FILENAME_ID_MISMATCH")
+
+        out.append(record)
+
     return out
 
 
