@@ -108,11 +108,15 @@ class PortabilityContractOnRealRuntime(unittest.TestCase):
                        "obsidia_mission_local_snapshot_v0",
                        "obsidia_mission_authority_v0"):
             self.assertEqual(by[module]["status"], P.AVAILABLE_PINNED, by[module])
-        # Aucune source canonique pour periphery.ecom_attestation : jamais présenté comme fermé.
+        # Aucune source canonique pour periphery.ecom_attestation, et agent_obsidure non intégré :
         self.assertEqual(by["periphery.ecom_attestation"]["status"], P.MISSING)
+        self.assertEqual(by["periphery.agents.agent_obsidure"]["status"], P.MISSING)
         self.assertFalse(res["portable_closure_verified"])
         self.assertEqual(res["status"], "HOLD")
-        self.assertEqual(res["blocking_modules"], ["periphery.ecom_attestation"])
+        self.assertEqual(
+            res["blocking_modules"],
+            ["periphery.ecom_attestation", "periphery.agents.agent_obsidure"],
+        )
 
     def test_isolated_resolution_does_not_leave_the_runtime(self):
         resolver = P.isolated_origin_resolver(ROOT)

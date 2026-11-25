@@ -54,6 +54,19 @@
         "expected_interface": "get_or_verify_state_attestation(state) -> (att_status: str, unused, age_s: float | None); only att_status == 'VERIFIED' qualifies a measure",
         "consumer": "sigma/domains/ecom_agents.py (imported at module load by sigma/protocols.py)"
       }
+    },
+    {
+      "module": "periphery.agents.agent_obsidure",
+      "relative_path": "periphery/agents/agent_obsidure.py",
+      "expected_sha256": "fbf8f84de0f21e74f2b5faa55a6e6cef38b2a3fc812e26a6636935da06030d25",
+      "superseded_sha256": [],
+      "required": true,
+      "provenance": {
+        "source_repo": "obsidia-x108-proofs",
+        "abi_snapshot": "contracts/K1_CANONICAL_ABI_SNAPSHOT_20261118.json",
+        "adoption": "MISSING_IN_PORTABLE_RUNTIME_HOLD",
+        "consumer": "scripts/obsidure_bounded_apply.py, tests/cli/test_governed_content_apply_c2_v0.py::test_19"
+      }
     }
   ]
 }
