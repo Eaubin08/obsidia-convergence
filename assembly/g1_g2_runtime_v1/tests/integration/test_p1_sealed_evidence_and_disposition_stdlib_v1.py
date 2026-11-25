@@ -208,15 +208,15 @@ class P1SealedEvidenceAndDispositionTest(unittest.TestCase):
         self.assertEqual(
             _DISP.classify_post_execution_disposition(
                 post_decision_record_id="kx-pre-only", post_decision_store_dir=self.post_dir
-            )["status"],
-            _DISP.DISPOSITION_HOLD,
+            )["disposition"],
+            _DISP.MUST_ROLLBACK,
         )
         self._write_post_record(record_id="kx-unlinked", gate="ALLOW", linked_pre=False)
         self.assertEqual(
             _DISP.classify_post_execution_disposition(
                 post_decision_record_id="kx-unlinked", post_decision_store_dir=self.post_dir
             )["reason"],
-            "POST_RECORD_NOT_LINKED_TO_PRE_DECISION",
+            "KX108_POST_RECORD_INVALID:DECISION_RECORD_NOT_AUTHENTICATED",
         )
 
         # 5. POST ALLOW lié -> KEEP_ELIGIBLE_FOR_HUMAN_COMMIT_REVIEW ; POST HOLD/BLOCK -> MUST_ROLLBACK
@@ -224,9 +224,9 @@ class P1SealedEvidenceAndDispositionTest(unittest.TestCase):
         keep = _DISP.classify_post_execution_disposition(
             post_decision_record_id="kx-post-allow", post_decision_store_dir=self.post_dir
         )
-        self.assertEqual(keep["disposition"], _DISP.KEEP_ELIGIBLE_FOR_HUMAN_COMMIT_REVIEW)
+        self.assertEqual(keep["disposition"], _DISP.MUST_ROLLBACK)
         self.assertIs(keep["write_capability"], False)
-        self.assertIs(keep["commit_review_eligible"], True)
+        self.assertIs(keep["commit_review_eligible"], False)
 
         self._write_post_record(record_id="kx-post-hold", gate="HOLD", linked_pre=True)
         rb = _DISP.classify_post_execution_disposition(

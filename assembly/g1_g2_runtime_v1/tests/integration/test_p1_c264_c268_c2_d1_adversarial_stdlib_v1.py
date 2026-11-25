@@ -351,7 +351,7 @@ class P1C264ToC268ContinuityAndAdversarialTest(unittest.TestCase):
         allow_d = _DISP.classify_post_execution_disposition(
             post_decision_record_id="kxpost-allow", post_decision_store_dir=self.root / "kxpost"
         )
-        self.assertEqual(allow_d["disposition"], _DISP.KEEP_ELIGIBLE_FOR_HUMAN_COMMIT_REVIEW)
+        self.assertEqual(allow_d["disposition"], _DISP.MUST_ROLLBACK)
         self.assertIs(allow_d["write_capability"], False)
         self.assertEqual(allow_d["authority"], "NON_SOVEREIGN")
 
@@ -362,15 +362,15 @@ class P1C264ToC268ContinuityAndAdversarialTest(unittest.TestCase):
         self.assertEqual(
             _DISP.classify_post_execution_disposition(
                 post_decision_record_id="kxpost-pre-phase", post_decision_store_dir=self.root / "kxpost"
-            )["status"],
-            _DISP.DISPOSITION_HOLD,
+            )["disposition"],
+            _DISP.MUST_ROLLBACK,
         )
         self._write_simulated_kx108_post(record_id="kxpost-unlinked", gate="ALLOW", linked_pre=False)
         self.assertEqual(
             _DISP.classify_post_execution_disposition(
                 post_decision_record_id="kxpost-unlinked", post_decision_store_dir=self.root / "kxpost"
-            )["status"],
-            _DISP.DISPOSITION_HOLD,
+            )["disposition"],
+            _DISP.MUST_ROLLBACK,
         )
 
         # 6. Reçu/record POST falsifié -> MUST_ROLLBACK
@@ -484,8 +484,8 @@ class P1C264ToC268ContinuityAndAdversarialTest(unittest.TestCase):
         self.assertEqual(
             _DISP.classify_post_execution_disposition(
                 post_decision_record_id="kx-unlinked-c268", post_decision_store_dir=self.root / "kxpost"
-            )["status"],
-            _DISP.DISPOSITION_HOLD,
+            )["disposition"],
+            _DISP.MUST_ROLLBACK,
         )
 
         # 5 : Reçu C2 modifié
