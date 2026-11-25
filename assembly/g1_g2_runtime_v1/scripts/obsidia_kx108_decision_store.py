@@ -996,7 +996,7 @@ def run_and_persist_kx108_post_execution_decision(
     if pre is None:
         return {"status": "REJECTED", "reason": "KX108_PRE_DECISION_NOT_FOUND",
                 "kx108_kernel_call_count": 0}
-    ok_pre, reason_pre = verify_kx108_decision_record(pre)
+    ok_pre, reason_pre = verify_kx108_decision_record_authenticity(pre)
     if not ok_pre:
         return {"status": "REJECTED", "reason": f"KX108_PRE_DECISION_INVALID:{reason_pre}",
                 "kx108_kernel_call_count": 0}
@@ -1073,10 +1073,11 @@ def run_and_persist_kx108_post_execution_decision(
         identity_seed.update(sealed_link)
     record["decision_record_id"] = _compute_post_pre_linked_decision_record_identity(identity_seed)
     record["decision_record_hash"] = compute_kx108_decision_record_hash(record)
+    _authenticate_decision_record(record, "run_and_persist_kx108_post_execution_decision")
 
     store_result = store_kx108_decision_record(record, post_decision_store_dir)
     reloaded = load_kx108_decision_record(record["decision_record_id"], post_decision_store_dir)
-    verify_ok, verify_reason = verify_kx108_decision_record(reloaded)
+    verify_ok, verify_reason = verify_kx108_decision_record_authenticity(reloaded)
 
     return {
         "status": "STORED" if verify_ok else "VERIFY_FAILED",

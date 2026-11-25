@@ -136,12 +136,53 @@ def test_all_existing_k1_function_bodies_unchanged_except_phase_dispatch():
     funcs = lambda tree: {node.name: node for node in tree.body if isinstance(node, ast.FunctionDef)}
     original, merged = funcs(old), funcs(new)
     assert set(original).issubset(set(merged))
+    baseline_source = base.read_text(encoding="utf-8")
+
     for name, function in original.items():
         if name == "_record_bound_fields_for":
             continue
-        assert ast.dump(function, include_attributes=False) == ast.dump(
+
+        expected_function = function
+
+        if name == "run_and_persist_kx108_post_execution_decision":
+            baseline_body = ast.get_source_segment(
+                baseline_source, function
+            )
+            assert baseline_body is not None
+
+            allowed_changes = (
+                (
+                    "ok_pre, reason_pre = verify_kx108_decision_record(pre)",
+                    "ok_pre, reason_pre = verify_kx108_decision_record_authenticity(pre)",
+                ),
+                (
+                    'record["decision_record_hash"] = compute_kx108_decision_record_hash(record)',
+                    'record["decision_record_hash"] = compute_kx108_decision_record_hash(record)\n'
+                    '    _authenticate_decision_record(record, "run_and_persist_kx108_post_execution_decision")',
+                ),
+                (
+                    "verify_ok, verify_reason = verify_kx108_decision_record(reloaded)",
+                    "verify_ok, verify_reason = verify_kx108_decision_record_authenticity(reloaded)",
+                ),
+            )
+
+            expected_body = baseline_body
+
+            for before, after in allowed_changes:
+                assert expected_body.count(before) == 1, (
+                    f"K1 baseline exception mismatch: {before}"
+                )
+                expected_body = expected_body.replace(
+                    before, after, 1
+                )
+
+            expected_function = ast.parse(expected_body).body[0]
+
+        assert ast.dump(
+            expected_function, include_attributes=False
+        ) == ast.dump(
             merged[name], include_attributes=False
-        ), f"K1 existing function modified: {name}"
+        ), f"K1 existing function modified beyond approved C354 scope: {name}"
 
 
 def test_duplicate_world_evidence_is_idempotent_and_never_authorizing(tmp_path, binding):
