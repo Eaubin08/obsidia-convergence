@@ -337,7 +337,7 @@ def check_local_snapshot_eligibility(
 
     # 3. KX108_PRE
     pre = _DS.load_kx108_decision_record(kx108_pre_decision_record_id, Path(kx108_pre_decision_dir))
-    ok, why = _DS.verify_kx108_decision_record(pre)
+    ok, why = _DS.verify_kx108_decision_record_authenticity(pre)
     if not ok:
         return _ineligible(f"KX108_PRE_INVALID:{why}")
     if pre.get("x108_gate") != "ALLOW":
@@ -350,7 +350,7 @@ def check_local_snapshot_eligibility(
 
     # 4. KX108_POST — lié à PRE exact
     post = _DS.load_kx108_decision_record(kx108_post_decision_record_id, Path(kx108_post_decision_dir))
-    ok, why = _DS.verify_kx108_decision_record(post)
+    ok, why = _DS.verify_kx108_decision_record_authenticity(post)
     if not ok:
         return _ineligible(f"KX108_POST_INVALID:{why}")
     if post.get("x108_gate") != "ALLOW":

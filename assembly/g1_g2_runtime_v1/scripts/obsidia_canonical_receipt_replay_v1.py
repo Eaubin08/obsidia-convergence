@@ -212,7 +212,7 @@ def _verify_kx108(envelope: dict, stores: dict, result: dict) -> Optional[dict]:
         result["KX108_ref_valid"] = NOT_REACHED
         return None
     record = _DS.load_kx108_decision_record(record_id, store_dir=stores["kxpre"])
-    ok, reason = _DS.verify_kx108_decision_record(record)
+    ok, reason = _DS.verify_kx108_decision_record_authenticity(record)
     if not ok:
         if reason == "DECISION_RECORD_MISSING":
             result["KX108_ref_valid"] = UNAVAILABLE

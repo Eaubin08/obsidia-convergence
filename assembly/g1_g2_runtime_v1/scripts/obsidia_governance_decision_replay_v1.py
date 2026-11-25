@@ -195,7 +195,7 @@ def _replay_kx108_from_frozen_record(envelope: dict, approval: Optional[dict], s
         result["missing_inputs"].append("KX108_PRE_RECORD_ID_MISSING")
         return None
     record = _DS.load_kx108_decision_record(record_id, store_dir=stores["kxpre"])
-    ok, reason = _DS.verify_kx108_decision_record(record)
+    ok, reason = _DS.verify_kx108_decision_record_authenticity(record)
     if not ok:
         result["conflicts" if reason != "DECISION_RECORD_MISSING" else "missing_inputs"].append(reason or "KX108_RECORD_INVALID")
         return record
