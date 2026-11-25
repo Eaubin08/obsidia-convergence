@@ -145,7 +145,7 @@ def validate_governed_apply_preflight(
     pre = _DS.load_kx108_decision_record(kx108_pre_decision_record_id, kx108_decision_dir)
     if pre is None:
         return _hold("KX108_PRE_DECISION_NOT_FOUND")
-    ok_p, reason_p = _DS.verify_kx108_decision_record(pre)
+    ok_p, reason_p = _DS.verify_kx108_decision_record_authenticity(pre)
     if not ok_p:
         return _hold(f"KX108_PRE_DECISION_INVALID:{reason_p}")
     if _DS.decision_phase_of(pre) != _DS.PRE_DECISION_PHASE:
@@ -463,7 +463,7 @@ def run_governed_content_apply(
         return _rej("STAGE4_CONTEXT_WITH_NON_DERIVED_APPROVAL")
 
     pre = _DS.load_kx108_decision_record(kx108_pre_decision_record_id, kx108_decision_dir)
-    ok_p, r_p = _DS.verify_kx108_decision_record(pre)
+    ok_p, r_p = _DS.verify_kx108_decision_record_authenticity(pre)
     if not ok_p:
         return _rej(f"KX108_PRE_DECISION_INVALID:{r_p}")
     if _DS.decision_phase_of(pre) != _DS.PRE_DECISION_PHASE:

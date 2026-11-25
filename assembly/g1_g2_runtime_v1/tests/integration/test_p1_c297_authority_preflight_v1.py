@@ -98,7 +98,7 @@ def test_p1_c297_authority_preflight():
                 )
                 stack.enter_context(
                     patch.object(
-                        DS, "verify_kx108_decision_record",
+                        DS, "verify_kx108_decision_record_authenticity",
                         return_value=(True, None),
                     )
                 )
