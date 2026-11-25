@@ -178,11 +178,36 @@ def test_all_existing_k1_function_bodies_unchanged_except_phase_dispatch():
 
             expected_function = ast.parse(expected_body).body[0]
 
+        if name in (
+            "run_and_persist_kx108_decision",
+            "run_and_persist_kx108_pre_execution_decision",
+        ):
+            baseline_body = ast.get_source_segment(
+                baseline_source, function
+            )
+            assert baseline_body is not None
+
+            before = (
+                "verify_ok, verify_reason = "
+                "verify_kx108_decision_record(reloaded)"
+            )
+            after = (
+                "verify_ok, verify_reason = "
+                "verify_kx108_decision_record_authenticity(reloaded)"
+            )
+
+            assert baseline_body.count(before) == 1, (
+                f"K1 C368 baseline exception mismatch: {name}"
+            )
+
+            expected_body = baseline_body.replace(before, after, 1)
+            expected_function = ast.parse(expected_body).body[0]
+
         assert ast.dump(
             expected_function, include_attributes=False
         ) == ast.dump(
             merged[name], include_attributes=False
-        ), f"K1 existing function modified beyond approved C354 scope: {name}"
+        ), f"K1 existing function modified beyond approved C354/C368 scope: {name}"
 
 
 def test_duplicate_world_evidence_is_idempotent_and_never_authorizing(tmp_path, binding):

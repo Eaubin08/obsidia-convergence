@@ -539,7 +539,7 @@ def run_and_persist_kx108_decision(
 
     store_result = store_kx108_decision_record(record, store_dir)
     reloaded = load_kx108_decision_record(record["decision_record_id"], store_dir)
-    verify_ok, verify_reason = verify_kx108_decision_record(reloaded)
+    verify_ok, verify_reason = verify_kx108_decision_record_authenticity(reloaded)
 
     return {
         "decision_record_id": record["decision_record_id"],
@@ -690,7 +690,7 @@ def run_and_persist_kx108_pre_execution_decision(
 
     store_result = store_kx108_decision_record(record, store_dir)
     reloaded = load_kx108_decision_record(record["decision_record_id"], store_dir)
-    verify_ok, verify_reason = verify_kx108_decision_record(reloaded)
+    verify_ok, verify_reason = verify_kx108_decision_record_authenticity(reloaded)
 
     return {
         "decision_record_id": record["decision_record_id"],
