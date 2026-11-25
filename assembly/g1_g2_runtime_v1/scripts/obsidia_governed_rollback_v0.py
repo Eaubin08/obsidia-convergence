@@ -548,7 +548,7 @@ def run_governed_rollback(
     if pre is None:
         return _finalize(status=ROLLBACK_REFUSED_PRE_DECISION_INVALID, reason="PRE_NOT_FOUND",
                          ctx=ctx, rollback_result_dir=rollback_result_dir)
-    ok, r = _DS.verify_kx108_decision_record(pre)
+    ok, r = _DS.verify_kx108_decision_record_authenticity(pre)
     if not ok:
         return _finalize(status=ROLLBACK_REFUSED_PRE_DECISION_INVALID, reason=f"PRE_INVALID:{r}",
                          ctx=ctx, rollback_result_dir=rollback_result_dir)
@@ -610,7 +610,7 @@ def run_governed_rollback(
         if post is None:
             return _finalize(status=ROLLBACK_REFUSED_POST_DECISION_INVALID, reason="POST_NOT_FOUND",
                              ctx=ctx, rollback_result_dir=rollback_result_dir)
-        ok_p, rp = _DS.verify_kx108_decision_record(post)
+        ok_p, rp = _DS.verify_kx108_decision_record_authenticity(post)
         if not ok_p:
             return _finalize(status=ROLLBACK_REFUSED_POST_DECISION_INVALID, reason=f"POST_INVALID:{rp}",
                              ctx=ctx, rollback_result_dir=rollback_result_dir)
