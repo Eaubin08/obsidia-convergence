@@ -4,21 +4,21 @@ def test_p1_c297_authority_preflight():
     import tempfile
     from unittest.mock import patch
     from contextlib import ExitStack
-    
+
     root = pathlib.Path(__file__).resolve().parents[2]
     sys.path.insert(0, str(root / "scripts"))
     sys.path.insert(0, str(root))
-    
+
     import obsidia_governed_apply_v0 as G
-    
+
     E = G._E
     DS = G._DS
-    
+
     batch_id = "p1-c297-batch"
     child_id = "p1-c297-child"
     approval_id = "p1-c297-approval"
     pre_id = "p1-c297-pre"
-    
+
     envelope = {
         "integrity_verified": True,
         "decision_authority": G.DECISION_AUTHORITY,
@@ -29,21 +29,21 @@ def test_p1_c297_authority_preflight():
             "operation_type": G.OPERATION_TYPE,
         }],
     }
-    
+
     envelope["execution_authority_hash"] = E.compute_execution_authority_hash(envelope)
     eah = envelope["execution_authority_hash"]
-    
+
     approval = {
         "approval_id": approval_id,
         "execution_authority_hash": eah,
     }
-    
+
     pre = {
         "x108_gate": "ALLOW",
         "execution_authority_hash": eah,
         "approval_id": approval_id,
     }
-    
+
     cases = [
         ("MISSING_APPROVAL", None, None, True, True,
          "HUMAN_APPROVAL_NOT_FOUND"),
@@ -59,12 +59,12 @@ def test_p1_c297_authority_preflight():
          dict(pre, execution_authority_hash="0" * 64),
          True, True, "KX108_PRE_EXECUTION_AUTHORITY_HASH_MISMATCH"),
     ]
-    
+
     failures = []
-    
+
     with tempfile.TemporaryDirectory(prefix="P1_C297_") as tmp:
         target = pathlib.Path(tmp)
-    
+
         for name, a, p, structural_ok, binding_ok, expected in cases:
             with ExitStack() as stack:
                 stack.enter_context(
@@ -108,7 +108,7 @@ def test_p1_c297_authority_preflight():
                         return_value=DS.PRE_DECISION_PHASE,
                     )
                 )
-    
+
                 result = G.validate_governed_apply_preflight(
                     batch_execution_id=batch_id,
                     child_execution_id=child_id,
@@ -116,23 +116,23 @@ def test_p1_c297_authority_preflight():
                     kx108_pre_decision_record_id=pre_id,
                     repo_root=target,
                 )
-    
+
             observed = result.get("reason")
             passed = (
                 result.get("status") == G.STATUS_HOLD
                 and observed == expected
             )
-    
+
             print(
                 f"CASE={name} REASON={observed} "
                 f"EXPECTED={expected} PASS={passed}"
             )
-    
+
             if not passed:
                 failures.append(name)
-    
+
         written = [str(p.relative_to(target)) for p in target.rglob("*")]
-    
+
     print("\n=== P1-C297 — VERDICT ===")
     print("CASES=" + str(len(cases)))
     print("FAILURES=" + repr(failures))
@@ -145,9 +145,9 @@ def test_p1_c297_authority_preflight():
     print("REAL_ACT=False")
     print("KX108_AUTHORITY=UNCHANGED")
     print("RELEASE=HOLD")
-    
+
     if failures or written:
         print("P1_C297_ADVERSARIAL=HOLD")
         raise SystemExit(1)
-    
+
     print("P1_C297_ADVERSARIAL=PASS")
