@@ -19,7 +19,7 @@
     {
       "module": "obsidia_mission_local_snapshot_v0",
       "relative_path": "scripts/obsidia_mission_local_snapshot_v0.py",
-      "expected_sha256": "133dd6d014becba69fc880a6c3c3469a51b6ffaa0f4147167cdcf1a01091679e",
+      "expected_sha256": "7ad313aba08cbc3a5c0a1cb8d8e123d029c774578c4eed370ab5996edc9cdd26",
       "superseded_sha256": [],
       "required": true,
       "provenance": {

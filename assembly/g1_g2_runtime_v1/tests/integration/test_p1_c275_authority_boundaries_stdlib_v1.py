@@ -190,7 +190,12 @@ class AuthorityBoundaryChain(unittest.TestCase):
         b._write_simulated_kx108_post(record_id="kxpost-c275-keep", gate="ALLOW")
         keep = _DISP.classify_post_execution_disposition(
             post_decision_record_id="kxpost-c275-keep", post_decision_store_dir=b.root / "kxpost")
-        self.assertEqual(keep["disposition"], _DISP.KEEP_ELIGIBLE_FOR_HUMAN_COMMIT_REVIEW)
+        self.assertEqual(keep["disposition"], _DISP.MUST_ROLLBACK)
+        self.assertEqual(
+            keep["reason"],
+            "KX108_POST_RECORD_INVALID:DECISION_RECORD_NOT_AUTHENTICATED",
+        )
+        self.assertIs(keep["commit_review_eligible"], False)
         self.assertIs(keep["write_capability"], False)
         self.assertEqual(keep["authority"], "NON_SOVEREIGN")
         for flag in ("execution_authorized", "release_authorized", "commit_authorized", "ticket_id"):
